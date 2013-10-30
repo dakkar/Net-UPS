@@ -1,6 +1,6 @@
 package Net::UPS::Address;
 {
-  $Net::UPS::Address::VERSION = '0.08';
+  $Net::UPS::Address::VERSION = '0.09';
 }
 {
   $Net::UPS::Address::DIST = 'Net-UPS';

@@ -1,6 +1,6 @@
 package Net::UPS;
 {
-  $Net::UPS::VERSION = '0.08';
+  $Net::UPS::VERSION = '0.09';
 }
 {
   $Net::UPS::DIST = 'Net-UPS';
@@ -15,7 +15,7 @@ use Net::UPS::Rate;
 use Net::UPS::Service;
 use Net::UPS::Address;
 use Net::UPS::Package;
-
+use Scalar::Util 'weaken';
 
 @Net::UPS::ISA          = ( "Net::UPS::ErrorHandler" );
 $Net::UPS::LIVE         = 0;
@@ -367,6 +367,7 @@ sub request_rate {
         $service->guaranteed_days(ref($ref->{GuaranteedDaysToDelivery}) ?
                                                 undef : $ref->{GuaranteedDaysToDelivery});
         $service->rated_packages( $packages );
+        weaken(my $weak_service = $service);
         my @rates = ();
         for (my $j=0; $j < @{$ref->{RatedPackage}}; $j++ ) {
             push @rates, Net::UPS::Rate->new(
@@ -374,7 +375,7 @@ sub request_rate {
                 total_charges   => $ref->{RatedPackage}->[$j]->{TotalCharges}->{MonetaryValue},
                 weight          => $ref->{Weight},
                 rated_package   => $packages->[$j],
-                service         => $service,
+                service         => $weak_service,
                 from            => $from,
                 to              => $to
             );
