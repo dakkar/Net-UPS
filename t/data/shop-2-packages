@@ -15,11 +15,6 @@ POST https://wwwcie.ups.com/ups.app/xml/Rate
   </Request>
   <Shipment>
     <Package>
-      <DimensionalWeight>
-        <UnitOfMeasurement>
-          <Code>LBS</Code>
-        </UnitOfMeasurement>
-      </DimensionalWeight>
       <Dimensions>
         <Height>1.5</Height>
         <Length>34</Length>
@@ -40,11 +35,6 @@ POST https://wwwcie.ups.com/ups.app/xml/Rate
       </PackagingType>
     </Package>
     <Package>
-      <DimensionalWeight>
-        <UnitOfMeasurement>
-          <Code>LBS</Code>
-        </UnitOfMeasurement>
-      </DimensionalWeight>
       <Dimensions>
         <Height>1.5</Height>
         <Length>34</Length>

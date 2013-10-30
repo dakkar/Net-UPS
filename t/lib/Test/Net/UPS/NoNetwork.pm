@@ -1,21 +1,21 @@
 package Test::Net::UPS::NoNetwork;
 use strict;
 use warnings;
-use Net::UPS;
+use Moo;
 use XML::Simple;
 use HTTP::Response;
 use Test::Deep;
 
-our @ISA=('Net::UPS');
-
 our @requests;our @testing_requests;our @responses;
 
-# we don't need this in tests, and it makes parsing the requsets
-# harder
-sub access_as_xml { '' }
+sub request {
+    my ($self,$request) = @_;
 
-sub post {
-    my ($self,$url,$content) = @_;
+    my $url = $request->uri;
+    my $content = $request->content;
+
+    # remove the access request prefixed document
+    $content =~ s{\A <\?xml .*? (?= <\?xml)}{}xms;
 
     my $parsed_content = XMLin(
         $content,
@@ -25,24 +25,30 @@ sub post {
 
     push @requests,[$url,$parsed_content];
     if (@testing_requests) {
-        my ($url,$request,$comment) = @{shift @testing_requests};
+        my ($url,$request_comp,$comment) = @{shift @testing_requests};
         cmp_deeply([$url,$parsed_content],
-                   [$url,$request],
+                   [$url,$request_comp],
                    $comment || 'expected request');
     }
 
     if (@responses) {
         my $data = shift @responses;
-        return (ref($data) ? ( XMLout(
-            $data,
-            KeepRoot => 1,
-            NoAttr => 1,
-            KeyAttr => [],
-            XMLDecl => 1,
-        ) ) : $data);
+        return HTTP::Response->new(
+            200,'OK',[],
+            (ref($data) ? ( XMLout(
+                $data,
+                KeepRoot => 1,
+                NoAttr => 1,
+                KeyAttr => [],
+                XMLDecl => 1,
+            ) ) : $data),
+        );
     }
     else {
-        die 'no test response prepared';
+        return HTTP::Response->new(
+            500,'no test response prepared',
+            [],'',
+        );
     }
 }
 

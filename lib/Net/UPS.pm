@@ -39,6 +39,9 @@ sub live {
         croak "$class->live(): usage error";
     }
     $Net::UPS::LIVE = shift;
+    if (ref($class)) {
+        $class->{delegate}->live_mode($Net::UPS::LIVE);
+    }
 }
 
 my $ups = undef;
@@ -53,6 +56,7 @@ sub new {
         user_id => $_[0] || undef,
         password => $_[1] || undef,
         access_key  => $_[2] || undef,
+        live_mode => $Net::UPS::LIVE,
         %{ $_[3] || {} },
     };
 

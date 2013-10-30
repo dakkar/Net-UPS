@@ -17,17 +17,21 @@ sub from_config {
 
 sub from_config_tracing {
     my $upsrc = File::Spec->catfile($ENV{HOME}, '.upsrc');
-    return (Test::Net::UPS::Tracing->new($upsrc) or do {
+    my $ret = Net::UPS->new($upsrc) or do {
         plan(skip_all=>Net::UPS->errstr);
         exit(0);
-    })
+    };
+    $ret->{delegate}{user_agent} = Test::Net::UPS::Tracing->new();
+    return $ret;
 }
 
 sub without_network {
     my ($args) = @_;
-    return Test::Net::UPS::NoNetwork->new(
+    my $ret = Net::UPS->new(
         'testid','testpass','testkey',$args
     );
+    $ret->{delegate}{user_agent} = Test::Net::UPS::NoNetwork->new();
+    return $ret;
 }
 
 1;

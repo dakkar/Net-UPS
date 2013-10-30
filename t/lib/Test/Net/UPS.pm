@@ -5,6 +5,20 @@ use Test::Most;
 use Data::Printer;
 use Net::UPS::Package;
 
+sub package_comparator {
+    my (@p) = @_;
+
+    return map {
+        my $p = $_;
+        all(
+            isa('Net::UPS::Package'),
+            methods(
+                map { $_ => $p->$_ } qw(length width height weight)
+            )
+        );
+    } @p;
+}
+
 sub test_it {
     my ($ups) = @_;
 
@@ -50,7 +64,7 @@ sub test_it {
         all(
             isa('Net::UPS::Rate'),
             methods(
-                rated_package => $_,
+                rated_package => package_comparator($_),
                 from => $address_comparators[0],
                 to => $address_comparators[1],
                 billing_weight => num($_->weight,0.01),
@@ -76,7 +90,7 @@ sub test_it {
         ) or note p $rate1;
         cmp_deeply(
             $rate1->service->rated_packages,
-            [$packages[0]],
+            [package_comparator($packages[0])],
             'service refers to the right package'
         );
     };
@@ -91,7 +105,7 @@ sub test_it {
         ) or note p $rate2;
         cmp_deeply(
             $rate2->service->rated_packages,
-            [$packages[0]],
+            [package_comparator($packages[0])],
             'service refers to the right package'
         );
 
@@ -114,7 +128,7 @@ sub test_it {
         my $service = $rate->[0]->service;
         cmp_deeply(
             $service->rated_packages,
-            \@packages,
+            [package_comparator(@packages)],
             'service refers to the both packages'
         );
         cmp_deeply(
@@ -133,7 +147,7 @@ sub test_it {
                 array_each(all(
                     isa('Net::UPS::Service'),
                     methods(
-                        rated_packages => [$packages[0]],
+                        rated_packages => [package_comparator($packages[0])],
                     ),
                 )),
                 superbagof(all(
@@ -163,13 +177,13 @@ sub test_it {
                 array_each(all(
                     isa('Net::UPS::Service'),
                     methods(
-                        rated_packages => \@packages,
+                        rated_packages => [package_comparator(@packages)],
                         rates => bag(
                             map {
                                 all(
                                     isa('Net::UPS::Rate'),
                                     methods(
-                                        rated_package => $_,
+                                        rated_package => package_comparator($_),
                                         from => $address_comparators[0],
                                         to => $address_comparators[1],
                                     ),
