@@ -5,11 +5,13 @@ author:
   - 'Gianni Ceccarelli <gianni.ceccarelli@net-a-porter.com>'
 build_requires:
   File::Temp: 0
-  Task::Weaken: 0
+  HTTP::Response: 0
   Test::Deep: 0
   Test::Exception: 0
   Test::More: 0
+  Test::Most: 0
   diagnostics: 0
+  lib: 0
 configure_requires:
   ExtUtils::MakeMaker: 6.30
 dynamic_config: 0
@@ -29,9 +31,10 @@ requires:
   IO::File: 0
   LWP::UserAgent: 0
   Scalar::Util: 0
+  Task::Weaken: 0
   XML::Simple: 0
   strict: 0
   warnings: 0
 resources:
   repository: git://github.com/NET-A-PORTER/Net-UPS.git
-version: 0.09
+version: 0.10

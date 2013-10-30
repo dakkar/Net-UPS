@@ -1,6 +1,6 @@
 package Net::UPS;
 {
-  $Net::UPS::VERSION = '0.09';
+  $Net::UPS::VERSION = '0.10';
 }
 {
   $Net::UPS::DIST = 'Net-UPS';
@@ -212,11 +212,21 @@ sub rate {
 
     my $services = $self->request_rate($from, $to, $packages, $args);
     return if !defined $services;
+
+    # we need to replace the rate->service ref with a non-weak one,
+    # but we also need to avoid the circular reference problem. Hence
+    # all this mess
+
+    my $service = $services->[0];
+    my @rates = @{$service->rates()};
+    $service->rates([]); # now the service no longer references the rates
+    $_->service($service) for @rates; # and each rate has a non-weak service ref
+
     if ( @$packages == 1 ) {
-        return $services->[0]->rates()->[0];
+        return $rates[0];
     }
 
-    return $services->[0]->rates();
+    return \@rates;
 }
 
 
@@ -367,7 +377,6 @@ sub request_rate {
         $service->guaranteed_days(ref($ref->{GuaranteedDaysToDelivery}) ?
                                                 undef : $ref->{GuaranteedDaysToDelivery});
         $service->rated_packages( $packages );
-        weaken(my $weak_service = $service);
         my @rates = ();
         for (my $j=0; $j < @{$ref->{RatedPackage}}; $j++ ) {
             push @rates, Net::UPS::Rate->new(
@@ -375,10 +384,24 @@ sub request_rate {
                 total_charges   => $ref->{RatedPackage}->[$j]->{TotalCharges}->{MonetaryValue},
                 weight          => $ref->{Weight},
                 rated_package   => $packages->[$j],
-                service         => $weak_service,
+                service         => $service,
                 from            => $from,
                 to              => $to
             );
+            # bad hack! we have to do it this way because:
+            #
+            # 1) Class::Struct has no support for weak references
+            #
+            # 2) weakening the result of the accessor would not change
+            #    the actual value inside the object
+            #
+            # 3) the objects created by Class::Struct by default are
+            #    array-based
+            #
+            # we are clearly breaking encapsulation, and this may stop
+            # working if the internals of Class::Struct change. I
+            # can't see any better way, though.
+            weaken($rates[-1]->[3]);
         }
         $service->rates(\@rates);
         if ( (lc($args->{mode}) eq 'shop') && defined($cache) ) {

@@ -11,9 +11,7 @@ use ExtUtils::MakeMaker 6.30;
 my %WriteMakefileArgs = (
   "ABSTRACT" => "Implementation of UPS Online Tools API in Perl",
   "AUTHOR" => "Sherzod B. Ruzmetov <sherzodr\@cpan.org>, Gianni Ceccarelli <gianni.ceccarelli\@net-a-porter.com>",
-  "BUILD_REQUIRES" => {
-    "Task::Weaken" => 0
-  },
+  "BUILD_REQUIRES" => {},
   "CONFIGURE_REQUIRES" => {
     "ExtUtils::MakeMaker" => "6.30"
   },
@@ -28,18 +26,22 @@ my %WriteMakefileArgs = (
     "IO::File" => 0,
     "LWP::UserAgent" => 0,
     "Scalar::Util" => 0,
+    "Task::Weaken" => 0,
     "XML::Simple" => 0,
     "strict" => 0,
     "warnings" => 0
   },
   "TEST_REQUIRES" => {
     "File::Temp" => 0,
+    "HTTP::Response" => 0,
     "Test::Deep" => 0,
     "Test::Exception" => 0,
     "Test::More" => 0,
-    "diagnostics" => 0
+    "Test::Most" => 0,
+    "diagnostics" => 0,
+    "lib" => 0
   },
-  "VERSION" => "0.09",
+  "VERSION" => "0.10",
   "test" => {
     "TESTS" => "t/*.t"
   }

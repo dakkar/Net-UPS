@@ -1,0 +1,43 @@
+#!perl
+use strict;
+use warnings;
+use lib 't/lib';
+use Test::Most;
+use Test::Net::UPS::Factory;
+use Net::UPS::Package;
+
+my $ups = Test::Net::UPS::Factory::from_config;
+
+subtest 'setting live / testing' => sub {
+    is($Net::UPS::LIVE,0,'starts in testing');
+    my $test_rate = $ups->rate_proxy;
+    my $test_av = $ups->av_proxy;
+
+    $ups->live(1);
+    is($Net::UPS::LIVE,1,'can be set live');
+    isnt($ups->rate_proxy,$test_rate,'live Rate proxy different than test one');
+    isnt($ups->av_proxy,$test_av,'live AV proxy different than test one');
+
+    $ups->live(0);
+    is($Net::UPS::LIVE,0,'can be set back to testing');
+    is($ups->rate_proxy,$test_rate,'test Rate proxy same as before');
+    is($ups->av_proxy,$test_av,'test AV proxy same as before');
+};
+
+subtest 'rating a package' => sub {
+    my $package = Net::UPS::Package->new(
+        length=>34, width=>24, height=>1.5,
+        weight=>1,
+    );
+
+    my $rate = $ups->rate(15241, 48823, $package);
+    cmp_deeply(
+        $rate,
+        all(
+            isa("Net::UPS::Rate"),
+            methods(
+            ),
+        ),
+        'sensible rate returned',
+    );
+};

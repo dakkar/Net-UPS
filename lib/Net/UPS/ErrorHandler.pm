@@ -1,6 +1,6 @@
 package Net::UPS::ErrorHandler;
 {
-  $Net::UPS::ErrorHandler::VERSION = '0.09';
+  $Net::UPS::ErrorHandler::VERSION = '0.10';
 }
 {
   $Net::UPS::ErrorHandler::DIST = 'Net-UPS';
