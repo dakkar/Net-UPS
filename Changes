@@ -2,6 +2,8 @@ Revision history for Perl module Net::UPS
 ==============================================
 
 {{$NEXT}}
+
+0.10 2013-10-30
    * do the weaking properly
    * undo the weakening in 'sub rate', otherwise we get service-less
      rates out of it
