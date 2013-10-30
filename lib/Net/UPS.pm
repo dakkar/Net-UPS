@@ -87,7 +87,8 @@ sub new {
         if ($base{av} ne $base{rate}) {
             croak "overridden AV and Rate proxies must refer to the same server";
         }
-        $args->{base_url} = $base{av};
+        $args->{base_url_live} = $base{av};
+        $args->{base_url_test} = $base{av};
     }
 
     $ups = bless {

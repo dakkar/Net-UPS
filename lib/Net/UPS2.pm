@@ -56,6 +56,18 @@ has live_mode => (
     default => sub { 0 },
 );
 
+has base_url_test => (
+    is => 'ro',
+    isa => Str,
+    default => sub { $base_urls{test} },
+);
+
+has base_url_live => (
+    is => 'ro',
+    isa => Str,
+    default => sub { $base_urls{live} },
+);
+
 has base_url => (
     is => 'lazy',
     isa => Str,
@@ -70,7 +82,8 @@ sub _trigger_live_mode {
 sub _build_base_url {
     my ($self) = @_;
 
-    return $base_urls{$self->live_mode ? 'live' : 'test'};
+    my $attr = 'base_url_'.($self->live_mode ? 'live' : 'test');
+    return $self->$attr;
 }
 
 has user_id => (
