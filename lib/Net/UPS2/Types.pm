@@ -17,6 +17,7 @@ use Type::Library
               );
 use Type::Utils -all;
 use Types::Standard -types;
+use Scalar::Util 'weaken';
 use namespace::autoclean;
 
 sub _map_args {
@@ -226,7 +227,23 @@ coerce OldService, from Service, via {
         ) : () ),
     );
     # fixup service-rate-service refs
-    $_->service($service) for @{$service->rates};
+    for my $rate (@{$service->rates}) {
+        $rate->service($service);
+        # bad hack! we have to do it this way because:
+        #
+        # 1) Class::Struct has no support for weak references
+        #
+        # 2) weakening the result of the accessor would not change
+        #    the actual value inside the object
+        #
+        # 3) the objects created by Class::Struct by default are
+        #    array-based
+        #
+        # we are clearly breaking encapsulation, and this may stop
+        # working if the internals of Class::Struct change. I
+        # can't see any better way, though.
+        weaken($rate->[3]);
+    }
     return $service;
 };
 

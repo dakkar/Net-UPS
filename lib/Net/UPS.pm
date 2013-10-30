@@ -172,11 +172,20 @@ sub rate {
     my $services = $self->request_rate($from, $to, $packages, $args || {});
     return if !defined $services;
 
+    # we need to replace the rate->service ref with a non-weak one,
+    # but we also need to avoid the circular reference problem. Hence
+    # all this mess
+
+    my $service = $services->[0];
+    my @rates = @{$service->rates()};
+    $service->rates([]); # now the service no longer references the rates
+    $_->service($service) for @rates; # and each rate has a non-weak service ref
+
     if ( ref($packages) ne 'ARRAY' or @$packages == 1 ) {
-        return $services->[0]->rates()->[0];
+        return $rates[0];
     }
 
-    return $services->[0]->rates();
+    return \@rates;
 }
 
 sub shop_for_rates {
