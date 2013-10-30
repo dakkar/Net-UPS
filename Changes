@@ -2,6 +2,8 @@ Revision history for Perl module Net::UPS
 ==============================================
 
 {{$NEXT}}
+
+0.09 2013-10-30
    * weaken service ref in ::Rate in request_rate, this avoids a
      circular reference and thus a memory leak
 
