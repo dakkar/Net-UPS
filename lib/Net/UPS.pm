@@ -376,7 +376,6 @@ sub request_rate {
             push @rates, Net::UPS::Rate->new(
                 billing_weight  => $ref->{RatedPackage}->[$j]->{BillingWeight}->{Weight},
                 total_charges   => $ref->{RatedPackage}->[$j]->{TotalCharges}->{MonetaryValue},
-                weight          => $ref->{Weight},
                 rated_package   => $packages->[$j],
                 service         => $service,
                 from            => $from,
