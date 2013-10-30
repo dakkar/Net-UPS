@@ -14,14 +14,10 @@ lib/Net/UPS/Package.pm
 lib/Net/UPS/Rate.pm
 lib/Net/UPS/Service.pm
 lib/Net/UPS/Tutorial.pm
-t/#net-ups-live.t#
 t/01.t
 t/02address.t
 t/custom-url.t
-t/lib/Test/Net/UPS/Factory.pm
-t/lib/Test/Net/UPS/NoNetwork.pm
 t/missing-sizes.t
-t/net-ups-live.t
 t/oversized.t
 t/release-no-tabs.t
 t/release-pod-syntax.t

@@ -5,13 +5,10 @@ author:
   - 'Gianni Ceccarelli <gianni.ceccarelli@net-a-porter.com>'
 build_requires:
   File::Temp: 0
-  HTTP::Response: 0
   Test::Deep: 0
   Test::Exception: 0
   Test::More: 0
-  Test::Most: 0
   diagnostics: 0
-  lib: 0
 configure_requires:
   ExtUtils::MakeMaker: 6.30
 dynamic_config: 0

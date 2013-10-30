@@ -33,13 +33,10 @@ my %WriteMakefileArgs = (
   },
   "TEST_REQUIRES" => {
     "File::Temp" => 0,
-    "HTTP::Response" => 0,
     "Test::Deep" => 0,
     "Test::Exception" => 0,
     "Test::More" => 0,
-    "Test::Most" => 0,
-    "diagnostics" => 0,
-    "lib" => 0
+    "diagnostics" => 0
   },
   "VERSION" => "0.10",
   "test" => {
