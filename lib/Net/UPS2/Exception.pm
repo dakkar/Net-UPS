@@ -21,7 +21,7 @@ around _build_stack_trace_args => sub {
     return $ret;
 };
 
-sub as_string { "something bad happened at ". $_[0]->stack_trace }
+sub as_string { "something bad happened at ". $_[0]->stack_trace->as_string }
 
 {package Net::UPS2::Exception::ConfigError;
  use strict;
@@ -36,7 +36,7 @@ sub as_string { "something bad happened at ". $_[0]->stack_trace }
 
      return 'Bad config file: %s, at %s',
          $self->file,
-         $self->stack_trace;
+         $self->stack_trace->as_string;
  }
 }
 
@@ -51,14 +51,14 @@ sub as_string { "something bad happened at ". $_[0]->stack_trace }
  sub as_string {
      my ($self) = @_;
 
-     return 'Package size/weight not supported: %fx%fx%f %s %f %s, at %s',
-         $self->package->length,
-         $self->package->width,
-         $self->package->height,
+     return sprintf 'Package size/weight not supported: %fx%fx%f %s %f %s, at %s',
+         $self->package->length//'<undef>',
+         $self->package->width//'<undef>',
+         $self->package->height//'<undef>',
          $self->package->linear_unit,
-         $self->package->weight,
+         $self->package->weight//'<undef>',
          $self->package->weight_unit,
-         $self->stack_trace;
+         $self->stack_trace->as_string;
  }
 }
 
@@ -77,7 +77,7 @@ sub as_string { "something bad happened at ". $_[0]->stack_trace }
      return sprintf 'Error %sin %s: %s, at %s',
          $self->request->method,$self->request->uri,
          $self->response->status_line,
-         $self->stack_trace;
+         $self->stack_trace->as_string;
  }
 }
 
@@ -93,10 +93,10 @@ sub as_string { "something bad happened at ". $_[0]->stack_trace }
      my ($self) = @_;
 
      return sprintf 'UPS returned an error: %s, severity %s, code %d, at %s',
-         $self->error->{ErrorDescription},
-         $self->error->{ErrorSeverity},
-         $self->error->{ErrorCode},
-         $self->stack_trace;
+         $self->error->{ErrorDescription}//'<undef>',
+         $self->error->{ErrorSeverity}//'<undef>',
+         $self->error->{ErrorCode}//'<undef>',
+         $self->stack_trace->as_string;
  }
 }
 
