@@ -5,7 +5,7 @@ use Type::Library
     -base,
     -declare => qw( PickupType CustomerClassification
                     Cache Cacheable UserAgent
-                    Address Package PackageList
+                    Address Shipper Package PackageList
                     Rate RateList
                     RequestMode Service
                     ServiceCode ServiceLabel
@@ -53,6 +53,7 @@ enum RequestMode, # there are probably more
     [qw(
            rate
            shop
+           validate
    )];
 
 enum ServiceCode,
@@ -172,6 +173,8 @@ coerce OldAddress, from Address, via {
         _map_args( $in, @address_fields ),
     );
 };
+
+class_type Shipper, { class => 'Net::UPS2::Shipper' };
 
 class_type Package, { class => 'Net::UPS2::Package' };
 declare PackageList, as ArrayRef[Package];

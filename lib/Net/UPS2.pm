@@ -188,6 +188,7 @@ sub _load_config_file {
     Net::UPS2::Exception::ConfigError->throw({
         file => $file,
     }) unless $config;
+
     return $config;
 }
 
@@ -410,6 +411,85 @@ sub validate_address {
     return $ret;
 }
 
+sub shipment_confirm {
+    state $argcheck = compile(Object, Dict[
+        from => Optional[Address],
+        to => Address,
+        shipper => Shipper,
+        packages => PackageList,
+        mode => Optional[RequestMode],
+        service => Optional[Service],
+        signature_required => Optional[Bool],
+    ]);
+    my ($self,$args) = $argcheck->(@_);
+    $args->{mode} ||= 'validate';
+    $args->{service} ||= to_Service('GROUND');
+    $args->{from} ||= $args->{shipper};
+
+    my $packages = $args->{packages};
+
+    unless (scalar(@$packages)) {
+        Error::TypeTiny::croak("shipment_confirm() was given an empty list of packages");
+    }
+
+    { my $pack_id=0; $_->id(++$pack_id) for @$packages }
+
+    my %request = (
+        ShipmentConfirmRequest => {
+            Request => {
+                RequestAction   => 'ShipConfirm',
+                RequestOption   =>  $args->{mode},
+                TransactionReference => $self->transaction_reference,
+            },
+            Service     => { Code   => $args->{service}->code },
+            LabelSpecification => {
+                # TODO we need a Label class
+                Code => 'EPL',
+                LabelStockSize => {
+                    Height => 4,
+                    Width => 6,
+                },
+            },
+            Shipment => {
+                Description => 'test shipment',
+                Shipper => $args->{shipper}->as_hash,
+                ShipFrom => $args->{from}->as_hash,
+                ShipTo => $args->{to}->as_hash,
+                PaymentInformation => { # TODO make this general
+                    Prepaid => {
+                        BillShipper => {
+                            ( $self->account_number ? (
+                                ShipperNumber => $self->account_number,
+                            ) : () ),
+                        }
+                    }
+                },
+                Package => [map {
+                    my $x = $_->as_hash();
+                    $x->{Description} ||= 'Apparel';
+                    if ($args->{signature_required}) {
+                        $x->{PackageServiceOptions} = {
+                            DeliveryConfirmation => {
+                                DCISType => 2, # TODO make this general
+                            },
+                        };
+                    };
+                    $x;
+                } @$packages],
+            },
+        },
+    );
+
+    my $response = $self->xml_request({
+        data => \%request,
+        url_suffix => '/ShipConfirm',
+        XMLin => {
+            #ForceArray => [ 'RatedPackage', 'RatedShipment' ],
+        },
+    });
+    return $response;
+}
+
 sub xml_request {
     state $argcheck = compile(
         Object,
@@ -437,6 +517,8 @@ sub xml_request {
                 KeepRoot    => 1,
                 %{ $args->{XMLout}||{} },
             );
+
+    warn $request;
 
     my $response_string = $self->post( $args->{url_suffix}, $request );
 

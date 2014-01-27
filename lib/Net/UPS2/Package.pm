@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use Moo;
 use Type::Params qw(compile);
-use Types::Standard qw(Int Object);
+use Types::Standard qw(Int Object Str);
 use Net::UPS2::Types ':types';
 use Net::UPS2::Exception;
 use namespace::autoclean;
@@ -46,6 +46,11 @@ has weight => (
     isa => Measure,
 );
 
+has description => (
+    is => 'ro',
+    isa => Str,
+);
+
 my %code_for_packaging_type = (
     LETTER          => '01',
     PACKAGE         => '02',
@@ -79,6 +84,10 @@ sub as_hash {
             Code => $code_for_packaging_type{$self->packaging_type},
         },
     );
+
+    if ($self->description) {
+        $data{Description} = $self->description;
+    }
 
     if ( $self->length || $self->width || $self->height ) {
         $data{Dimensions} = {

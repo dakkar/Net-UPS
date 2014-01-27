@@ -1,9 +1,12 @@
 package Test::Net::UPS2;
 use strict;
 use warnings;
+use Try::Tiny;
 use Test::Most;
 use Data::Printer;
 use Net::UPS2::Package;
+use Net::UPS2::Address;
+use Net::UPS2::Shipper;
 
 sub package_comparator {
     my (@p) = @_;
@@ -37,6 +40,11 @@ sub test_it {
 
     my @postal_codes = ( 15241, 48823 );
     my @addresses = map { Net::UPS2::Address->new(postal_code=>$_) } @postal_codes;
+    my $shipper = Net::UPS2::Shipper->new({
+        postal_code => 15241,
+        name => 'Test Shipper',
+    });
+
     my @address_comparators = map {
         all(
             isa('Net::UPS2::Address'),
@@ -109,6 +117,23 @@ sub test_it {
             ),
         ],
     );
+
+    subtest 'shipment confirm' => sub {
+        try {
+            my $ret = $ups->shipment_confirm({
+                from => $addresses[0],
+                to => $addresses[1],
+                shipper => $shipper,
+                packages => \@packages,
+            });
+
+            note p $ret;
+        } catch {
+            note p $_;
+        };
+    };
+
+    return;
 
     my $rate1;
     subtest 'rating a package via postcodes' => sub {

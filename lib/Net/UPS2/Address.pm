@@ -42,6 +42,8 @@ has is_residential => (
     required => 0,
 );
 
+# TODO add full address lines &c
+
 sub is_exact_match {
     my $self = shift;
     return unless $self->quality();
