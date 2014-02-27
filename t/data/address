@@ -6,6 +6,8 @@ POST https://wwwcie.ups.com/ups.app/xml/AV
     <City>East Lansing</City>
     <PostalCode>48823</PostalCode>
     <StateProvinceCode>MI</StateProvinceCode>
+    <CountryCode>US</CountryCode>
+    <ResidentialAddressIndicator/>
   </Address>
   <Request>
     <RequestAction>AV</RequestAction>

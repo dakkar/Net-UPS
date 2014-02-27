@@ -2,6 +2,8 @@ Revision history for Perl module Net::UPS
 ==============================================
 
 {{$NEXT}}
+   * FIX RT #92473 add support for street-level address validation,
+     thanks to perl@xev.net for the code
 
 0.10 2013-10-30
    * do the weaking properly
