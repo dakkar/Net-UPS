@@ -1,0 +1,41 @@
+---
+abstract: 'Implementation of UPS Online Tools API in Perl'
+author:
+  - 'Sherzod B. Ruzmetov <sherzodr@cpan.org>'
+  - 'Gianni Ceccarelli <gianni.ceccarelli@net-a-porter.com>'
+build_requires:
+  Data::Printer: '0'
+  File::Temp: '0'
+  HTTP::Response: '0'
+  Test::Deep: '0'
+  Test::Exception: '0'
+  Test::More: '0'
+  Test::Most: '0'
+  Time::HiRes: '0'
+  lib: '0'
+configure_requires:
+  ExtUtils::MakeMaker: '6.30'
+dynamic_config: 0
+generated_by: 'Dist::Zilla version 5.012, CPAN::Meta::Converter version 2.133380'
+license: perl
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: '1.4'
+name: Net-UPS
+no_index:
+  directory:
+    - t/lib
+requires:
+  Carp: '0'
+  Class::Struct: '0.58'
+  File::Spec: '0'
+  IO::File: '0'
+  LWP::UserAgent: '0'
+  Scalar::Util: '0'
+  Task::Weaken: '0'
+  XML::Simple: '0'
+  strict: '0'
+  warnings: '0'
+resources:
+  repository: git://github.com/NET-A-PORTER/Net-UPS.git
+version: '0.11'
