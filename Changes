@@ -2,6 +2,7 @@ Revision history for Perl module Net::UPS
 ==============================================
 
 {{$NEXT}}
+   * replace // with ||, no need to test for definedness
 
 0.11 2014-02-27
    * FIX RT #92473 add support for street-level address validation,

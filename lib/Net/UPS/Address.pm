@@ -55,7 +55,7 @@ sub is_poor_match {
 
 sub as_hash {
     my $self = shift;
-    my $shape = shift // 'AV';
+    my $shape = shift || 'AV';
 
     unless ( defined $self->postal_code ) {
         croak "as_string(): 'postal_code' is empty";
