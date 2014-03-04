@@ -5,7 +5,7 @@
       "Gianni Ceccarelli <gianni.ceccarelli@net-a-porter.com>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Dist::Zilla version 4.300039, CPAN::Meta::Converter version 2.132140",
+   "generated_by" : "Dist::Zilla version 5.006, CPAN::Meta::Converter version 2.132830",
    "license" : [
       "perl_5"
    ],
@@ -27,6 +27,8 @@
       },
       "develop" : {
          "requires" : {
+            "Test::More" : "0",
+            "Test::NoTabs" : "0",
             "Test::Pod" : "1.41"
          }
       },
@@ -46,11 +48,15 @@
       },
       "test" : {
          "requires" : {
+            "Data::Printer" : "0",
             "File::Temp" : "0",
+            "HTTP::Response" : "0",
             "Test::Deep" : "0",
             "Test::Exception" : "0",
             "Test::More" : "0",
-            "diagnostics" : "0"
+            "Test::Most" : "0",
+            "Time::HiRes" : "0",
+            "lib" : "0"
          }
       }
    },
@@ -62,6 +68,6 @@
          "web" : "https://github.com/NET-A-PORTER/Net-UPS.git"
       }
    },
-   "version" : "0.10"
+   "version" : "0.12"
 }
 

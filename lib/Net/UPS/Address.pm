@@ -1,6 +1,6 @@
 package Net::UPS::Address;
 {
-  $Net::UPS::Address::VERSION = '0.10';
+  $Net::UPS::Address::VERSION = '0.12';
 }
 {
   $Net::UPS::Address::DIST = 'Net-UPS';
@@ -13,15 +13,19 @@ use Class::Struct 0.58;
 
 struct(
     quality             => '$',
+    name                => '$',
+    building_name       => '$',
+    address             => '$',
+    address2            => '$',
+    address3            => '$',
     city                => '$',
     postal_code         => '$',
+    postal_code_extended => '$',
     state               => '$',
     country_code        => '$',
-    is_residential      => '$'
+    is_residential      => '$',
+    is_commercial       => '$',
 );
-
-
-
 
 *is_exact_match = \&is_match;
 sub is_match {
@@ -57,24 +61,93 @@ sub is_poor_match {
 
 sub as_hash {
     my $self = shift;
+    my $shape = shift || 'AV';
+
     unless ( defined $self->postal_code ) {
         croak "as_string(): 'postal_code' is empty";
     }
-    my %data = (
-        Address => {
-            CountryCode => $self->country_code || "US",
-            PostalCode  => $self->postal_code,
+
+    # internal validation; this should be in the constructor, but
+    # we're stuck with Class::Struct for the time being...
+    if ( defined $self->state && length($self->state) != 2 ) {
+        croak "'state' has to be two letters long";
+    }
+    if ( defined $self->country_code && length($self->country_code) != 2 ) {
+        croak "'country_code' has to be two letters long";
+    }
+    my $postal_code = $self->postal_code;
+    if ($postal_code =~ /(\d+)-(\d+)/) {
+        $self->postal_code($1);
+        unless ($self->postal_code_extended) {
+            $self->postal_code_extended($2);
         }
-    );
-    if ( defined $self->city ) {
-        $data{Address}->{City} = $self->city();
     }
-    if ( defined $self->state ) {
-        $data{Address}->{StateProvinceCode} = $self->state_province_code;
+
+    my %data;
+
+    if ($shape eq 'AV') {
+        %data = (
+            Address => {
+                CountryCode => $self->country_code || "US",
+                PostalCode  => $self->postal_code,
+            }
+        );
+        if ( defined $self->city ) {
+            $data{Address}->{City} = $self->city();
+        }
+        if ( defined $self->state ) {
+            $data{Address}->{StateProvinceCode} = $self->state;
+        }
+        if ( $self->is_residential ) {
+            $data{Address}->{ResidentialAddressIndicator} = undef;
+        }
     }
-    if ( $self->is_residential ) {
-        $data{Address}->{ResidentialAddressIndicator} = undef;
+    elsif ($shape eq 'XAV') {
+        %data = (
+            AddressKeyFormat => {
+                CountryCode => $self->country_code || "US",
+                PostcodePrimaryLow  => $self->postal_code,
+            }
+        );
+
+        if ( defined $self->name ) {
+            $data{AddressKeyFormat}->{ConsigneeName} = $self->name();
+        }
+
+        if ( defined $self->building_name ) {
+            $data{AddressKeyFormat}->{BuildingName} = $self->building_name();
+        }
+
+        $data{AddressKeyFormat}->{AddressLine} = [];
+
+        if ( defined $self->address ) {
+            push(@{ $data{AddressKeyFormat}->{AddressLine} }, $self->address());
+        }
+
+        if ( defined $self->address2 ) {
+            push(@{ $data{AddressKeyFormat}->{AddressLine} }, $self->address2());
+        }
+
+        if ( defined $self->address3 ) {
+            push(@{ $data{AddressKeyFormat}->{AddressLine} }, $self->address3());
+        }
+
+        if ( defined $self->city ) {
+            $data{AddressKeyFormat}->{PoliticalDivision2} = $self->city();
+        }
+
+        if ( defined $self->state ) {
+            $data{AddressKeyFormat}->{PoliticalDivision1} = $self->state();
+        }
+
+        if ( defined $self->postal_code_extended ) {
+            $data{AddressKeyFormat}->{PostcodeExtendedLow} = $self->postal_code_extended;
+        }
     }
+    else {
+        croak "parameter to as_hash should be AV or XAV, not $shape";
+    }
+
     return \%data;
 }
 
@@ -102,6 +175,14 @@ sub validate {
     return $ups->validate_address($self, $args);
 }
 
+sub validate_street_level {
+    my $self = shift;
+    my $args = shift || {};
+
+    require Net::UPS;
+    my $ups = Net::UPS->instance();
+    return $ups->validate_street_address($self, $args);
+}
 
 
 

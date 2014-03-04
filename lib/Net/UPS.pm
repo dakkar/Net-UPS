@@ -1,6 +1,6 @@
 package Net::UPS;
 {
-  $Net::UPS::VERSION = '0.10';
+  $Net::UPS::VERSION = '0.12';
 }
 {
   $Net::UPS::DIST = 'Net-UPS';
@@ -24,6 +24,8 @@ sub RATE_TEST_PROXY () { 'https://wwwcie.ups.com/ups.app/xml/Rate'      }
 sub RATE_LIVE_PROXY () { 'https://onlinetools.ups.com/ups.app/xml/Rate' }
 sub AV_TEST_PROXY   () { 'https://wwwcie.ups.com/ups.app/xml/AV'        }
 sub AV_LIVE_PROXY   () { 'https://onlinetools.ups.com/ups.app/xml/AV'   }
+sub XAV_TEST_PROXY  () { 'https://wwwcie.ups.com/ups.app/xml/XAV'       }
+sub XAV_LIVE_PROXY  () { 'https://onlinetools.ups.com/ups.app/xml/XAV'  }
 
 sub PICKUP_TYPES () {
     return {
@@ -165,6 +167,8 @@ sub _read_args_from_file {
 sub init        {                                                       }
 sub rate_proxy  { return $_[0]->{__args}->{rate_proxy} || ($Net::UPS::LIVE ? RATE_LIVE_PROXY : RATE_TEST_PROXY) }
 sub av_proxy    { return $_[0]->{__args}->{av_proxy} || ($Net::UPS::LIVE ? AV_LIVE_PROXY   : AV_TEST_PROXY) }
+sub xav_proxy   { return $_[0]->{__args}->{xav_proxy} || ($Net::UPS::LIVE ? XAV_LIVE_PROXY   : XAV_TEST_PROXY) }
+
 sub cache_life  { return $_[0]->{__args}->{cache_life} = $_[1]          }
 sub cache_root  { return $_[0]->{__args}->{cache_root} = $_[1]          }
 sub userid      { return $_[0]->{__userid}                              }
@@ -315,8 +319,8 @@ sub request_rate {
             Shipment    => {
                 Service     => { Code   => Net::UPS::Service->new_from_label( $args->{service} )->code },
                 Package     => [map { $_->as_hash()->{Package} } @$packages],
-                Shipper     => $from->as_hash(),
-                ShipTo      => $to->as_hash()
+                Shipper     => $from->as_hash('AV'),
+                ShipTo      => $to->as_hash('AV')
             }
     });
     if ( my $shipper_number = $self->{__args}->{ups_account_number} ) {
@@ -382,7 +386,6 @@ sub request_rate {
             push @rates, Net::UPS::Rate->new(
                 billing_weight  => $ref->{RatedPackage}->[$j]->{BillingWeight}->{Weight},
                 total_charges   => $ref->{RatedPackage}->[$j]->{TotalCharges}->{MonetaryValue},
-                weight          => $ref->{Weight},
                 rated_package   => $packages->[$j],
                 service         => $service,
                 from            => $from,
@@ -489,25 +492,16 @@ sub validate_address {
             Request => {
                 RequestAction   => "AV",
                 TransactionReference => $self->transaction_reference(),
-            }
+            },
+            %{$address->as_hash('AV')},
         }
     );
-    if ( $address->city ) {
-        $data{AddressValidationRequest}->{Address}->{City} = $address->city;
-    }
-    if ( $address->state ) {
-        if ( length($address->state) != 2 ) {
-            croak "StateProvinceCode has to be two letters long";
-        }
-        $data{AddressValidationRequest}->{Address}->{StateProvinceCode} = $address->state;
-    }
-    if ( $address->postal_code ) {
-        $data{AddressValidationRequest}->{Address}->{PostalCode} = $address->postal_code;
-    }
+
     my $xml = $self->access_as_xml . XMLout(\%data, KeepRoot=>1, NoAttr=>1, KeyAttr=>[], XMLDecl=>1);
     my $response = XMLin($self->post($self->av_proxy, $xml),
                                                 KeepRoot=>0, NoAttr=>1,
                                                 KeyAttr=>[], ForceArray=>["AddressValidationResult"]);
+
     if ( my $error = $response->{Response}->{Error} ) {
         unless ($error->{'ErrorSeverity'} eq 'Warning') {
             return $self->set_error( $error->{ErrorDescription} );
@@ -530,6 +524,76 @@ sub validate_address {
         }
     }
     return \@addresses;
+}
+
+sub validate_street_address {
+    my $self = shift;
+    my ($address, $args) = @_;
+
+    croak "validate_street_address(): usage error" unless defined($address);
+
+    unless ( ref $address ) {
+        $address = {postal_code => $address};
+    }
+    if ( ref $address eq 'HASH' ) {
+        $address = Net::UPS::StreetAddress->new(%$address);
+    }
+    $args ||= {};
+
+    my %data = (
+        AddressValidationRequest => {
+            Request => {
+                RequestAction => "XAV",
+                RequestOption => "3",
+                TransactionReference => $self->transaction_reference(),
+            },
+            %{$address->as_hash('XAV')},
+        },
+    );
+
+    my $xml = $self->access_as_xml . XMLout(\%data, KeepRoot=>1, NoAttr=>1, KeyAttr=>[], XMLDecl=>1);
+    my $response = XMLin($self->post($self->xav_proxy, $xml),
+                         KeepRoot=>0, NoAttr=>1,
+                         KeyAttr=>[], ForceArray=>["AddressValidationResponse", "AddressLine"]);
+
+    if ( my $error = $response->{Response}->{Error} ) {
+        unless ($error->{'ErrorSeverity'} eq 'Warning') {
+            return $self->set_error( $error->{ErrorDescription} );
+        }
+    }
+    if ( $response->{NoCandidatesIndicator} )
+    {
+        return $self->set_error("The Address Matching System is not able to match an address from any other one in the database.");
+    }
+    my $quality = 0;
+    if ( $response->{AmbiguousAddressIndicator} )
+    {
+        $self->set_error("The Address Matching System is not able to explicitly differentiate an address from any other one in the database.");
+    }
+    elsif ( $response->{ValidAddressIndicator} )
+    {
+        $quality = 1;
+    }
+
+    my $response_address;
+    if ($response->{AddressKeyFormat}) {
+        $response_address = Net::UPS::Address->new(
+            quality => $quality,
+            building_name => $response->{AddressKeyFormat}->{BuildingName},
+            address => $response->{AddressKeyFormat}->{AddressLine}->[0],
+            address2 => $response->{AddressKeyFormat}->{AddressLine}->[1],
+            address3 => $response->{AddressKeyFormat}->{AddressLine}->[2],
+            postal_code => $response->{AddressKeyFormat}->{PostcodePrimaryLow},
+            postal_code_extended => $response->{AddressKeyFormat}->{PostcodeExtendedLow},
+            city => $response->{AddressKeyFormat}->{PoliticalDivision2},
+            state => $response->{AddressKeyFormat}->{PoliticalDivision1},
+            country_code => $response->{AddressKeyFormat}->{CountryCode},
+            is_commercial => ( $response->{AddressClassification}->{Code} eq "1" ) ? 1 : 0,
+            is_residential => ( $response->{AddressClassification}->{Code} eq "2" ) ? 1 : 0,
+        );
+    }
+
+    return $response_address;
 }
 
 sub generate_cache_key {

@@ -8,9 +8,21 @@ BEGIN {
 
 use strict;
 use warnings;
-use Test::More;
 
-eval 'use Test::NoTabs';
-plan skip_all => 'Test::NoTabs required' if $@;
+# this test was generated with Dist::Zilla::Plugin::NoTabsTests 0.05
 
-all_perl_files_ok();
+use Test::More 0.88;
+use Test::NoTabs;
+
+my @files = (
+    'lib/Net/UPS.pm',
+    'lib/Net/UPS/Address.pm',
+    'lib/Net/UPS/ErrorHandler.pm',
+    'lib/Net/UPS/Package.pm',
+    'lib/Net/UPS/Rate.pm',
+    'lib/Net/UPS/Service.pm',
+    'lib/Net/UPS/Tutorial.pm'
+);
+
+notabs_ok($_) foreach @files;
+done_testing;
