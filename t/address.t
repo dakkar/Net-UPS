@@ -12,10 +12,10 @@ use Sub::Override;
 use Data::Printer;
 use Test::Net::UPS2::TestCache;
 
-my $orig_post = \&Net::UPS2::post;
+my $orig_post = \&Net::Async::UPS::post;
 my @calls;
 my $new_post = Sub::Override->new(
-    'Net::UPS2::post',
+    'Net::Async::UPS::post',
     sub {
         note "my post";
         push @calls,[@_];
@@ -63,13 +63,13 @@ cmp_deeply($addresses->addresses,
            'address validated',
 ) or p $addresses;
 cmp_deeply(\@calls,
-           [[ $ups,'/AV',ignore() ]],
+           [[ ignore(),'/AV',ignore() ]],
            'one call to the service');
 
 my $addresses2 = $ups->validate_address($address);
 cmp_deeply($addresses2,$addresses,'the same answer');
 cmp_deeply(\@calls,
-           [[ $ups,'/AV',ignore() ]],
+           [[ ignore(),'/AV',ignore() ]],
            'still only one call to the service');
 
 # build with no cache
@@ -80,7 +80,7 @@ my $addresses3 = $ups->validate_address($address);
 cmp_deeply($addresses3,$addresses,'the same answer');
 cmp_deeply(\@calls,
            [[ ignore(),'/AV',ignore() ],
-            [ $ups,'/AV',ignore() ]],
+            [ ignore(),'/AV',ignore() ]],
            'two calls to the service');
 
 done_testing();

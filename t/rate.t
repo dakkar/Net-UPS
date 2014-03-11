@@ -12,10 +12,10 @@ use Sub::Override;
 use Data::Printer;
 use Test::Net::UPS2::TestCache;
 
-my $orig_post = \&Net::UPS2::post;
+my $orig_post = \&Net::Async::UPS::post;
 my @calls;
 my $new_post = Sub::Override->new(
-    'Net::UPS2::post',
+    'Net::Async::UPS::post',
     sub {
         note "my post";
         push @calls,[@_];
@@ -58,14 +58,14 @@ my $argpack = {
 my $services = $ups->request_rate($argpack);
 ok($services && @{$services->services},'got answer');
 cmp_deeply(\@calls,
-           [[ $ups,'/Rate',ignore() ]],
+           [[ ignore(),'/Rate',ignore() ]],
            'one call to the service');
 
 my $services2 = $ups->request_rate($argpack);
 ok($services2 && @{$services2->services},'got answer again');
 cmp_deeply($services2,$services,'the same answer');
 cmp_deeply(\@calls,
-           [[ $ups,'/Rate',ignore() ]],
+           [[ ignore(),'/Rate',ignore() ]],
            'still only one call to the service');
 
 done_testing();
