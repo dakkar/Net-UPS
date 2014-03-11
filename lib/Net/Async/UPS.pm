@@ -449,8 +449,8 @@ sub xml_request {
                 %{ $args->{XMLout}||{} },
             );
 
-    return $self->post( $args->{url_suffix}, $request )->transform(
-        done => sub {
+    return $self->post( $args->{url_suffix}, $request )->then(
+        sub {
             my ($response_string) = @_;
 
             my $response = XMLin(
@@ -461,12 +461,12 @@ sub xml_request {
 
             if ($response->{Response}{ResponseStatusCode}==0) {
                 return Future->new->fail(
-                    Net::UPS2::Exception::UPSError->throw({
+                    Net::UPS2::Exception::UPSError->new({
                         error => $response->{Response}{Error}
                     })
                   );
             }
-            return $response;
+            return Future->wrap($response);
         },
     );
 }
