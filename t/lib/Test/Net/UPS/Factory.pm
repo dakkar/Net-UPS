@@ -21,8 +21,9 @@ sub from_config_tracing {
         plan(skip_all=>Net::UPS->errstr);
         exit(0);
     };
-    $ret->{delegate}{user_agent} = Test::Net::UPS::Tracing->new();
-    return $ret;
+    my $ua = Test::Net::UPS::Tracing->new();
+    $ret->{delegate}->user_agent->{ua} = $ua;
+    return ($ret,$ua);
 }
 
 sub without_network {
@@ -30,8 +31,9 @@ sub without_network {
     my $ret = Net::UPS->new(
         'testid','testpass','testkey',$args
     );
-    $ret->{delegate}{user_agent} = Test::Net::UPS::NoNetwork->new();
-    return $ret;
+    my $ua = Test::Net::UPS::NoNetwork->new();
+    $ret->{delegate}->user_agent->{ua} = $ua;
+    return ($ret,$ua);
 }
 
 1;

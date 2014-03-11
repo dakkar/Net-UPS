@@ -7,6 +7,7 @@ use Net::UPS::Service;
 use Net::UPS::Address;
 use Net::UPS::Package;
 use Net::UPS2;
+use Net::Async::UPS;
 use Net::UPS2::Types ':to';
 use Try::Tiny;
 use Carp qw(croak confess);
@@ -14,14 +15,14 @@ use Carp qw(croak confess);
 @Net::UPS::ISA          = ( "Net::UPS::ErrorHandler" );
 $Net::UPS::LIVE         = 0;
 
-sub RATE_TEST_PROXY () { Net::UPS2::_base_urls->{test}.'/Rate' }
-sub RATE_LIVE_PROXY () { Net::UPS2::_base_urls->{live}.'/Rate' }
-sub AV_TEST_PROXY   () { Net::UPS2::_base_urls->{test}.'/AV' }
-sub AV_LIVE_PROXY   () { Net::UPS2::_base_urls->{live}.'/AV' }
+sub RATE_TEST_PROXY () { Net::Async::UPS::_base_urls->{test}.'/Rate' }
+sub RATE_LIVE_PROXY () { Net::Async::UPS::_base_urls->{live}.'/Rate' }
+sub AV_TEST_PROXY   () { Net::Async::UPS::_base_urls->{test}.'/AV' }
+sub AV_LIVE_PROXY   () { Net::Async::UPS::_base_urls->{live}.'/AV' }
 
-sub PICKUP_TYPES () { Net::UPS2::_pickup_types }
+sub PICKUP_TYPES () { Net::Async::UPS::_pickup_types }
 
-sub CUSTOMER_CLASSIFICATION () { Net::UPS2::_customer_classification }
+sub CUSTOMER_CLASSIFICATION () { Net::Async::UPS::_customer_classification }
 
 sub import {
     my $class = shift;

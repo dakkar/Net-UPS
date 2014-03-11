@@ -4,7 +4,7 @@ use warnings;
 use Type::Library
     -base,
     -declare => qw( PickupType CustomerClassification
-                    Cache Cacheable UserAgent
+                    Cache Cacheable UserAgent AsyncUserAgent
                     Address Package PackageList
                     Rate RateList
                     RequestMode Service
@@ -267,6 +267,7 @@ coerce OldRate, from Rate, via {
 
 duck_type Cache, [qw(get set)];
 duck_type Cacheable, [qw(cache_id)];
-duck_type UserAgent, [qw(request)];
+duck_type AsyncUserAgent, [qw(POST do_request)];
+duck_type UserAgent, [qw(post request)];
 
 1;

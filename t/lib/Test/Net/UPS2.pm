@@ -117,6 +117,9 @@ sub test_it {
             to => $postal_codes[1],
             packages => $packages[0],
         });
+        if ($rate1->isa('Future')) {
+            $rate1 = $rate1->get;
+        }
 
         cmp_deeply(
             $rate1,
@@ -136,6 +139,9 @@ sub test_it {
             to => $addresses[1],
             packages => $packages[0],
         });
+        if ($rate2->isa('Future')) {
+            $rate2 = $rate2->get;
+        }
 
         cmp_deeply(
             $rate1,
@@ -157,6 +163,9 @@ sub test_it {
             to => $postal_codes[1],
             packages => \@packages,
         });
+        if ($rate->isa('Future')) {
+            $rate = $rate->get;
+        }
 
         cmp_deeply(
             $rate,
@@ -185,6 +194,9 @@ sub test_it {
             packages => $packages[0],
             mode => 'shop',
         });
+        if ($services->isa('Future')) {
+            $services = $services->get;
+        }
 
         cmp_deeply(
             $services,
@@ -224,6 +236,9 @@ sub test_it {
             packages => \@packages,
             mode => 'shop',
         });
+        if ($services->isa('Future')) {
+            $services = $services->get;
+        }
 
         cmp_deeply(
             $services,
@@ -288,6 +303,9 @@ sub test_it {
         });
 
         my $addresses = $ups->validate_address($address, 0);
+        if ($addresses->isa('Future')) {
+            $addresses = $addresses->get;
+        }
 
         cmp_deeply(
             $addresses,

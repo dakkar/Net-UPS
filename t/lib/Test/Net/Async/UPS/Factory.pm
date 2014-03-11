@@ -1,29 +1,35 @@
-package Test::Net::UPS2::Factory;
+package Test::Net::Async::UPS::Factory;
 use strict;
 use warnings;
 use File::Spec;
 use Test::More;
 use Try::Tiny;
-use Net::UPS2;
-use Test::Net::UPS::NoNetwork;
-use Test::Net::UPS::Tracing;
+use Net::Async::UPS;
+use IO::Async::Loop;
+use Test::Net::Async::UPS::NoNetwork;
+use Test::Net::Async::UPS::Tracing;
 
 sub from_config {
+    my $loop = IO::Async::Loop->new;
     my $upsrc = File::Spec->catfile($ENV{HOME}, '.upsrc.conf');
     my $ups = try {
-        Net::UPS2->new($upsrc)
+        Net::Async::UPS->new({
+            config_file => $upsrc,
+            loop => $loop,
+        })
       } catch {
           plan(skip_all=>"$_");
           exit(0);
       };
-    return $ups;
+    return ($ups,$loop);
 }
 
 sub from_config_tracing {
     my $upsrc = File::Spec->catfile($ENV{HOME}, '.upsrc.conf');
-    my $ua = Test::Net::UPS::Tracing->new();
+    my $loop = IO::Async::Loop->new;
+    my $ua = Test::Net::Async::UPS::Tracing->new({loop=>$loop});
     my $ups = try {
-        Net::UPS2->new({
+        Net::Async::UPS->new({
             config_file => $upsrc,
             user_agent => $ua,
         })
@@ -36,8 +42,8 @@ sub from_config_tracing {
 
 sub without_network {
     my ($args) = @_;
-    my $ua = Test::Net::UPS::NoNetwork->new();
-    my $ret = Net::UPS2->new({
+    my $ua = Test::Net::Async::UPS::NoNetwork->new();
+    my $ret = Net::Async::UPS->new({
         user_id => 'testid',
         password => 'testpass',
         access_key => 'testkey',

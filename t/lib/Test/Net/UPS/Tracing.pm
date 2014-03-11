@@ -23,4 +23,6 @@ sub request {
     return $response;
 }
 
+sub post {}
+
 1;

@@ -80,4 +80,6 @@ sub push_test_responses {
     push @responses,@_;
 }
 
+sub post {}
+
 1;
