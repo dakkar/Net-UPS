@@ -1,4 +1,4 @@
-package Test::Net::Async::UPS::NoNetwork;
+package Test::Net::Async::Webservice::UPS::NoNetwork;
 use strict;
 use warnings;
 use Moo;

@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 use Moo;
-use Net::Async::UPS;
+use Net::Async::Webservice::UPS;
 use 5.10.0;
 
 # ABSTRACT: attempt to re-implement Net::UPS with modern insides
@@ -64,7 +64,7 @@ sub BUILDARGS {
     );
 
     my %args;
-    $args{_engine} = Net::Async::UPS->new(\%engine_args);
+    $args{_engine} = Net::Async::Webservice::UPS->new(\%engine_args);
 
     return \%args;
 }

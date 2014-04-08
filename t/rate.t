@@ -12,10 +12,10 @@ use Sub::Override;
 use Data::Printer;
 use Test::Net::UPS2::TestCache;
 
-my $orig_post = \&Net::Async::UPS::post;
+my $orig_post = \&Net::Async::Webservice::UPS::post;
 my @calls;
 my $new_post = Sub::Override->new(
-    'Net::Async::UPS::post',
+    'Net::Async::Webservice::UPS::post',
     sub {
         note "my post";
         push @calls,[@_];

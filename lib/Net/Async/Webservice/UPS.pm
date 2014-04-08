@@ -1,4 +1,4 @@
-package Net::Async::UPS;
+package Net::Async::Webservice::UPS;
 use strict;
 use warnings;
 use Moo;

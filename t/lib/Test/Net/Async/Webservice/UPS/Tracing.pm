@@ -1,4 +1,4 @@
-package Test::Net::Async::UPS::Tracing;
+package Test::Net::Async::Webservice::UPS::Tracing;
 use strict;
 use warnings;
 use Moo;
