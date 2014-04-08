@@ -8,7 +8,18 @@ extends 'Test::Net::UPS::NoNetwork';
 sub do_request {
     my ($self,%args) = @_;
 
-    return Future->wrap($self->request($args{request}));
+    my $res = $self->request($args{request});
+    if ($res->is_success) {
+        return Future->wrap($res);
+    }
+    else {
+        return Future->new->fail(
+            $res->status_line,
+            'http',
+            $res,
+            $args{request},
+        );
+    }
 }
 
 sub POST {}

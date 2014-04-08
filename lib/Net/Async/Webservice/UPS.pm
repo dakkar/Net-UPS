@@ -492,7 +492,7 @@ sub post {
             )
         },
         fail => sub {
-            my ($exception,$response,$request) = @_;
+            my ($exception,undef,$response,$request) = @_;
             return Net::UPS2::Exception::HTTPError->new({
                 request=>$request,
                 response=>$response,

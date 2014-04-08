@@ -74,7 +74,7 @@ sub as_string { "something bad happened at ". $_[0]->stack_trace->as_string }
  sub as_string {
      my ($self) = @_;
 
-     return sprintf 'Error %sin %s: %s, at %s',
+     return sprintf 'Error %sing %s: %s, at %s',
          $self->request->method,$self->request->uri,
          $self->response->status_line,
          $self->stack_trace->as_string;
