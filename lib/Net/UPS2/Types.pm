@@ -12,8 +12,6 @@ use Type::Library
                     PackagingType MeasurementSystem
                     Measure MeasurementUnit Currency
                     Tolerance
-
-                    OldPackage OldAddress OldRate OldService
               );
 use Type::Utils -all;
 use Types::Standard -types;
@@ -154,57 +152,10 @@ coerce Address, from Str, via {
     require Net::UPS2::Address;
     Net::UPS2::Address->new({postal_code => $_});
 };
-class_type OldAddress, { class => 'Net::UPS::Address' };
-
-my @address_fields = qw(quality city postal_code state country_code is_residential);
-coerce Address, from OldAddress, via {
-    require Net::UPS2::Address;
-    my $in = $_;
-    Net::UPS2::Address->new({
-        _map_args( $in, @address_fields ),
-    });
-};
-
-coerce OldAddress, from Address, via {
-    require Net::UPS::Address;
-    my $in = $_;
-    Net::UPS::Address->new(
-        _map_args( $in, @address_fields ),
-    );
-};
 
 class_type Package, { class => 'Net::UPS2::Package' };
 declare PackageList, as ArrayRef[Package];
 coerce PackageList, from Package, via { [ $_ ] };
-
-class_type OldPackage, { class => 'Net::UPS::Package' };
-
-my @package_fields = qw(id packaging_type measurement_system length width height weight);
-
-coerce Package, from OldPackage, via {
-    require Net::UPS2::Package;
-    my $in = $_;
-    Net::UPS2::Package->new({
-        measurement_system => 'english',
-        _map_args( $in, @package_fields ),
-    });
-};
-
-coerce OldPackage, from Package, via {
-    require Net::UPS::Package;
-    my $in = $_;
-    Net::UPS::Package->new(
-        _map_args( $in, @package_fields ),
-    );
-};
-
-coerce PackageList, from ArrayRef[OldPackage], via {
-    my $list = $_;
-    [ map { to_Package($_) } @$list ];
-};
-coerce PackageList, from OldPackage, via {
-    [ to_Package($_) ];
-};
 
 class_type Service, { class => 'Net::UPS2::Service' };
 coerce Service, from Str, via {
@@ -212,58 +163,9 @@ coerce Service, from Str, via {
     Net::UPS2::Service->new({label=>$_});
 };
 
-class_type OldService, { class => 'Net::UPS::Service' };
-coerce OldService, from Service, via {
-    require Net::UPS::Service;
-    my $in = $_;
-
-    my $service = Net::UPS::Service->new(
-        _map_args($in,qw(code label total_charges guaranteed_days)),
-        ( $in->rates ? (
-            rates => [ map { to_OldRate($_) } @{$in->rates} ],
-        ) : () ),
-        ( $in->rated_packages ? (
-            rated_packages => [ map { to_OldPackage($_) } @{$in->rated_packages} ],
-        ) : () ),
-    );
-    # fixup service-rate-service refs
-    for my $rate (@{$service->rates}) {
-        $rate->service($service);
-        # bad hack! we have to do it this way because:
-        #
-        # 1) Class::Struct has no support for weak references
-        #
-        # 2) weakening the result of the accessor would not change
-        #    the actual value inside the object
-        #
-        # 3) the objects created by Class::Struct by default are
-        #    array-based
-        #
-        # we are clearly breaking encapsulation, and this may stop
-        # working if the internals of Class::Struct change. I
-        # can't see any better way, though.
-        weaken($rate->[3]);
-    }
-    return $service;
-};
-
 class_type Rate, { class => 'Net::UPS2::Rate' };
 declare RateList, as ArrayRef[Rate];
 coerce RateList, from Rate, via { [ $_ ] };
-
-class_type OldRate, { class => 'Net::UPS::Rate' };
-
-coerce OldRate, from Rate, via {
-    require Net::UPS::Rate;
-    my $in = $_;
-
-    Net::UPS::Rate->new(
-        _map_args($in,qw(billing_weight total_charges)),
-        rated_package => to_OldPackage($in->rated_package),
-        from => to_OldAddress($in->from),
-        to => to_OldAddress($in->to),
-    );
-};
 
 duck_type Cache, [qw(get set)];
 duck_type Cacheable, [qw(cache_id)];

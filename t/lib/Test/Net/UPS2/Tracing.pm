@@ -1,4 +1,4 @@
-package Test::Net::UPS::Tracing;
+package Test::Net::UPS2::Tracing;
 use strict;
 use warnings;
 use parent 'LWP::UserAgent';

@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use Moo;
 use Future;
-extends 'Test::Net::UPS::NoNetwork';
+extends 'Test::Net::UPS2::NoNetwork';
 
 sub do_request {
     my ($self,%args) = @_;

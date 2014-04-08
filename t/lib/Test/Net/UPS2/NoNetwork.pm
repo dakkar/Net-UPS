@@ -1,4 +1,4 @@
-package Test::Net::UPS::NoNetwork;
+package Test::Net::UPS2::NoNetwork;
 use strict;
 use warnings;
 use Moo;
