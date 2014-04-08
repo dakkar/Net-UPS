@@ -42,4 +42,34 @@ subtest 'HTTP failure' => sub {
     );
 };
 
+subtest 'UPS failure' => sub {
+    $u->prepare_test_from_file('t/data/address-fail');
+
+    my $f = $ups->validate_address(
+        Net::UPS2::Address->new({
+            postal_code => '12345',
+        }),
+    );
+
+    $f->await until $f->is_ready;
+
+    ok(!$f->is_done && !$f->is_cancelled,'Future is failed');
+
+    cmp_deeply(
+        [$f->failure],
+        [
+            all(
+                isa('Net::UPS2::Exception::UPSError'),
+                methods(
+                    error => {
+                        ErrorDescription => 'manual failure for testing',
+                        ErrorSeverity => 'medium',
+                        ErrorCode => 999,
+                    },
+                ),
+            ),
+        ],
+    );
+};
+
 done_testing();

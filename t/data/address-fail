@@ -1,0 +1,17 @@
+POST https://wwwcie.ups.com/ups.app/xml/AV
+
+<?xml version='1.0' standalone='yes'?>
+<AddressValidationRequest>
+  <Address>
+    <PostalCode>12345</PostalCode>
+  </Address>
+  <Request>
+    <RequestAction>AV</RequestAction>
+    <TransactionReference>
+      <CustomerContext>Net::UPS</CustomerContext>
+      <XpciVersion>1.0001</XpciVersion>
+    </TransactionReference>
+  </Request>
+</AddressValidationRequest>
+
+<?xml version="1.0"?><AddressValidationResponse><Response><TransactionReference><CustomerContext>Net::UPS</CustomerContext><XpciVersion>1.0001</XpciVersion></TransactionReference><ResponseStatusCode>0</ResponseStatusCode><ResponseStatusDescription>Failure</ResponseStatusDescription><Error><ErrorDescription>manual failure for testing</ErrorDescription><ErrorSeverity>medium</ErrorSeverity><ErrorCode>999</ErrorCode></Error></Response></AddressValidationResponse>

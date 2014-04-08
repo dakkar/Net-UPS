@@ -38,7 +38,35 @@ subtest 'HTTP failure' => sub {
             ),
         ),
     );
-    note "$e";
+};
+
+subtest 'UPS failure' => sub {
+    $u->prepare_test_from_file('t/data/address-fail');
+
+    my $res;
+    my $e = exception {
+        $res = $ups->validate_address(
+            Net::UPS2::Address->new({
+                postal_code => '12345',
+            }),
+        );
+    };
+
+    ok(!defined $res && defined $e,'UPS failure throws exception');
+
+    cmp_deeply(
+        $e,
+        all(
+            isa('Net::UPS2::Exception::UPSError'),
+            methods(
+                error => {
+                    ErrorDescription => 'manual failure for testing',
+                    ErrorSeverity => 'medium',
+                    ErrorCode => 999,
+                },
+            ),
+        ),
+    );
 };
 
 done_testing();
