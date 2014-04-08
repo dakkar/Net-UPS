@@ -1,10 +1,10 @@
-package Net::UPS2::Address;
+package Net::Async::Webservice::UPS::Address;
 use strict;
 use warnings;
 use Moo;
 use 5.10.0;
 use Types::Standard qw(Str Int Bool StrictNum);
-use Net::UPS2::Types ':types';
+use Net::Async::Webservice::UPS::Types ':types';
 
 has quality => (
     is => 'ro',

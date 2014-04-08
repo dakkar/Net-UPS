@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 use Test::Most;
-use Net::UPS2::Package;
+use Net::Async::Webservice::UPS::Package;
 
 my @data = (
     { width => 10, length => 20, height => 30, weight => 40,
@@ -48,12 +48,12 @@ for my $d (@data) {
     my ($oversized,$fail,$comment) =
         (delete @$d{qw(oversized fail comment)});
 
-    my $p = Net::UPS2::Package->new($d);
+    my $p = Net::Async::Webservice::UPS::Package->new($d);
 
     if ($fail) {
         throws_ok {
             $p->is_oversized;
-        } 'Net::UPS2::Exception::BadPackage',
+        } 'Net::Async::Webservice::UPS::Exception::BadPackage',
             "$comment - expected failure";
     }
     else {

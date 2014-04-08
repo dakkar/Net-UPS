@@ -1,10 +1,10 @@
-package Net::UPS2::Service;
+package Net::Async::Webservice::UPS::Service;
 use strict;
 use warnings;
 use Moo;
 use 5.10.0;
 use Types::Standard qw(Str ArrayRef);
-use Net::UPS2::Types ':types';
+use Net::Async::Webservice::UPS::Types ':types';
 
 has code => (
     is => 'ro',

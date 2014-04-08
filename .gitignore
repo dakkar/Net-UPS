@@ -11,4 +11,4 @@ MANIFEST.bak
 .prove
 *~
 /.build/
-/Net-UPS-*/
+/Net-Async-Webservice-UPS-*/

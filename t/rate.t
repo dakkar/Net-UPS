@@ -4,13 +4,15 @@ use warnings;
 use 5.10.0;
 use lib 't/lib';
 use Test::Most;
-use Net::UPS2;
-use Net::UPS2::Package;
+use Net::Async::Webservice::UPS;
+use Net::Async::Webservice::UPS::Package;
 use File::Spec;
-use Try::Tiny;
 use Sub::Override;
-use Data::Printer;
-use Test::Net::UPS2::TestCache;
+use Test::Net::Async::Webservice::UPS;
+use Test::Net::Async::Webservice::UPS::TestCache;
+use IO::Async::Loop;
+
+my $loop = IO::Async::Loop->new;
 
 my $orig_post = \&Net::Async::Webservice::UPS::post;
 my @calls;
@@ -23,21 +25,16 @@ my $new_post = Sub::Override->new(
     }
 );
 
-my $cache = Test::Net::UPS2::TestCache->new();
-my $upsrc = File::Spec->catfile($ENV{HOME}, '.upsrc.conf');
-my $ups = try {
-    Net::UPS2->new({
-        config_file => $upsrc,
-        cache => $cache,
-    });
-}
-catch {
-    plan(skip_all=>$_);
-    exit(0);
-};
+my $cache = Test::Net::Async::Webservice::UPS::TestCache->new();
+
+my $ups = Net::Async::Webservice::UPS->new({
+    config_file => Test::Net::Async::Webservice::UPS->conf_file,
+    cache => $cache,
+    loop => $loop,
+});
 
 my $package =
-    Net::UPS2::Package->new({
+    Net::Async::Webservice::UPS::Package->new({
         length => 34,
         width => 24,
         height => 1.5,
@@ -55,13 +52,13 @@ my $argpack = {
     service => 'GROUND',
 };
 
-my $services = $ups->request_rate($argpack);
+my $services = $ups->request_rate($argpack)->get;
 ok($services && @{$services->services},'got answer');
 cmp_deeply(\@calls,
            [[ ignore(),'/Rate',ignore() ]],
            'one call to the service');
 
-my $services2 = $ups->request_rate($argpack);
+my $services2 = $ups->request_rate($argpack)->get;
 ok($services2 && @{$services2->services},'got answer again');
 cmp_deeply($services2,$services,'the same answer');
 cmp_deeply(\@calls,

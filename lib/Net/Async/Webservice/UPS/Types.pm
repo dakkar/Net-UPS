@@ -1,4 +1,4 @@
-package Net::UPS2::Types;
+package Net::Async::Webservice::UPS::Types;
 use strict;
 use warnings;
 use Type::Library
@@ -147,23 +147,23 @@ declare Tolerance,
     },
     message { ($_//'<undef>').' is not a valid tolerance, it must be a number between 0 and 1' };
 
-class_type Address, { class => 'Net::UPS2::Address' };
+class_type Address, { class => 'Net::Async::Webservice::UPS::Address' };
 coerce Address, from Str, via {
-    require Net::UPS2::Address;
-    Net::UPS2::Address->new({postal_code => $_});
+    require Net::Async::Webservice::UPS::Address;
+    Net::Async::Webservice::UPS::Address->new({postal_code => $_});
 };
 
-class_type Package, { class => 'Net::UPS2::Package' };
+class_type Package, { class => 'Net::Async::Webservice::UPS::Package' };
 declare PackageList, as ArrayRef[Package];
 coerce PackageList, from Package, via { [ $_ ] };
 
-class_type Service, { class => 'Net::UPS2::Service' };
+class_type Service, { class => 'Net::Async::Webservice::UPS::Service' };
 coerce Service, from Str, via {
-    require Net::UPS2::Service;
-    Net::UPS2::Service->new({label=>$_});
+    require Net::Async::Webservice::UPS::Service;
+    Net::Async::Webservice::UPS::Service->new({label=>$_});
 };
 
-class_type Rate, { class => 'Net::UPS2::Rate' };
+class_type Rate, { class => 'Net::Async::Webservice::UPS::Rate' };
 declare RateList, as ArrayRef[Rate];
 coerce RateList, from Rate, via { [ $_ ] };
 

@@ -1,4 +1,4 @@
-package Test::Net::UPS2::TestCache;
+package Test::Net::Async::Webservice::UPS::TestCache;
 use Moo;
 use Types::Standard qw(HashRef);
 

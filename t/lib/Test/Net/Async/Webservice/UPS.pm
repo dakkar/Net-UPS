@@ -1,9 +1,18 @@
-package Test::Net::UPS2;
+package Test::Net::Async::Webservice::UPS;
 use strict;
 use warnings;
 use Test::Most;
 use Data::Printer;
-use Net::UPS2::Package;
+use Net::Async::Webservice::UPS::Package;
+
+sub conf_file {
+    my $upsrc = File::Spec->catfile($ENV{HOME}, '.upsrc.conf');
+    if (not -r $upsrc) {
+        plan(skip_all=>'need a ~/.upsrc.conf file');
+        exit(0);
+    }
+    return $upsrc;
+}
 
 sub package_comparator {
     my (@p) = @_;
@@ -11,7 +20,7 @@ sub package_comparator {
     return map {
         my $p = $_;
         all(
-            isa('Net::UPS2::Package'),
+            isa('Net::Async::Webservice::UPS::Package'),
             methods(
                 map { $_ => $p->$_ } qw(length width height weight packaging_type measurement_system)
             )
@@ -36,10 +45,10 @@ sub test_it {
     };
 
     my @postal_codes = ( 15241, 48823 );
-    my @addresses = map { Net::UPS2::Address->new(postal_code=>$_) } @postal_codes;
+    my @addresses = map { Net::Async::Webservice::UPS::Address->new(postal_code=>$_) } @postal_codes;
     my @address_comparators = map {
         all(
-            isa('Net::UPS2::Address'),
+            isa('Net::Async::Webservice::UPS::Address'),
             methods(
                 postal_code => $_,
             ),
@@ -47,12 +56,12 @@ sub test_it {
     } @postal_codes;
 
     my @packages = (
-        Net::UPS2::Package->new(
+        Net::Async::Webservice::UPS::Package->new(
             length=>34, width=>24, height=>1.5,
             weight=>1,
             measurement_system => 'english',
         ),
-        Net::UPS2::Package->new(
+        Net::Async::Webservice::UPS::Package->new(
             length=>34, width=>24, height=>1.5,
             weight=>2,
             measurement_system => 'english',
@@ -64,13 +73,13 @@ sub test_it {
             warnings => undef,
             services => [
                 all(
-                    isa('Net::UPS2::Service'),
+                    isa('Net::Async::Webservice::UPS::Service'),
                     methods(
                         label => 'GROUND',
                         code => '03',
                         rates => [
                             all(
-                                isa('Net::UPS2::Rate'),
+                                isa('Net::Async::Webservice::UPS::Rate'),
                                 methods(
                                     rated_package => package_comparator($_),
                                     from => $address_comparators[0],
@@ -89,14 +98,14 @@ sub test_it {
         warnings => undef,
         services => [
             all(
-                isa('Net::UPS2::Service'),
+                isa('Net::Async::Webservice::UPS::Service'),
                 methods(
                     label => 'GROUND',
                     code => '03',
                     rated_packages => bag(map {package_comparator($_)} @packages),
                     rates => bag(map {
                         all(
-                            isa('Net::UPS2::Rate'),
+                            isa('Net::Async::Webservice::UPS::Rate'),
                             methods(
                                 rated_package => package_comparator($_),
                                 from => $address_comparators[0],
@@ -116,10 +125,7 @@ sub test_it {
             from => $postal_codes[0],
             to => $postal_codes[1],
             packages => $packages[0],
-        });
-        if ($rate1->isa('Future')) {
-            $rate1 = $rate1->get;
-        }
+        })->get;
 
         cmp_deeply(
             $rate1,
@@ -138,10 +144,7 @@ sub test_it {
             from => $addresses[0],
             to => $addresses[1],
             packages => $packages[0],
-        });
-        if ($rate2->isa('Future')) {
-            $rate2 = $rate2->get;
-        }
+        })->get;
 
         cmp_deeply(
             $rate1,
@@ -162,10 +165,7 @@ sub test_it {
             from => $postal_codes[0],
             to => $postal_codes[1],
             packages => \@packages,
-        });
-        if ($rate->isa('Future')) {
-            $rate = $rate->get;
-        }
+        })->get;
 
         cmp_deeply(
             $rate,
@@ -193,10 +193,7 @@ sub test_it {
             to => $addresses[1],
             packages => $packages[0],
             mode => 'shop',
-        });
-        if ($services->isa('Future')) {
-            $services = $services->get;
-        }
+        })->get;
 
         cmp_deeply(
             $services,
@@ -204,13 +201,13 @@ sub test_it {
                 warnings => undef,
                 services => all(
                     array_each(all(
-                        isa('Net::UPS2::Service'),
+                        isa('Net::Async::Webservice::UPS::Service'),
                         methods(
                             rated_packages => [package_comparator($packages[0])],
                         ),
                     )),
                     superbagof(all(
-                        isa('Net::UPS2::Service'),
+                        isa('Net::Async::Webservice::UPS::Service'),
                         methods(
                             label => 'GROUND',
                             code => '03',
@@ -235,10 +232,7 @@ sub test_it {
             to => $addresses[1],
             packages => \@packages,
             mode => 'shop',
-        });
-        if ($services->isa('Future')) {
-            $services = $services->get;
-        }
+        })->get;
 
         cmp_deeply(
             $services,
@@ -246,13 +240,13 @@ sub test_it {
                 warnings => undef,
                 services => all(
                     array_each(all(
-                        isa('Net::UPS2::Service'),
+                        isa('Net::Async::Webservice::UPS::Service'),
                         methods(
                             rated_packages => [package_comparator(@packages)],
                             rates => bag(
                                 map {
                                     all(
-                                        isa('Net::UPS2::Rate'),
+                                        isa('Net::Async::Webservice::UPS::Rate'),
                                         methods(
                                             rated_package => package_comparator($_),
                                             from => $address_comparators[0],
@@ -264,7 +258,7 @@ sub test_it {
                         ),
                     )),
                     superbagof(all(
-                        isa('Net::UPS2::Service'),
+                        isa('Net::Async::Webservice::UPS::Service'),
                         methods(
                             label => 'GROUND',
                             code => '03',
@@ -294,7 +288,7 @@ sub test_it {
     };
 
     subtest 'validate address' => sub {
-        my $address = Net::UPS2::Address->new({
+        my $address = Net::Async::Webservice::UPS::Address->new({
             city        => "East Lansing",
             state       => "MI",
             country_code=> "US",
@@ -302,10 +296,7 @@ sub test_it {
             is_residential=>1
         });
 
-        my $addresses = $ups->validate_address($address, 0);
-        if ($addresses->isa('Future')) {
-            $addresses = $addresses->get;
-        }
+        my $addresses = $ups->validate_address($address, 0)->get;
 
         cmp_deeply(
             $addresses,
@@ -313,7 +304,7 @@ sub test_it {
                 warnings => undef,
                 addresses => array_each(
                     all(
-                        isa('Net::UPS2::Address'),
+                        isa('Net::Async::Webservice::UPS::Address'),
                         methods(
                             city => "EAST LANSING",
                             state => "MI",

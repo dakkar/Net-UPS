@@ -6,18 +6,18 @@ use XML::Simple;
 use Types::Standard qw(Str Bool Object Dict Optional ArrayRef HashRef Undef);
 use Type::Params qw(compile);
 use Error::TypeTiny;
-use Net::UPS2::Types qw(:types to_Service);
-use Net::UPS2::Exception;
+use Net::Async::Webservice::UPS::Types qw(:types to_Service);
+use Net::Async::Webservice::UPS::Exception;
 use Try::Tiny;
 use List::AllUtils 'pairwise';
 use HTTP::Request;
 use Encode;
 use namespace::autoclean;
-use Net::UPS2::Rate;
-use Net::UPS2::Address;
-use Net::UPS2::Service;
-use Net::UPS2::Response::Rate;
-use Net::UPS2::Response::Address;
+use Net::Async::Webservice::UPS::Rate;
+use Net::Async::Webservice::UPS::Address;
+use Net::Async::Webservice::UPS::Service;
+use Net::Async::Webservice::UPS::Response::Rate;
+use Net::Async::Webservice::UPS::Response::Address;
 use Future;
 use 5.10.0;
 
@@ -187,7 +187,7 @@ sub _load_config_file {
         flatten_to_hash => 1,
     });
     my $config = $loaded->{$file};
-    Net::UPS2::Exception::ConfigError->throw({
+    Net::Async::Webservice::UPS::Exception::ConfigError->throw({
         file => $file,
     }) unless $config;
     return $config;
@@ -306,10 +306,10 @@ sub request_rate {
             my @services;
             for my $rated_shipment (@{$response->{RatedShipment}}) {
                 my $code = $rated_shipment->{Service}{Code};
-                my $label = Net::UPS2::Service::label_for_code($code);
+                my $label = Net::Async::Webservice::UPS::Service::label_for_code($code);
                 next if not $ok_labels{$label};
 
-                push @services, my $service = Net::UPS2::Service->new({
+                push @services, my $service = Net::Async::Webservice::UPS::Service->new({
                     code => $code,
                     label => $label,
                     total_charges => $rated_shipment->{TotalCharges}{MonetaryValue},
@@ -320,7 +320,7 @@ sub request_rate {
                     rated_packages => $packages,
                     # TODO check this pairwise
                     rates => [ pairwise {
-                        Net::UPS2::Rate->new({
+                        Net::Async::Webservice::UPS::Rate->new({
                             billing_weight  => $a->{BillingWeight}{Weight},
                             unit            => $a->{BillingWeight}{UnitOfMeasurement}{Code},
                             total_charges   => $a->{TotalCharges}{MonetaryValue},
@@ -338,7 +338,7 @@ sub request_rate {
             }
             @services = sort { $a->total_charges <=> $b->total_charges } @services;
 
-            my $ret = Net::UPS2::Response::Rate->new({
+            my $ret = Net::Async::Webservice::UPS::Response::Rate->new({
                 services => \@services,
                 ( $response->{Error} ? (warnings => $response->{Error}) : () ),
             });
@@ -399,7 +399,7 @@ sub validate_address {
             for my $address (@{$response->{AddressValidationResult}}) {
                 next if $address->{Quality} < (1 - $tolerance);
                 for my $possible_postal_code ($address->{PostalCodeLowEnd} .. $address->{PostalCodeHighEnd}) {
-                    push @addresses, Net::UPS2::Address->new({
+                    push @addresses, Net::Async::Webservice::UPS::Address->new({
                         quality         => $address->{Quality},
                         postal_code     => $possible_postal_code,
                         city            => $address->{Address}->{City},
@@ -410,7 +410,7 @@ sub validate_address {
             }
 
 
-            my $ret = Net::UPS2::Response::Address->new({
+            my $ret = Net::Async::Webservice::UPS::Response::Address->new({
                 addresses => \@addresses,
                 ( $response->{Error} ? (warnings => $response->{Error}) : () ),
             });
@@ -461,7 +461,7 @@ sub xml_request {
 
             if ($response->{Response}{ResponseStatusCode}==0) {
                 return Future->new->fail(
-                    Net::UPS2::Exception::UPSError->new({
+                    Net::Async::Webservice::UPS::Exception::UPSError->new({
                         error => $response->{Response}{Error}
                     })
                   );
@@ -493,7 +493,7 @@ sub post {
         },
         fail => sub {
             my ($exception,undef,$response,$request) = @_;
-            return Net::UPS2::Exception::HTTPError->new({
+            return Net::Async::Webservice::UPS::Exception::HTTPError->new({
                 request=>$request,
                 response=>$response,
             })

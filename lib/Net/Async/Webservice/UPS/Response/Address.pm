@@ -1,9 +1,9 @@
-package Net::UPS2::Response::Address;
+package Net::Async::Webservice::UPS::Response::Address;
 use strict;
 use warnings;
 use Moo;
 use Types::Standard qw(ArrayRef HashRef);
-use Net::UPS2::Types qw(:types);
+use Net::Async::Webservice::UPS::Types qw(:types);
 use namespace::autoclean;
 
 has addresses => (

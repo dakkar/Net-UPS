@@ -1,4 +1,4 @@
-package Net::UPS2::Exception;
+package Net::Async::Webservice::UPS::Exception;
 use strict;
 use warnings;
 use Moo;
@@ -23,11 +23,11 @@ around _build_stack_trace_args => sub {
 
 sub as_string { "something bad happened at ". $_[0]->stack_trace->as_string }
 
-{package Net::UPS2::Exception::ConfigError;
+{package Net::Async::Webservice::UPS::Exception::ConfigError;
  use strict;
  use warnings;
  use Moo;
- extends 'Net::UPS2::Exception';
+ extends 'Net::Async::Webservice::UPS::Exception';
 
  has file => ( is => 'ro', required => 1 );
 
@@ -40,11 +40,11 @@ sub as_string { "something bad happened at ". $_[0]->stack_trace->as_string }
  }
 }
 
-{package Net::UPS2::Exception::BadPackage;
+{package Net::Async::Webservice::UPS::Exception::BadPackage;
  use strict;
  use warnings;
  use Moo;
- extends 'Net::UPS2::Exception';
+ extends 'Net::Async::Webservice::UPS::Exception';
 
  has package => ( is => 'ro', required => 1 );
 
@@ -62,11 +62,11 @@ sub as_string { "something bad happened at ". $_[0]->stack_trace->as_string }
  }
 }
 
-{package Net::UPS2::Exception::HTTPError;
+{package Net::Async::Webservice::UPS::Exception::HTTPError;
  use strict;
  use warnings;
  use Moo;
- extends 'Net::UPS2::Exception';
+ extends 'Net::Async::Webservice::UPS::Exception';
 
  has request => ( is => 'ro', required => 1 );
  has response => ( is => 'ro', required => 1 );
@@ -81,11 +81,11 @@ sub as_string { "something bad happened at ". $_[0]->stack_trace->as_string }
  }
 }
 
-{package Net::UPS2::Exception::UPSError;
+{package Net::Async::Webservice::UPS::Exception::UPSError;
  use strict;
  use warnings;
  use Moo;
- extends 'Net::UPS2::Exception';
+ extends 'Net::Async::Webservice::UPS::Exception';
 
  has error => ( is => 'ro', required => 1 );
 

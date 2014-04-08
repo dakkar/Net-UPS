@@ -1,11 +1,11 @@
-package Net::UPS2::Package;
+package Net::Async::Webservice::UPS::Package;
 use strict;
 use warnings;
 use Moo;
 use Type::Params qw(compile);
 use Types::Standard qw(Int Object);
-use Net::UPS2::Types ':types';
-use Net::UPS2::Exception;
+use Net::Async::Webservice::UPS::Types ':types';
+use Net::Async::Webservice::UPS::Exception;
 use namespace::autoclean;
 use 5.10.0;
 
@@ -145,7 +145,7 @@ sub is_oversized {
                   419, 40 );
 
     if ($len > $max_len or $self->weight > $max_weight or $size > $max_size) {
-        Net::UPS2::Exception::BadPackage->throw({package=>$self});
+        Net::Async::Webservice::UPS::Exception::BadPackage->throw({package=>$self});
     }
 
     return 0 if ( $size <= $min_size ); # Below OS1

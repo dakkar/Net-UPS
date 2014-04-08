@@ -1,9 +1,9 @@
-package Net::UPS2::Response::Rate;
+package Net::Async::Webservice::UPS::Response::Rate;
 use strict;
 use warnings;
 use Moo;
 use Types::Standard qw(ArrayRef HashRef);
-use Net::UPS2::Types qw(:types);
+use Net::Async::Webservice::UPS::Types qw(:types);
 use namespace::autoclean;
 
 has services => (
