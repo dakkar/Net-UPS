@@ -21,7 +21,35 @@ use Net::Async::Webservice::UPS::Response::Address;
 use Future;
 use 5.10.0;
 
-# ABSTRACT: attempt to re-implement Net::UPS with modern insides
+# ABSTRACT: UPS API client, non-blocking
+
+=head1 SYNOPSIS
+
+ use IO::Async::Loop;
+ use Net::Async::Webservice::UPS;
+
+ my $loop = IO::Async::Loop->new;
+
+ my $ups = Net::Async::Webservice::UPS->new({
+   config_file => $ENV{HOME}.'/.upsrc.conf',
+   loop => $loop,
+ });
+
+ $ups->validate_address($postcode)->then(sub {
+   my ($response) = @_;
+   say $_->postal_code for @{$response->addresses};
+   return Future->wrap();
+ });
+
+ $loop->run;
+
+=head1 DESCRIPTION
+
+This class implements some of the methods of the UPS API, using
+L<Net::Async::HTTP> as a user agent. All methods that perform API
+calls return L<Future>s.
+
+=cut
 
 my %code_for_pickup_type = (
     DAILY_PICKUP            => '01',
@@ -35,20 +63,26 @@ my %code_for_pickup_type = (
     LETTER_CENTER           => '19',
     AIR_SERVICE_CENTER      => '20'
 );
-sub _pickup_types { return {%code_for_pickup_type} }
 
 my %code_for_customer_classification = (
     WHOLESALE               => '01',
     OCCASIONAL              => '03',
     RETAIL                  => '04'
 );
-sub _customer_classification { return {%code_for_customer_classification} }
 
 my %base_urls = (
     live => 'https://onlinetools.ups.com/ups.app/xml',
     test => 'https://wwwcie.ups.com/ups.app/xml',
 );
-sub _base_urls { return {%base_urls} }
+
+=attr C<live_mode>
+
+Boolean, defaults to false. When set to true, the live API endpoint
+will be used, otherwise the test one will. Flipping this attribute
+will reset L</base_url>, so you generally don't want to touch this if
+you're using some custom API endpoint.
+
+=cut
 
 has live_mode => (
     is => 'rw',
@@ -57,17 +91,19 @@ has live_mode => (
     default => sub { 0 },
 );
 
-has base_url_test => (
-    is => 'ro',
-    isa => Str,
-    default => sub { $base_urls{test} },
-);
+=attr C<base_url>
 
-has base_url_live => (
-    is => 'ro',
-    isa => Str,
-    default => sub { $base_urls{live} },
-);
+A string. The base URL to use to send API requests to (actual requests
+will be C<POST>ed to an actual URL build from this by appending the
+appropriate service path). Defaults to the standard UPS endpoints:
+
+=for :list
+* C<https://onlinetools.ups.com/ups.app/xml> for live
+* C<https://wwwcie.ups.com/ups.app/xml> for testing
+
+See also L</live_mode>.
+
+=cut
 
 has base_url => (
     is => 'lazy',
@@ -83,9 +119,18 @@ sub _trigger_live_mode {
 sub _build_base_url {
     my ($self) = @_;
 
-    my $attr = 'base_url_'.($self->live_mode ? 'live' : 'test');
-    return $self->$attr;
+    return $base_urls{$self->live_mode ? 'live' : 'test'};
 }
+
+=attr C<user_id>
+
+=attr C<password>
+
+=attr C<access_key>
+
+Strings, required. Authentication credentials.
+
+=cut
 
 has user_id => (
     is => 'ro',
@@ -103,14 +148,34 @@ has access_key => (
     required => 1,
 );
 
+=attr C<account_number>
+
+String. Used in some requests as "shipper number".
+
+=cut
+
 has account_number => (
     is => 'ro',
     isa => Str,
 );
+
+=attr C<customer_classification>
+
+String, usually one of C<WHOLESALE>, C<OCCASIONAL>, C<RETAIL>. Used
+when requesting rates.
+
+=cut
+
 has customer_classification => (
     is => 'rw',
     isa => CustomerClassification,
 );
+
+=attr C<pickup_type>
+
+String, defaults to C<ONE_TIME>. Used when requesting rates.
+
+=cut
 
 has pickup_type => (
     is => 'rw',
@@ -118,14 +183,38 @@ has pickup_type => (
     default => sub { 'ONE_TIME' },
 );
 
+=attr C<cache>
+
+Responses are cached if this is set. You can pass your own cache
+object (that implements the C<get> and C<set> methods like L<CHI>
+does), or use the C<cache_life> and C<cache_root> constructor
+parameters to get a L<CHI> instance based on L<CHI::Driver::File>.
+
+=cut
+
 has cache => (
     is => 'ro',
     isa => Cache|Undef,
 );
+
+=method C<does_caching>
+
+Returns a true value if caching is enabled.
+
+=cut
+
 sub does_caching {
     my ($self) = @_;
     return defined $self->cache;
 }
+
+=attr C<user_agent>
+
+A user agent object implementing C<do_request> and C<POST> like
+L<Net::Async::HTTP>. You can pass the C<loop> constructor parameter
+to get a default user agent.
+
+=cut
 
 has user_agent => (
     is => 'ro',
@@ -133,19 +222,33 @@ has user_agent => (
     required => 1,
 );
 
-sub BUILDARGS {
-    my ($class,@args) = @_;
+=method C<new>
 
-    return _load_config_file($args[0])
-        if @args==1 and not ref($args[0]);
+  my $ups = Net::Async::Webservice::UPS->new({
+     loop => $loop,
+     config_file => $file_name,
+     cache_life => 5,
+  });
 
-    my $ret;
-    if (@args==1 and ref($args[0]) eq 'HASH') {
-        $ret = { %{$args[0]} };
-    }
-    else {
-        $ret = { @args };
-    }
+In addition to passing all the various attributes values, you can use
+a few shortcuts.
+
+=for :list
+= C<loop>
+a L<IO::Async::Loop>; a locally-constructer L</user_agent> will be registered to it
+= C<config_file>
+a path name; will be parsed with L<Config::Any>, and the values used as if they had been passed in to the constructor
+= C<cache_life>
+lifetime, in minutes, of cache entries; a L</cache> will be built automatically if this is set
+= C<cache_root>
+where to store the cache files, defaults to a temporary directory
+
+=cut
+
+around BUILDARGS => sub {
+    my ($orig,$class,@args) = @_;
+
+    my $ret = $class->$orig(@args);
 
     if (my $config_file = delete $ret->{config_file}) {
         $ret = {
@@ -176,7 +279,7 @@ sub BUILDARGS {
     }
 
     return $ret;
-}
+};
 
 sub _load_config_file {
     my ($file) = @_;
@@ -193,12 +296,25 @@ sub _load_config_file {
     return $config;
 }
 
+=method C<transaction_reference>
+
+Constant data used to fill something in requests. I don't know what
+it's for.
+
+=cut
+
 sub transaction_reference {
     return {
         CustomerContext => "Net::UPS",
         XpciVersion     => '1.0001'
     };
 }
+
+=method C<access_as_xml>
+
+Returns a XML document with the credentials.
+
+=cut
 
 sub access_as_xml {
     my $self = shift;
@@ -210,6 +326,39 @@ sub access_as_xml {
         }
     }, NoAttr=>1, KeepRoot=>1, XMLDecl=>1);
 }
+
+=method C<request_rate>
+
+  $ups->request_rate({
+    from => $address_a,
+    to => $address_b,
+    packages => [ $package_1, $package_2 ],
+  }) ==> (Net::Async::Webservice::UPS::Response::Rate)
+
+C<from> and C<to> are instances of
+L<Net::Async::Webservice::UPS::Address>, or postcode strings that will
+be coerced to addresses.
+
+C<packages> is an arrayref of L<Net::Async::Webservice::UPS::Package>
+(or a single package, will be coerced to a 1-element array ref).
+
+Optional parameters:
+
+=for :list
+= C<limit_to>
+only accept some services (see L<Net::Async::Webservice::UPS::Types/ServiceLabel>)
+= C<exclude>
+exclude some services (see L<Net::Async::Webservice::UPS::Types/ServiceLabel>)
+= C<mode>
+defaults to C<rate>, could be C<shop>
+= C<service>
+defaults to C<GROUND>, see L<Net::Async::Webservice::UPS::Service>
+
+The L<Future> returned will yield an instance of
+L<Net::Async::Webservice::UPS::Response::Rate>, or fail with an
+exception.
+
+=cut
 
 sub request_rate {
     state $argcheck = compile(Object, Dict[
@@ -349,6 +498,23 @@ sub request_rate {
         },
     );
 }
+
+=method C<validate_address>
+
+  $ups->validate_address($address)
+    ==> (Net::Async::Webservice::UPS::Response::Address)
+
+C<$address> is an instance of L<Net::Async::Webservice::UPS::Address>,
+or a postcode string that will be coerced to an address.
+
+Optional parameter: a tolerance (float, between 0 and 1). Returned
+addresses with quality below the tolerance will be filtered out.
+
+The L<Future> returned will yield an instance of
+L<Net::Async::Webservice::UPS::Response::Address>, or fail with an
+exception.
+
+=cut
 
 sub validate_address {
     state $argcheck = compile(
