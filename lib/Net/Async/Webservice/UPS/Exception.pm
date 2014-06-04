@@ -5,13 +5,21 @@ use overload
   q{""}    => 'as_string',
   fallback => 1;
 
-# ABSTRACT: base exception class for UPS
+=head1 NAME
+
+Net::Async::Webservice::UPS::Exception - exception classes for UPS
 
 =head1 DESCRIPTION
 
-This class is based on L<Throwable> and L<StackTrace::Auto>. The
+These classes are based on L<Throwable> and L<StackTrace::Auto>. The
 L</as_string> method should return something readable, with a full
 stack trace.
+
+=head1 Classes
+
+=head2 C<Net::Async::Webservice::UPS::Exception>
+
+Base class.
 
 =cut
 
@@ -29,7 +37,9 @@ around _build_stack_trace_args => sub {
     return $ret;
 };
 
-=method C<as_string>
+=head3 Methods
+
+=head4 C<as_string>
 
 Generic "something bad happened", with stack trace.
 
@@ -41,9 +51,13 @@ sub as_string { "something bad happened at ". $_[0]->stack_trace->as_string }
  use Moo;
  extends 'Net::Async::Webservice::UPS::Exception';
 
- # ABSTRACT: exception thrown when the configuration file can't be parsed
+=head2 C<Net::Async::Webservice::UPS::Exception::ConfigError>
 
-=attr C<file>
+exception thrown when the configuration file can't be parsed
+
+=head3 Attributes
+
+=head4 C<file>
 
 The name of the configuration file.
 
@@ -51,7 +65,9 @@ The name of the configuration file.
 
  has file => ( is => 'ro', required => 1 );
 
-=method C<as_string>
+=head3 Methods
+
+=head4 C<as_string>
 
 Mentions the file name, and gives the stack trace.
 
@@ -70,9 +86,13 @@ Mentions the file name, and gives the stack trace.
  use Moo;
  extends 'Net::Async::Webservice::UPS::Exception';
 
- # ABSTRACT: exception thrown when a package is too big for UPS to carry
+=head2 C<Net::Async::Webservice::UPS::Exception::BadPackage>
 
-=attr C<package>
+exception thrown when a package is too big for UPS to carry
+
+=head3 Attributes
+
+=head4 C<package>
 
 The package object that's too big.
 
@@ -80,7 +100,9 @@ The package object that's too big.
 
  has package => ( is => 'ro', required => 1 );
 
-=method C<as_string>
+=head3 Methods
+
+=head4 C<as_string>
 
 Shows the size of the package, and the stack trace.
 
@@ -104,13 +126,17 @@ Shows the size of the package, and the stack trace.
  use Moo;
  extends 'Net::Async::Webservice::UPS::Exception';
 
- # ABSTRACT: exception thrown when the HTTP request fails
+=head2 C<Net::Async::Webservice::UPS::Exception::HTTPError>
 
-=attr C<request>
+exception thrown when the HTTP request fails
+
+=head3 Attributes
+
+=head4 C<request>
 
 The request that failed.
 
-=attr C<response>
+=head4 C<response>
 
 The failure response returned by the user agent
 
@@ -119,7 +145,9 @@ The failure response returned by the user agent
  has request => ( is => 'ro', required => 1 );
  has response => ( is => 'ro', required => 1 );
 
-=method C<as_string>
+=head3 Methods
+
+=head4 C<as_string>
 
 Mentions the HTTP method, URL, response status line, and stack trace.
 
@@ -139,9 +167,13 @@ Mentions the HTTP method, URL, response status line, and stack trace.
  use Moo;
  extends 'Net::Async::Webservice::UPS::Exception';
 
- # ABSTRACT: exception thrown when UPS signals an error
+=head2 C<Net::Async::Webservice::UPS::Exception::UPSError>
 
-=attr C<error>
+exception thrown when UPS signals an error
+
+=head3 Attributes
+
+=head4 C<error>
 
 The error data structure extracted from the UPS response.
 
@@ -149,7 +181,9 @@ The error data structure extracted from the UPS response.
 
  has error => ( is => 'ro', required => 1 );
 
-=method C<as_string>
+=head3 Methods
+
+=head4 C<as_string>
 
 Mentions the description, severity, and code of the error, plus the
 stack trace.
