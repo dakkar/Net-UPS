@@ -62,7 +62,7 @@ enum CustomerClassification,
            RETAIL
    )];
 
-=heod2 C<RequestMode>
+=head2 C<RequestMode>
 
 Enum, one of C<rate> C<shop>
 

@@ -37,6 +37,9 @@ postcode matching C<< \d+-\d+ >> is passed in to the constructor, the
 first group of digits is assigned to L</postal_code> and the second
 one to L</postal_code_extended>.
 
+=for Pod::Coverage
+BUILDARGS
+
 =cut
 
 has postal_code_extended => (

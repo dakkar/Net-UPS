@@ -100,7 +100,7 @@ has from => (
     required => 1,
 );
 
-=attr C<from>
+=attr C<to>
 
 Recipient address for this shipment.
 

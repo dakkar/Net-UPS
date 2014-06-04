@@ -124,6 +124,9 @@ my %label_for_code = reverse %code_for_label;
 I<Not a method>. Returns the UPS service label string for the given
 service code.
 
+=for Pod::Coverage
+BUILDARGS
+
 =cut
 
 sub label_for_code {

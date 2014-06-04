@@ -309,6 +309,9 @@ config file, async, custom cache:
 
 =back
 
+=for Pod::Coverage
+BUILDARGS
+
 =cut
 
 around BUILDARGS => sub {
