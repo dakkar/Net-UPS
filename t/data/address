@@ -4,14 +4,16 @@ POST https://wwwcie.ups.com/ups.app/xml/AV
 <AddressValidationRequest>
   <Address>
     <City>East Lansing</City>
+    <CountryCode>US</CountryCode>
     <PostalCode>48823</PostalCode>
+    <ResidentialAddressIndicator></ResidentialAddressIndicator>
     <StateProvinceCode>MI</StateProvinceCode>
   </Address>
   <Request>
     <RequestAction>AV</RequestAction>
     <TransactionReference>
       <CustomerContext>Net::Async::Webservice::UPS</CustomerContext>
-      <XpciVersion>1.0001</XpciVersion>
+      <XpciVersion>0</XpciVersion>
     </TransactionReference>
   </Request>
 </AddressValidationRequest>

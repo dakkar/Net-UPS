@@ -15,6 +15,7 @@ $u->prepare_test_from_file('t/data/rate-2-packages');
 $u->prepare_test_from_file('t/data/shop-1-package');
 $u->prepare_test_from_file('t/data/shop-2-packages');
 $u->prepare_test_from_file('t/data/address');
+$u->prepare_test_from_file('t/data/address-street-level');
 
 Test::Net::Async::Webservice::UPS::test_it($ups);
 

@@ -3,6 +3,7 @@ POST https://wwwcie.ups.com/ups.app/xml/AV
 <?xml version='1.0' standalone='yes'?>
 <AddressValidationRequest>
   <Address>
+    <CountryCode>US</CountryCode>
     <PostalCode>12345</PostalCode>
   </Address>
   <Request>

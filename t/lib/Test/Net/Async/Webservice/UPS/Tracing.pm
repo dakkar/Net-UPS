@@ -20,7 +20,7 @@ sub _build_user_agent {
 }
 
 around do_request => sub {
-    my ($self,$orig,%args) = @_;
+    my ($orig,$self,%args) = @_;
     my $request = $args{request};
 
     my ($sec,$usec) = gettimeofday;
