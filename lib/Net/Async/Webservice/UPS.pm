@@ -490,12 +490,12 @@ sub request_rate {
                 Service     => { Code   => $args->{service}->code },
                 Package     => [map { $_->as_hash() } @$packages],
                 Shipper     => {
-                    %{$args->{from}->as_hash()},
+                    %{$args->{from}->as_hash('AV')},
                     ( $self->account_number ?
                         ( ShipperNumber => $self->account_number )
                       : () ),
                 },
-                ShipTo      => $args->{to}->as_hash(),
+                ShipTo      => $args->{to}->as_hash('AV'),
             },
             ( $self->customer_classification ? (
                 CustomerClassification => { Code => $code_for_customer_classification{$self->customer_classification} }
@@ -609,11 +609,7 @@ sub validate_address {
                 RequestAction => "AV",
                 TransactionReference => $self->transaction_reference(),
             },
-            Address => {
-                ( $address->city ? ( City => $address->city ) : () ),
-                ( $address->state ? ( StateProvinceCode => $address->state) : () ),
-                ( $address->postal_code ? ( PostalCode => $address->postal_code) : () ),
-            },
+            %{$address->as_hash('AV')},
         },
     );
 
@@ -661,6 +657,110 @@ sub validate_address {
 
             $self->cache->set($cache_key,$ret) if $self->does_caching;
             return $ret;
+        },
+    );
+}
+
+=method C<validate_street_address>
+
+  $ups->validate_street_address($address)
+    ==> (Net::Async::Webservice::UPS::Response::Address)
+
+C<$address> is an instance of L<Net::Async::Webservice::UPS::Address>,
+or a postcode string that will be coerced to an address.
+
+The L<Future> returned will yield an instance of
+L<Net::Async::Webservice::UPS::Response::Address>, or fail with an
+exception.
+
+Identical requests can be cached.
+
+=cut
+
+sub validate_street_address {
+    state $argcheck = compile(
+        Object,
+        Address,
+    );
+    my ($self,$address) = $argcheck->(@_);
+
+    my %data = (
+        AddressValidationRequest => {
+            Request => {
+                RequestAction => 'XAV',
+                RequestOption => '3',
+                TransactionReference => $self->transaction_reference(),
+            },
+            %{$address->as_hash('XAV')},
+        },
+    );
+
+    my $cache_key;
+    if ($self->does_caching) {
+        $cache_key = $self->generate_cache_key(
+            'XAV',
+            [ $address ],
+        );
+        if (my $cached_services = $self->cache->get($cache_key)) {
+            return Future->wrap($cached_services);
+        }
+    }
+
+    $self->xml_request({
+        data => \%data,
+        url_suffix => '/XAV',
+        XMLin => {
+            ForceArray => [ 'AddressValidationResponse','AddressLine' ],
+        },
+    })->then(
+        sub {
+            my ($response) = @_;
+
+
+            if ($response->{NoCandidatesIndicator}) {
+                return Future->new->fail(Net::Async::Webservice::UPS::Exception::UPSError->new({
+                    error => {
+                        ErrorDescription => 'The Address Matching System is not able to match an address from any other one in the database',
+                    },
+                }));
+            }
+            if ($response->{AmbiguousAddressIndicator}) {
+                return Future->new->fail(Net::Async::Webservice::UPS::Exception::UPSError->new({
+                    error => {
+                        ErrorDescription => 'The Address Matching System is not able to explicitly differentiate an address from any other one in the database',
+                    },
+                }));
+            }
+
+            my $quality = 0;
+            if ($response->{ValidAddressIndicator}) {
+                $quality = 1;
+            }
+
+            my $address;
+            if (my $ak = $response->{AddressKeyFormat}) {
+                $address = Net::Async::Webservice::UPS::Address->new({
+                    quality => $quality,
+                    building_name => $ak->{BuildingName},
+                    address => $ak->{AddressLine}->[0],
+                    address2 => $ak->{AddressLine}->[1],
+                    address3 => $ak->{AddressLine}->[2],
+                    postal_code => $ak->{PostcodePrimaryLow},
+                    postal_code_extended => $ak->{PostcodeExtendedLow},
+                    city => $ak->{PoliticalDivision2},
+                    state => $ak->{PoliticalDivision1},
+                    country_code => $ak->{CountryCode},
+                    is_residential => ( $response->{AddressClassification}->{Code} eq "2" ) ? 1 : 0,
+                });
+            }
+
+            my $ret = Net::Async::Webservice::UPS::Response::Address->new({
+                addresses => [ $address ? $address : () ],
+                ( $response->{Error} ? (warnings => $response->{Error}) : () ),
+            });
+
+            $self->cache->set($cache_key,$ret) if $self->does_caching;
+            return Future->wrap($ret);
         },
     );
 }

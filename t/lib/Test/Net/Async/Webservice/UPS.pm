@@ -4,6 +4,7 @@ use warnings;
 use Test::Most;
 use Data::Printer;
 use Net::Async::Webservice::UPS::Package;
+use Net::Async::Webservice::UPS::Address;
 
 sub conf_file {
     my $upsrc = $ENV{NAWS_UPS_CONFIG} || File::Spec->catfile($ENV{HOME}, '.naws_ups.conf');
@@ -315,6 +316,40 @@ sub test_it {
                 ),
             ),
             'sensible addresses returned',
+        ) or note p $addresses;
+    };
+
+    subtest 'validate address, street-level' => sub {
+        my $address = Net::Async::Webservice::UPS::Address->new({
+            name        => 'John Doe',
+            building_name => 'Pearl Hotel',
+            address     => '233 W 49th St',
+            city        => 'New York',
+            state       => "NY",
+            country_code=> "US",
+            postal_code => "10019",
+        });
+
+        my $addresses = $ups->validate_street_address($address)->get;
+
+        cmp_deeply(
+            $addresses,
+            methods(
+                warnings => undef,
+                addresses => [
+                    all(
+                        isa('Net::Async::Webservice::UPS::Address'),
+                        methods(
+                            city => re(qr{\ANew York\z}i),
+                            state => "NY",
+                            country_code=> "US",
+                            postal_code_extended => '7404',
+                            quality => 1,
+                        ),
+                    ),
+                ],
+            ),
+            'sensible address returned',
         ) or note p $addresses;
     };
 }

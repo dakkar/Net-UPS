@@ -30,6 +30,35 @@ has postal_code => (
     required => 1,
 );
 
+=attr C<postal_code_extended>
+
+String with the extended post code of the address, optional. If a
+postcode matching C<< \d+-\d+ >> is passed in to the constructor, the
+first group of digits is assigned to L</postal_code> and the second
+one to L</postal_code_extended>.
+
+=cut
+
+has postal_code_extended => (
+    is => 'ro',
+    isa => Str,
+    required => 0,
+);
+
+around BUILDARGS => sub {
+    my ($orig,$class,@etc) = @_;
+    my $args = $class->$orig(@etc);
+    if ($args->{postal_code}
+            and not defined $args->{postal_code_extended}
+                and $args->{postal_code} =~ m{\A(\d+)-(\d+)\z}) {
+        $args->{postal_code} = $1;
+        $args->{postal_code_extended} = $2;
+    }
+    my @undef_k = grep {not defined $args->{$_} } keys %$args;
+    delete @$args{@undef_k};
+    return $args;
+};
+
 =attr C<state>
 
 String with the name of the state, optional.
@@ -53,6 +82,66 @@ has country_code => (
     isa => Str,
     required => 0,
     default => 'US',
+);
+
+=attr C<name>
+
+String with the recipient name, optional.
+
+=cut
+
+has name => (
+    is => 'ro',
+    isa => Str,
+    required => 0,
+);
+
+=attr C<building_name>
+
+String with the building name, optional.
+
+=cut
+
+has building_name => (
+    is => 'ro',
+    isa => Str,
+    required => 0,
+);
+
+=attr C<address>
+
+String with the first line of the address, optional.
+
+=cut
+
+has address => (
+    is => 'ro',
+    isa => Str,
+    required => 0,
+);
+
+=attr C<address2>
+
+String with the second line of address, optional.
+
+=cut
+
+has address2 => (
+    is => 'ro',
+    isa => Str,
+    required => 0,
+);
+
+=attr C<address3>
+
+String with the third line of the address, optional.
+
+=cut
+
+has address3 => (
+    is => 'ro',
+    isa => Str,
+    required => 0,
 );
 
 =attr C<is_residential>
@@ -152,24 +241,48 @@ sub is_poor_match {
 
 Returns a hashref that, when passed through L<XML::Simple>, will
 produce the XML fragment needed in UPS requests to represent this
-address.
+address. Takes one parameter, either C<'AV'> or C<'XAV'>, to select
+which representation to use (C<'XAV'> is the "street level validation"
+variant).
 
 =cut
 
 sub as_hash {
-    my $self = shift;
+    my ($self, $shape) = @_;
+    $shape //= 'AV';
 
-    my %data = (
-        Address => {
-            CountryCode => $self->country_code || "US",
-            PostalCode  => $self->postal_code,
-            ( $self->city ? ( City => $self->city) : () ),
-            ( $self->state ? ( StateProvinceCode => $self->state) : () ),
-            ( $self->is_residential ? ( ResidentialAddressIndicator => undef ) : () ),
+    if ($shape eq 'AV') {
+        return {
+            Address => {
+                CountryCode => $self->country_code || "US",
+                PostalCode  => $self->postal_code,
+                ( $self->city ? ( City => $self->city) : () ),
+                ( $self->state ? ( StateProvinceCode => $self->state) : () ),
+                ( $self->is_residential ? ( ResidentialAddressIndicator => undef ) : () ),
+            }
+        };
+    }
+    elsif ($shape eq 'XAV') {
+        return {
+            AddressKeyFormat => {
+                CountryCode => $self->country_code || "US",
+                PostcodePrimaryLow  => $self->postal_code,
+                ( $self->postal_code_extended ? ( PostcodeExtendedLow => $self->postal_code_extended ) : () ),
+                ( $self->name ? ( ConsigneeName => $self->name ) : () ),
+                ( $self->building_name ? ( BuildingName => $self->building_name ) : () ),
+                AddressLine  => [
+                    ( $self->address ? $self->address : () ),
+                    ( $self->address2 ? $self->address2 : () ),
+                    ( $self->address3 ? $self->address3 : () ),
+                ],
+                ( $self->state ? ( PoliticalDivision1 => $self->state ) : () ),
+                ( $self->city ? ( PoliticalDivision2 => $self->city ) : () ),
+            }
         }
-    );
-
-    return \%data;
+    }
+    else {
+        die "bad address to_hash shape $shape";
+    }
 }
 
 =method C<cache_id>
@@ -181,10 +294,16 @@ Returns a string identifying this address.
 sub cache_id {
     my ($self) = @_;
     return join ':',
+        $self->name||'',
+        $self->building_name||'',
+        $self->address||'',
+        $self->address2||'',
+        $self->address3||'',
         $self->country_code,
         $self->state||'',
         $self->city||'',
         $self->postal_code,
+        $self->postal_code_extended||'',
 }
 
 1;

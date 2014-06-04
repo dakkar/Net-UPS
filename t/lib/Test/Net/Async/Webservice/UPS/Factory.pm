@@ -31,12 +31,6 @@ sub from_config_sync {
 }
 
 sub from_config_tracing {
-    my $upsrc = File::Spec->catfile($ENV{HOME}, '.upsrc.conf');
-    if (not -r $upsrc) {
-        plan(skip_all=>$_);
-        exit(0);
-    }
-
     my $loop = IO::Async::Loop->new;
     my $ua = Test::Net::Async::Webservice::UPS::Tracing->new({loop=>$loop});
     my $ups = Net::Async::Webservice::UPS->new({
