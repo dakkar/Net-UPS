@@ -1,4 +1,6 @@
 {{$NEXT}}
+
+0.09_1 2014-06-04
  * first release
  * all functionality (and most of the API) copied from Net::UPS 0.12
  * requires Perl 5.10
