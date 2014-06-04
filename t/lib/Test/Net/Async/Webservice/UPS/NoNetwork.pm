@@ -27,6 +27,11 @@ sub do_request {
     push @requests,[$url,$parsed_content];
     if (@testing_requests) {
         my ($url,$request_comp,$comment) = @{shift @testing_requests};
+        my ($root) = keys %$request_comp;
+        if ($request_comp->{$root}{Request}{TransactionReference}) {
+            $request_comp->{$root}{Request}{TransactionReference}{XpciVersion} =
+                $Net::Async::Webservice::UPS::VERSION||'0';
+        }
         cmp_deeply([$url,$parsed_content],
                    [$url,$request_comp],
                    $comment || 'expected request');

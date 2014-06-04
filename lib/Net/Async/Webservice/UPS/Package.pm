@@ -1,6 +1,4 @@
 package Net::Async::Webservice::UPS::Package;
-use strict;
-use warnings;
 use Moo;
 use Type::Params qw(compile);
 use Types::Standard qw(Int Object);
@@ -9,10 +7,15 @@ use Net::Async::Webservice::UPS::Exception;
 use namespace::autoclean;
 use 5.10.0;
 
-has id => (
-    is => 'rw',
-    isa => Int,
-);
+# ABSTRACT: a package for UPS
+
+=attr C<packaging_type>
+
+Type of packaging (see
+L<Net::Async::Webservice::UPS::Types/PackagingType>), defaults to
+C<PACKAGE>.
+
+=cut
 
 has packaging_type => (
     is => 'ro',
@@ -20,30 +23,76 @@ has packaging_type => (
     default => sub { 'PACKAGE' },
 );
 
+=attr C<measurement_system>
+
+Either C<metric> (centimeters and kilograms) or C<english> (inches and
+pounds), required.
+
+=cut
+
 has measurement_system => (
     is => 'ro',
     isa => MeasurementSystem,
     required => 1,
 );
 
+=attr C<length>
+
+Length of the package, in centimeters or inches depending on
+L</measurement_system>.
+
+=cut
+
 has length => (
     is => 'ro',
     isa => Measure,
 );
+
+=attr C<width>
+
+Width of the package, in centimeters or inches depending on
+L</measurement_system>.
+
+=cut
 
 has width => (
     is => 'ro',
     isa => Measure,
 );
 
+=attr C<height>
+
+Height of the package, in centimeters or inches depending on
+L</measurement_system>.
+
+=cut
+
 has height => (
     is => 'ro',
     isa => Measure,
 );
 
+=attr C<weight>
+
+Weight of the package, in kilograms or pounds depending on
+L</measurement_system>.
+
+=cut
+
 has weight => (
     is => 'ro',
     isa => Measure,
+);
+
+=attr C<id>
+
+Integer, usually only used internally when requesting rates.
+
+=cut
+
+has id => (
+    is => 'rw',
+    isa => Int,
 );
 
 my %code_for_packaging_type = (
@@ -56,6 +105,12 @@ my %code_for_packaging_type = (
     UPS_10KG_BOX    => '25'
 );
 
+=method C<linear_unit>
+
+Returns C<CM> or C<IN> depending on L</measurement_system>.
+
+=cut
+
 sub linear_unit {
     state $argcheck = compile(Object);
     my ($self) = $argcheck->(@_);
@@ -63,12 +118,26 @@ sub linear_unit {
     $self->measurement_system eq 'metric' ? 'CM' : 'IN';
 }
 
+=method C<weight_unit>
+
+Returns C<KGS> or C<LBS> depending on L</measurement_system>.
+
+=cut
+
 sub weight_unit {
     state $argcheck = compile(Object);
     my ($self) = $argcheck->(@_);
 
     $self->measurement_system eq 'metric' ? 'KGS' : 'LBS';
 }
+
+=method C<as_hash>
+
+Returns a hashref that, when passed through L<XML::Simple>, will
+produce the XML fragment needed in UPS requests to represent this
+package.
+
+=cut
 
 sub as_hash {
     state $argcheck = compile(Object);
@@ -113,6 +182,15 @@ sub as_hash {
 
     return \%data;
 }
+
+=method C<is_oversized>
+
+Returns an I<integer> indicating whether this package is to be
+considered "oversized", and if so, in which oversize class it fits.
+
+Mostly used internally by L</as_hash>.
+
+=cut
 
 sub is_oversized {
     state $argcheck = compile(Object);
@@ -160,14 +238,20 @@ sub is_oversized {
     }
 }
 
+=method C<cache_id>
+
+Returns a string identifying this package.
+
+=cut
+
 sub cache_id {
     state $argcheck = compile(Object);
     my ($self) = $argcheck->(@_);
 
     return join ':',
-        $self->packaging_type,
-        $self->length, $self->width, $self->height,
-        $self->weight;
+        $self->packaging_type,$self->measurement_system,
+        $self->length||0, $self->width||0, $self->height||0,
+        $self->weight||0,;
 }
 
 1;

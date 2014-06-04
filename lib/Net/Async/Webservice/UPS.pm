@@ -1,6 +1,4 @@
 package Net::Async::Webservice::UPS;
-use strict;
-use warnings;
 use Moo;
 use XML::Simple;
 use Types::Standard qw(Str Bool Object Dict Optional ArrayRef HashRef Undef);
@@ -31,7 +29,7 @@ use 5.10.0;
  my $loop = IO::Async::Loop->new;
 
  my $ups = Net::Async::Webservice::UPS->new({
-   config_file => $ENV{HOME}.'/.upsrc.conf',
+   config_file => $ENV{HOME}.'/.naws_ups.conf',
    loop => $loop,
  });
 
@@ -43,11 +41,30 @@ use 5.10.0;
 
  $loop->run;
 
+Alternatively:
+
+ use Net::Async::Webservice::UPS;
+
+ my $ups = Net::Async::Webservice::UPS->new({
+   config_file => $ENV{HOME}.'/.naws_ups.conf',
+   user_agent => LWP::UserAgent->new,
+ });
+
+ my $response = $ups->validate_address($postcode)->get;
+
+ say $_->postal_code for @{$response->addresses};
+
 =head1 DESCRIPTION
 
 This class implements some of the methods of the UPS API, using
-L<Net::Async::HTTP> as a user agent. All methods that perform API
-calls return L<Future>s.
+L<Net::Async::HTTP> as a user agent I<by default> (you can still pass
+something like L<LWP::UserAgent> and it will work). All methods that
+perform API calls return L<Future>s (if using a synchronous user
+agent, all the Futures will be returned already completed).
+
+B<NOTE>: I've kept many names and codes from the original L<Net::UPS>,
+so the API of this distribution may look a bit strange. It should make
+it simpler to migrate from L<Net::UPS>, though.
 
 =cut
 
@@ -94,7 +111,7 @@ has live_mode => (
 =attr C<base_url>
 
 A string. The base URL to use to send API requests to (actual requests
-will be C<POST>ed to an actual URL build from this by appending the
+will be C<POST>ed to an actual URL built from this by appending the
 appropriate service path). Defaults to the standard UPS endpoints:
 
 =for :list
@@ -210,9 +227,10 @@ sub does_caching {
 
 =attr C<user_agent>
 
-A user agent object implementing C<do_request> and C<POST> like
-L<Net::Async::HTTP>. You can pass the C<loop> constructor parameter
-to get a default user agent.
+A user agent object, looking either like L<Net::Async::HTTP> (has
+C<do_request> and C<POST>) or like L<LWP::UserAgent> (has C<request>
+and C<post>). You can pass the C<loop> constructor parameter to get a
+default L<Net::Async::HTTP> instance.
 
 =cut
 
@@ -220,12 +238,23 @@ has user_agent => (
     is => 'ro',
     isa => AsyncUserAgent,
     required => 1,
+    coerce => AsyncUserAgent->coercion,
 );
 
 =method C<new>
 
+Async:
+
   my $ups = Net::Async::Webservice::UPS->new({
      loop => $loop,
+     config_file => $file_name,
+     cache_life => 5,
+  });
+
+Sync:
+
+  my $ups = Net::Async::Webservice::UPS->new({
+     user_agent => LWP::UserAgent->new,
      config_file => $file_name,
      cache_life => 5,
   });
@@ -235,13 +264,50 @@ a few shortcuts.
 
 =for :list
 = C<loop>
-a L<IO::Async::Loop>; a locally-constructer L</user_agent> will be registered to it
+a L<IO::Async::Loop>; a locally-constructed L<Net::Async::HTTP> will be registered to it and set as L</user_agent>
 = C<config_file>
 a path name; will be parsed with L<Config::Any>, and the values used as if they had been passed in to the constructor
 = C<cache_life>
-lifetime, in minutes, of cache entries; a L</cache> will be built automatically if this is set
+lifetime, in I<minutes>, of cache entries; a L</cache> will be built automatically if this is set (using L<CHI> with the C<File> driver)
 = C<cache_root>
-where to store the cache files, defaults to a temporary directory
+where to store the cache files for the default cache object, defaults to C<naws_ups> under your system's temporary directory
+
+A few more examples:
+
+=over 4
+
+=item *
+
+no config file, no cache, async:
+
+   ->new({
+     user_id=>$user,password=>$pw,access_key=>$ak,
+     loop=>$loop,
+   }),
+
+=item *
+
+no config file, no cache, custom user agent (sync or async):
+
+   ->new({
+     user_id=>$user,password=>$pw,access_key=>$ak,
+     user_agent=>$ua,
+   }),
+
+it's your job to register the custom user agent to the event loop, if
+you're using an async agent
+
+=item *
+
+config file, async, custom cache:
+
+
+   ->new({
+     loop=>$loop,
+     cache=>CHI->new(...),
+   }),
+
+=back
 
 =cut
 
@@ -268,7 +334,7 @@ around BUILDARGS => sub {
         if (not $ret->{cache_root}) {
             require File::Spec;
             $ret->{cache_root} =
-                File::Spec->catdir(File::Spec->tmpdir,'net_ups2'),
+                File::Spec->catdir(File::Spec->tmpdir,'naws_ups'),
               }
         $ret->{cache} = CHI->new(
             driver => 'File',
@@ -299,14 +365,16 @@ sub _load_config_file {
 =method C<transaction_reference>
 
 Constant data used to fill something in requests. I don't know what
-it's for.
+it's for, I just copied it from L<Net::UPS>.
 
 =cut
 
 sub transaction_reference {
+    our $VERSION; # this, and the ||0 later, are to make it work
+                  # before dzil munges it
     return {
-        CustomerContext => "Net::UPS",
-        XpciVersion     => '1.0001'
+        CustomerContext => "Net::Async::Webservice::UPS",
+        XpciVersion     => "".($VERSION||0),
     };
 }
 
@@ -342,6 +410,9 @@ be coerced to addresses.
 C<packages> is an arrayref of L<Net::Async::Webservice::UPS::Package>
 (or a single package, will be coerced to a 1-element array ref).
 
+I<NOTE>: the C<id> field of the packages you pass in will be modified,
+and set to their position in the array.
+
 Optional parameters:
 
 =for :list
@@ -357,6 +428,8 @@ defaults to C<GROUND>, see L<Net::Async::Webservice::UPS::Service>
 The L<Future> returned will yield an instance of
 L<Net::Async::Webservice::UPS::Response::Rate>, or fail with an
 exception.
+
+Identical requests can be cached.
 
 =cut
 
@@ -504,6 +577,9 @@ sub request_rate {
   $ups->validate_address($address)
     ==> (Net::Async::Webservice::UPS::Response::Address)
 
+  $ups->validate_address($address,$tolerance)
+    ==> (Net::Async::Webservice::UPS::Response::Address)
+
 C<$address> is an instance of L<Net::Async::Webservice::UPS::Address>,
 or a postcode string that will be coerced to an address.
 
@@ -513,6 +589,8 @@ addresses with quality below the tolerance will be filtered out.
 The L<Future> returned will yield an instance of
 L<Net::Async::Webservice::UPS::Response::Address>, or fail with an
 exception.
+
+Identical requests can be cached.
 
 =cut
 
@@ -587,6 +665,33 @@ sub validate_address {
     );
 }
 
+=method C<xml_request>
+
+  $ups->xml_request({
+    url_suffix => $string,
+    data => \%request_data,
+    XMLout => \%xml_simple_out_options,
+    XMLin => \%xml_simple_in_options,
+  }) ==> ($parsed_response);
+
+This method is mostly internal, you shouldn't need to call it.
+
+It builds a request XML document by concatenating the output of
+L</access_as_xml> with whatever L<XML::Simple> produces from the given
+C<data> and C<XMLout> options.
+
+It then posts (possibly asynchronously) this to the URL obtained
+concatenating L</base_url> with C<url_suffix> (see the L</post>
+method). If the request is successful, it parser the body (with
+L<XML::Simple> using the C<XMLin> options) and completes the returned
+future with the result.
+
+If the parsed response contains a non-zero
+C</Response/ResponseStatusCode>, the returned future will fail with a
+L<Net::Async::Webservice::UPS::Exception::UPSError> instance.
+
+=cut
+
 sub xml_request {
     state $argcheck = compile(
         Object,
@@ -637,6 +742,18 @@ sub xml_request {
     );
 }
 
+=method C<post>
+
+  $ups->post($url_suffix,$body) ==> ($decoded_content)
+
+Posts the given C<$body> to the URL obtained concatenating
+L</base_url> with C<$url_suffix>. If the request is successful, it
+completes the returned future with the decoded content of the
+response, otherwise it fails the future with a
+L<Net::Async::Webservice::UPS::Exception::HTTPError> instance.
+
+=cut
+
 sub post {
     state $argcheck = compile( Object, Str, Str );
     my ($self, $url_suffix, $body) = $argcheck->(@_);
@@ -666,6 +783,13 @@ sub post {
         },
     );
 }
+
+=method C<generate_cache_key>
+
+Generates a cache key (a string) identifying a request. Two requests
+with the same cache key should return the same response.
+
+=cut
 
 sub generate_cache_key {
     state $argcheck = compile(Object, Str, ArrayRef[Cacheable],Optional[HashRef]);

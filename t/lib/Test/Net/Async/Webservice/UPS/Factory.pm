@@ -8,6 +8,7 @@ use IO::Async::Loop;
 use Test::Net::Async::Webservice::UPS::NoNetwork;
 use Test::Net::Async::Webservice::UPS::Tracing;
 use Test::Net::Async::Webservice::UPS;
+use LWP::UserAgent;
 
 sub from_config {
     my $loop = IO::Async::Loop->new;
@@ -17,6 +18,16 @@ sub from_config {
         loop => $loop,
     });
     return ($ups,$loop);
+}
+
+sub from_config_sync {
+    my $ua = LWP::UserAgent->new;
+
+    my $ups = Net::Async::Webservice::UPS->new({
+        config_file => Test::Net::Async::Webservice::UPS->conf_file,
+        user_agent => $ua,
+    });
+    return ($ups,$ua);
 }
 
 sub from_config_tracing {

@@ -1,11 +1,19 @@
 package Net::Async::Webservice::UPS::Exception;
-use strict;
-use warnings;
 use Moo;
 with 'Throwable','StackTrace::Auto';
 use overload
   q{""}    => 'as_string',
   fallback => 1;
+
+# ABSTRACT: base exception class for UPS
+
+=head1 DESCRIPTION
+
+This class is based on L<Throwable> and L<StackTrace::Auto>. The
+L</as_string> method should return something readable, with a full
+stack trace.
+
+=cut
 
 around _build_stack_trace_args => sub {
     my ($orig,$self) = @_;
@@ -21,15 +29,33 @@ around _build_stack_trace_args => sub {
     return $ret;
 };
 
+=method C<as_string>
+
+Generic "something bad happened", with stack trace.
+
+=cut
+
 sub as_string { "something bad happened at ". $_[0]->stack_trace->as_string }
 
 {package Net::Async::Webservice::UPS::Exception::ConfigError;
- use strict;
- use warnings;
  use Moo;
  extends 'Net::Async::Webservice::UPS::Exception';
 
+ # ABSTRACT: exception thrown when the configuration file can't be parsed
+
+=attr C<file>
+
+The name of the configuration file.
+
+=cut
+
  has file => ( is => 'ro', required => 1 );
+
+=method C<as_string>
+
+Mentions the file name, and gives the stack trace.
+
+=cut
 
  sub as_string {
      my ($self) = @_;
@@ -41,12 +67,24 @@ sub as_string { "something bad happened at ". $_[0]->stack_trace->as_string }
 }
 
 {package Net::Async::Webservice::UPS::Exception::BadPackage;
- use strict;
- use warnings;
  use Moo;
  extends 'Net::Async::Webservice::UPS::Exception';
 
+ # ABSTRACT: exception thrown when a package is too big for UPS to carry
+
+=attr C<package>
+
+The package object that's too big.
+
+=cut
+
  has package => ( is => 'ro', required => 1 );
+
+=method C<as_string>
+
+Shows the size of the package, and the stack trace.
+
+=cut
 
  sub as_string {
      my ($self) = @_;
@@ -63,13 +101,29 @@ sub as_string { "something bad happened at ". $_[0]->stack_trace->as_string }
 }
 
 {package Net::Async::Webservice::UPS::Exception::HTTPError;
- use strict;
- use warnings;
  use Moo;
  extends 'Net::Async::Webservice::UPS::Exception';
 
+ # ABSTRACT: exception thrown when the HTTP request fails
+
+=attr C<request>
+
+The request that failed.
+
+=attr C<response>
+
+The failure response returned by the user agent
+
+=cut
+
  has request => ( is => 'ro', required => 1 );
  has response => ( is => 'ro', required => 1 );
+
+=method C<as_string>
+
+Mentions the HTTP method, URL, response status line, and stack trace.
+
+=cut
 
  sub as_string {
      my ($self) = @_;
@@ -82,12 +136,25 @@ sub as_string { "something bad happened at ". $_[0]->stack_trace->as_string }
 }
 
 {package Net::Async::Webservice::UPS::Exception::UPSError;
- use strict;
- use warnings;
  use Moo;
  extends 'Net::Async::Webservice::UPS::Exception';
 
+ # ABSTRACT: exception thrown when UPS signals an error
+
+=attr C<error>
+
+The error data structure extracted from the UPS response.
+
+=cut
+
  has error => ( is => 'ro', required => 1 );
+
+=method C<as_string>
+
+Mentions the description, severity, and code of the error, plus the
+stack trace.
+
+=cut
 
  sub as_string {
      my ($self) = @_;
