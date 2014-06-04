@@ -1,9 +1,6 @@
 package Test::Net::Async::Webservice::UPS::Tracing;
-use strict;
-use warnings;
 use Moo;
 use Future;
-use Net::Async::HTTP;
 use Time::HiRes 'gettimeofday';
 use File::Temp 'tempfile';
 
@@ -14,6 +11,7 @@ has user_agent => (
 );
 sub _build_user_agent {
     my ($self) = @_;
+    require Net::Async::HTTP;
     my $ua = Net::Async::HTTP->new();
     $self->loop->add($ua);
     return $ua;

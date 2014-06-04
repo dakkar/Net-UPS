@@ -4,13 +4,17 @@ use warnings;
 use File::Spec;
 use Test::More;
 use Net::Async::Webservice::UPS;
-use IO::Async::Loop;
 use Test::Net::Async::Webservice::UPS::NoNetwork;
 use Test::Net::Async::Webservice::UPS::Tracing;
 use Test::Net::Async::Webservice::UPS;
-use LWP::UserAgent;
 
 sub from_config {
+    eval { require IO::Async::Loop; require Net::Async::HTTP }
+        or do {
+            plan(skip_all=>'this test only runs with IO::Async and Net::Async::HTTP');
+            exit(0);
+        };
+
     my $loop = IO::Async::Loop->new;
 
     my $ups = Net::Async::Webservice::UPS->new({
@@ -21,6 +25,12 @@ sub from_config {
 }
 
 sub from_config_sync {
+    eval { require LWP::UserAgent }
+        or do {
+            plan(skip_all=>'this test only runs with LWP::UserAgent');
+            exit(0);
+        };
+
     my $ua = LWP::UserAgent->new;
 
     my $ups = Net::Async::Webservice::UPS->new({
@@ -31,6 +41,12 @@ sub from_config_sync {
 }
 
 sub from_config_tracing {
+    eval { require IO::Async::Loop; require Net::Async::HTTP }
+        or do {
+            plan(skip_all=>'this test only runs with IO::Async and Net::Async::HTTP');
+            exit(0);
+        };
+
     my $loop = IO::Async::Loop->new;
     my $ua = Test::Net::Async::Webservice::UPS::Tracing->new({loop=>$loop});
     my $ups = Net::Async::Webservice::UPS->new({

@@ -9,7 +9,7 @@ use Net::Async::Webservice::UPS::Address;
 sub conf_file {
     my $upsrc = $ENV{NAWS_UPS_CONFIG} || File::Spec->catfile($ENV{HOME}, '.naws_ups.conf');
     if (not -r $upsrc) {
-        plan(skip_all=>'need a ~/.naws_ups.conf file, or a NAWS_UPS_CONFIG envvariable pointing to a valid config file');
+        plan(skip_all=>'need a ~/.naws_ups.conf file, or a NAWS_UPS_CONFIG env variable pointing to a valid config file');
         exit(0);
     }
     return $upsrc;

@@ -10,7 +10,11 @@ use File::Spec;
 use Sub::Override;
 use Test::Net::Async::Webservice::UPS;
 use Test::Net::Async::Webservice::UPS::TestCache;
-use IO::Async::Loop;
+eval { require IO::Async::Loop; require Net::Async::HTTP }
+    or do {
+        plan(skip_all=>'this test only runs with IO::Async and Net::Async::HTTP');
+        exit(0);
+    };
 
 my $loop = IO::Async::Loop->new;
 
