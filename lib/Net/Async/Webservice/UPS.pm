@@ -728,6 +728,7 @@ sub validate_street_address {
                     error => {
                         ErrorDescription => 'The Address Matching System is not able to match an address from any other one in the database',
                     },
+                    'ups',
                 }));
             }
             if ($response->{AmbiguousAddressIndicator}) {
@@ -735,7 +736,7 @@ sub validate_street_address {
                     error => {
                         ErrorDescription => 'The Address Matching System is not able to explicitly differentiate an address from any other one in the database',
                     },
-                }));
+                }),'ups');
             }
 
             my $quality = 0;
@@ -840,7 +841,8 @@ sub xml_request {
                 return Future->new->fail(
                     Net::Async::Webservice::UPS::Exception::UPSError->new({
                         error => $response->{Response}{Error}
-                    })
+                    }),
+                    'ups',
                   );
             }
             return Future->wrap($response);
@@ -882,10 +884,10 @@ sub post {
         },
         fail => sub {
             my ($exception,undef,$response) = @_;
-            return Net::Async::Webservice::UPS::Exception::HTTPError->new({
+            return (Net::Async::Webservice::UPS::Exception::HTTPError->new({
                 request=>$request,
                 response=>$response,
-            })
+            }),'ups')
         },
     );
 }

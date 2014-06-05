@@ -1,4 +1,6 @@
 {{$NEXT}}
+ - failed Futures now have a 'ups' string as second element, as
+   recommended by PEVANS
 
 0.09_2 2014-06-05
  - correctly handle connection failures
