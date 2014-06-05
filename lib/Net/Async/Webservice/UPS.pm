@@ -788,7 +788,7 @@ C<data> and C<XMLout> options.
 
 It then posts (possibly asynchronously) this to the URL obtained
 concatenating L</base_url> with C<url_suffix> (see the L</post>
-method). If the request is successful, it parser the body (with
+method). If the request is successful, it parses the body (with
 L<XML::Simple> using the C<XMLin> options) and completes the returned
 future with the result.
 
@@ -881,7 +881,7 @@ sub post {
             )
         },
         fail => sub {
-            my ($exception,undef,$response,$request) = @_;
+            my ($exception,undef,$response) = @_;
             return Net::Async::Webservice::UPS::Exception::HTTPError->new({
                 request=>$request,
                 response=>$response,

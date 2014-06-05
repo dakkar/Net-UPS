@@ -1,4 +1,5 @@
 {{$NEXT}}
+ - correctly handle connection failures
 
 0.09_1 2014-06-04
  - first release
