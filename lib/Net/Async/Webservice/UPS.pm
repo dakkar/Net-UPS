@@ -2,6 +2,7 @@ package Net::Async::Webservice::UPS;
 use Moo;
 use XML::Simple;
 use Types::Standard qw(Str Bool Object Dict Optional ArrayRef HashRef Undef);
+use Types::URI qw(Uri);
 use Type::Params qw(compile);
 use Error::TypeTiny;
 use Net::Async::Webservice::UPS::Types qw(:types to_Service);
@@ -110,9 +111,10 @@ has live_mode => (
 
 =attr C<base_url>
 
-A string. The base URL to use to send API requests to (actual requests
-will be C<POST>ed to an actual URL built from this by appending the
-appropriate service path). Defaults to the standard UPS endpoints:
+A L<URI> object, coercible from a string. The base URL to use to send
+API requests to (actual requests will be C<POST>ed to an actual URL
+built from this by appending the appropriate service path). Defaults
+to the standard UPS endpoints:
 
 =for :list
 * C<https://onlinetools.ups.com/ups.app/xml> for live
@@ -124,8 +126,9 @@ See also L</live_mode>.
 
 has base_url => (
     is => 'lazy',
-    isa => Str,
+    isa => Uri,
     clearer => '_clear_base_url',
+    coerce => Uri->coercion,
 );
 
 sub _trigger_live_mode {
