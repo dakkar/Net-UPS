@@ -1,6 +1,6 @@
 package Net::Async::Webservice::UPS::Service;
 use Moo;
-use 5.10.0;
+use 5.010;
 use Types::Standard qw(Str ArrayRef);
 use Net::Async::Webservice::UPS::Types ':types';
 

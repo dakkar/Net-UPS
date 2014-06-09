@@ -5,7 +5,7 @@ use Types::Standard qw(Int Object);
 use Net::Async::Webservice::UPS::Types ':types';
 use Net::Async::Webservice::UPS::Exception;
 use namespace::autoclean;
-use 5.10.0;
+use 5.010;
 
 # ABSTRACT: a package for UPS
 

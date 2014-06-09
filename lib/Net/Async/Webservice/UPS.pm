@@ -18,7 +18,7 @@ use Net::Async::Webservice::UPS::Service;
 use Net::Async::Webservice::UPS::Response::Rate;
 use Net::Async::Webservice::UPS::Response::Address;
 use Future;
-use 5.10.0;
+use 5.010;
 
 # ABSTRACT: UPS API client, non-blocking
 
