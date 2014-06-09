@@ -1,4 +1,6 @@
 {{$NEXT}}
+
+0.09_3 2014-06-09
  - failed Futures now have a 'ups' string as second element, as
    recommended by PEVANS
  - fixed Perl version specification
