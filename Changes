@@ -1,5 +1,3 @@
-{{$NEXT}}
-
 0.09_5 2014-06-10
  - exception class UPSError now has methods to look inside the error data
 
