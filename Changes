@@ -1,4 +1,6 @@
 {{$NEXT}}
+
+0.09_4 2014-06-10
  - do not swallow non-HTTP exceptions
 
 0.09_3 2014-06-09
