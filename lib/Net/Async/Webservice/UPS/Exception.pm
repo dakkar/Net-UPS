@@ -186,6 +186,21 @@ The error data structure extracted from the UPS response.
 
 =head3 Methods
 
+=head4 C<error_description>
+
+=head4 C<error_severity>
+
+=head4 C<error_code>
+
+These just return the similarly-named fields from inside L</error>:
+C<ErrorDescription>, C<ErrorSeverity> and C<ErrorCode>.
+
+=cut
+
+ sub error_description { $_[0]->error->{ErrorDescription} }
+ sub error_severity { $_[0]->error->{ErrorSeverity} }
+ sub error_code { $_[0]->error->{ErrorCode} }
+
 =head4 C<as_string>
 
 Mentions the description, severity, and code of the error, plus the
@@ -197,9 +212,9 @@ stack trace.
      my ($self) = @_;
 
      return sprintf 'UPS returned an error: %s, severity %s, code %d, at %s',
-         $self->error->{ErrorDescription}//'<undef>',
-         $self->error->{ErrorSeverity}//'<undef>',
-         $self->error->{ErrorCode}//'<undef>',
+         $self->error_description//'<undef>',
+         $self->error_severity//'<undef>',
+         $self->error_code//'<undef>',
          $self->stack_trace->as_string;
  }
 }
