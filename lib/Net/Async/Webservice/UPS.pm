@@ -883,11 +883,12 @@ sub post {
             )
         },
         fail => sub {
-            my ($exception,undef,$response) = @_;
+            my ($exception,$kind,$response) = @_;
             return (Net::Async::Webservice::UPS::Exception::HTTPError->new({
                 request=>$request,
                 response=>$response,
-            }),'ups')
+                (($kind//'') ne 'http' ? ( more_info => "@_" ) : ()),
+            }),'ups');
         },
     );
 }
