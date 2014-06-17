@@ -4,7 +4,7 @@ use warnings;
 use Type::Library
     -base,
     -declare => qw( PickupType CustomerClassification
-                    Cache Cacheable UserAgent AsyncUserAgent
+                    Cache Cacheable
                     Address Package PackageList
                     Rate RateList
                     RequestMode Service
@@ -291,25 +291,5 @@ Duck type, any object with a C<cache_id> method.
 
 duck_type Cache, [qw(get set)];
 duck_type Cacheable, [qw(cache_id)];
-
-=head2 C<AsyncUserAgent>
-
-Duck type, any object with a C<do_request> and C<POST> methods.
-Coerced from L</UserAgent> via
-L<Net::Async::Webservice::UPS::SyncAgentWrapper>.
-
-=head2 C<UserAgent>
-
-Duck type, any object with a C<request> and C<post> methods.
-
-=cut
-
-duck_type AsyncUserAgent, [qw(POST do_request)];
-duck_type UserAgent, [qw(post request)];
-
-coerce AsyncUserAgent, from UserAgent, via {
-    require Net::Async::Webservice::UPS::SyncAgentWrapper;
-    Net::Async::Webservice::UPS::SyncAgentWrapper->new({ua=>$_});
-};
 
 1;
