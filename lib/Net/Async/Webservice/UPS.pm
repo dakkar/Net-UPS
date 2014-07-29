@@ -441,7 +441,7 @@ sub request_rate {
     if ($self->does_caching) {
         $cache_key = $self->generate_cache_key(
             'rate',
-            [ $args->{from},$args->{to},$args->{shipper},@$packages, ],
+            [ $args->{from},$args->{to},@$packages, ],
             {
                 mode => $args->{mode},
                 service => $args->{service}->code,

@@ -57,4 +57,10 @@ sub as_hash {
     };
 }
 
+sub cache_id {
+    my ($self) = @_;
+
+    return $self->address->cache_id;
+}
+
 1;
