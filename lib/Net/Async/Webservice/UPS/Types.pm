@@ -7,11 +7,13 @@ use Type::Library
                     Cache Cacheable
                     Address Package PackageList
                     Rate RateList
-                    RequestMode Service
+                    RequestMode Service ReturnService
                     ServiceCode ServiceLabel
+                    CreditCardCode CreditCardType
                     PackagingType MeasurementSystem
                     Measure MeasurementUnit Currency
-                    Tolerance
+                    Tolerance Payment
+                    Contact Shipper CreditCard Label
               );
 use Type::Utils -all;
 use Types::Standard -types;
@@ -152,6 +154,41 @@ enum PackagingType,
         UPS_10KG_BOX
    )];
 
+=head2 C<CreditCardCode>
+
+Enum, one of C<01> C<03> C<04> C<05> C<06> C<07> C<08>
+
+=cut
+
+enum CreditCardCode,
+    [qw(
+           01
+           03
+           04
+           05
+           06
+           07
+           08
+   )];
+
+=head2 C<CreditCardType>
+
+Enum, one of C<AMEX> C<Discover> C<MasterCard> C<Optima> C<VISA>
+C<Bravo> C<Diners>.
+
+=cut
+
+enum CreditCardType,
+    [qw(
+           AMEX
+           Discover
+           MasterCard
+           Optima
+           VISA
+           Bravo
+           Diners
+   )];
+
 =head2 C<MeasurementSystem>
 
 Enum, one of C<metric> C<english>.
@@ -236,6 +273,60 @@ coerce Address, from Str, via {
     Net::Async::Webservice::UPS::Address->new({postal_code => $_});
 };
 
+=head2 C<Contact>
+
+Instance of L<Net::Async::Webservice::UPS::Contact>.
+
+=cut
+
+class_type Contact, { class => 'Net::Async::Webservice::UPS::Contact' };
+coerce Contact, from Address, via {
+    require Net::Async::Webservice::UPS::Contact;
+    Net::Async::Webservice::UPS::Contact->new({address=>$_});
+};
+
+=head2 C<Shipper>
+
+Instance of L<Net::Async::Webservice::UPS::Shipper>.
+
+=cut
+
+class_type Shipper, { class => 'Net::Async::Webservice::UPS::Shipper' };
+
+=head2 C<Payment>
+
+Instance of L<Net::Async::Webservice::UPS::Payment>.
+
+=cut
+
+class_type Payment, { class => 'Net::Async::Webservice::UPS::Payment' };
+
+=head2 C<CreditCard>
+
+Instance of L<Net::Async::Webservice::UPS::CreditCard>, with automatic
+coercion from string (interpreted as a L</CreditCardType>).
+
+=cut
+
+class_type CreditCard, { class => 'Net::Async::Webservice::UPS::CreditCard' };
+coerce CreditCard, from Str, via {
+    require Net::Async::Webservice::UPS::CreditCard;
+    Net::Async::Webservice::UPS::CreditCard->new({ type => $_ });
+};
+
+=head2 C<Label>
+
+Instance of L<Net::Async::Webservice::UPS::Label>, with automatic
+coercion from string (interpreted as a label code).
+
+=cut
+
+class_type Label, { class => 'Net::Async::Webservice::UPS::Label' };
+coerce Label, from Str, via {
+    require Net::Async::Webservice::UPS::Label;
+    Net::Async::Webservice::UPS::Label->new({ code => $_ });
+};
+
 =head2 C<Package>
 
 Instance of L<Net::Async::Webservice::UPS::Package>.
@@ -262,6 +353,19 @@ class_type Service, { class => 'Net::Async::Webservice::UPS::Service' };
 coerce Service, from Str, via {
     require Net::Async::Webservice::UPS::Service;
     Net::Async::Webservice::UPS::Service->new({label=>$_});
+};
+
+=head2 C<ReturnService>
+
+Instance of L<Net::Async::Webservice::UPS::ReturnService>, with automatic
+coercion from string (interpreted as a service label).
+
+=cut
+
+class_type ReturnService, { class => 'Net::Async::Webservice::UPS::ReturnService' };
+coerce ReturnService, from Str, via {
+    require Net::Async::Webservice::UPS::ReturnService;
+    Net::Async::Webservice::UPS::ReturnService->new({label=>$_});
 };
 
 =head2 C<Rate>

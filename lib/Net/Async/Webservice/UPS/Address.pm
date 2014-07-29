@@ -283,6 +283,19 @@ sub as_hash {
             }
         }
     }
+    elsif ($shape eq 'Ship') {
+        return {
+            Address => {
+                CountryCode => $self->country_code || "US",
+                PostalCode  => $self->postal_code,
+                ( $self->address ? ( AddressLine1 => $self->address ) : () ),
+                ( $self->address2 ? ( AddressLine3 => $self->address2 ) : () ),
+                ( $self->address3 ? ( AddressLine3 => $self->address3 ) : () ),
+                ( $self->city ? ( City => $self->city) : () ),
+                ( $self->state ? ( StateProvinceCode => $self->state) : () ),
+            }
+        }
+    }
     else {
         die "bad address to_hash shape $shape";
     }

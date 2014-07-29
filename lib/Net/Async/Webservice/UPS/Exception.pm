@@ -90,6 +90,20 @@ C<ErrorDescription>, C<ErrorSeverity> and C<ErrorCode>.
  sub error_description { $_[0]->error->{ErrorDescription} }
  sub error_severity { $_[0]->error->{ErrorSeverity} }
  sub error_code { $_[0]->error->{ErrorCode} }
+ sub error_location { $_[0]->error->{ErrorLocation} }
+ sub _error_location_str {
+     my ($self) = @_;
+     my $el = $self->error_location;
+     if ($el->{ErrorLocationElementName}) {
+         return "element ".$el->{ErrorLocationElementName};
+     }
+     elsif ($el->{ErrorLocationAttributeName}) {
+         return "attribute ".$el->{ErrorLocationAttributeName};
+     }
+     else {
+         return;
+     }
+ }
 
 =head4 C<as_string>
 
@@ -101,10 +115,11 @@ stack trace.
  sub as_string {
      my ($self) = @_;
 
-     return sprintf 'UPS returned an error: %s, severity %s, code %d, at %s',
+     return sprintf 'UPS returned an error: %s, severity %s, code %d, location %s, at %s',
          $self->error_description//'<undef>',
          $self->error_severity//'<undef>',
          $self->error_code//'<undef>',
+         $self->_error_location_str//'<undef>',
          $self->stack_trace->as_string;
  }
 }
