@@ -82,8 +82,13 @@ The error data structure extracted from the UPS response.
 
 =head4 C<error_code>
 
+=head4 C<error_location>
+
+=head4 C<retry_seconds>
+
 These just return the similarly-named fields from inside L</error>:
-C<ErrorDescription>, C<ErrorSeverity> and C<ErrorCode>.
+C<ErrorDescription>, C<ErrorSeverity>, C<ErrorCode>, C<ErrorLocation>,
+C<MinimumRetrySeconds>.
 
 =cut
 
@@ -91,6 +96,8 @@ C<ErrorDescription>, C<ErrorSeverity> and C<ErrorCode>.
  sub error_severity { $_[0]->error->{ErrorSeverity} }
  sub error_code { $_[0]->error->{ErrorCode} }
  sub error_location { $_[0]->error->{ErrorLocation} }
+ sub retry_seconds { $_[0]->error->{MinimumRetrySeconds} }
+
  sub _error_location_str {
      my ($self) = @_;
      my $el = $self->error_location;
