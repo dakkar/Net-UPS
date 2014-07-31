@@ -12,8 +12,9 @@ use Type::Library
                     CreditCardCode CreditCardType
                     PackagingType MeasurementSystem
                     Measure MeasurementUnit Currency
-                    Tolerance Payment
+                    Tolerance Payment ImageType Image
                     Contact Shipper CreditCard Label
+                    ShipmentConfirm PackageResult
               );
 use Type::Utils -all;
 use Types::Standard -types;
@@ -314,6 +315,28 @@ coerce CreditCard, from Str, via {
     Net::Async::Webservice::UPS::CreditCard->new({ type => $_ });
 };
 
+=head2 C<ImageType>
+
+Enum, one of C<EPL>, C<ZPL>, C<SPL>, C<STARPL>, C<GIF>.
+
+=cut
+
+enum ImageType, [qw(EPL ZPL SPL STARPL GIF)];
+
+=head2 C<Image>
+
+Instance of L<Net::Async::Webservice::UPS::Response::Image>, with
+automatic coercion from hashref (via
+L<Net::Async::Webservice::UPS::Response::Image/from_hash>).
+
+=cut
+
+class_type Image, { class => 'Net::Async::Webservice::UPS::Response::Image' };
+coerce Image, from HashRef, via {
+    require Net::Async::Webservice::UPS::Response::Image;
+    Net::Async::Webservice::UPS::Response::Image->from_hash($_);
+};
+
 =head2 C<Label>
 
 Instance of L<Net::Async::Webservice::UPS::Label>, with automatic
@@ -341,6 +364,14 @@ to a singleton array.
 class_type Package, { class => 'Net::Async::Webservice::UPS::Package' };
 declare PackageList, as ArrayRef[Package];
 coerce PackageList, from Package, via { [ $_ ] };
+
+=head2 C<PackageResult>
+
+Instance of L<Net::Async::Webservice::UPS::Response::PackageResult>.
+
+=cut
+
+class_type PackageResult, { class => 'Net::Async::Webservice::UPS::Response::PackageResult' };
 
 =head2 C<Service>
 
@@ -382,6 +413,14 @@ singleton array.
 class_type Rate, { class => 'Net::Async::Webservice::UPS::Rate' };
 declare RateList, as ArrayRef[Rate];
 coerce RateList, from Rate, via { [ $_ ] };
+
+=head2 C<ShipmentConfirm>
+
+Instance of L<Net::Async::Webservice::UPS::Response::ShipmentConfirm>.
+
+=cut
+
+class_type ShipmentConfirm, { class => 'Net::Async::Webservice::UPS::Response::ShipmentConfirm' };
 
 =head2 C<Cache>
 

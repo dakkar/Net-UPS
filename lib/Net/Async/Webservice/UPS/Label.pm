@@ -1,11 +1,11 @@
 package Net::Async::Webservice::UPS::Label;
 use Moo;
 use 5.010;
-use Types::Standard qw(Str Int Enum);
+use Net::Async::Webservice::UPS::Types qw(:types);
 
 has code => (
     is => 'ro',
-    isa => Enum[qw(EPL ZPL SPL STARPL GIF)],
+    isa => ImageType,
     required => 1,
 );
 

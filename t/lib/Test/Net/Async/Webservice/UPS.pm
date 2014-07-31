@@ -380,7 +380,7 @@ sub test_it {
         address => $street_addresses[1],
     });
 
-    subtest 'confirm shipment' => sub {
+    subtest 'book shipment' => sub {
         my $confirm = $ups->ship_confirm({
             from => $shipper,
             to => $destination,
@@ -406,6 +406,34 @@ sub test_it {
         );
         ok($confirm->shipment_digest,'we have a digest');
         ok($confirm->shipment_identification_number,'we have an id number');
+
+        my $accept = $ups->ship_accept({
+            confirm => $confirm,
+        })->get;
+
+        cmp_deeply(
+            $accept,
+            methods(
+                billing_weight => num(3),
+                unit => 'LBS',
+                currency => 'USD',
+                service_option_charges => num($confirm->service_option_charges),
+                transportation_charges => num($confirm->transportation_charges),
+                total_charges => num($confirm->total_charges),
+                shipment_identification_number => $confirm->shipment_identification_number,
+                package_results => [
+                    (
+                        all(
+                            isa('Net::Async::Webservice::UPS::Response::PackageResult'),
+                            methods(
+                                label => isa('Net::Async::Webservice::UPS::Response::Image'),
+                            ),
+                        )
+                    ) x @packages
+                ],
+            ),
+            'shipment accept worked',
+        );
     };
 }
 

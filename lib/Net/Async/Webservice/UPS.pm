@@ -18,6 +18,10 @@ use Net::Async::Webservice::UPS::Service;
 use Net::Async::Webservice::UPS::Response::Rate;
 use Net::Async::Webservice::UPS::Response::Address;
 use Net::Async::Webservice::UPS::Response::ShipmentConfirm;
+use Net::Async::Webservice::UPS::Response::ShipmentAccept;
+use Net::Async::Webservice::UPS::Response::PackageResult;
+use Net::Async::Webservice::UPS::Response::Image;
+use MIME::Base64;
 use Future;
 use 5.010;
 
@@ -803,7 +807,6 @@ sub ship_confirm {
     $self->xml_request({
         data => \%data,
         url_suffix => '/ShipConfirm',
-        XMLin => { },
     })->transform(
         done => sub {
             my ($response) = @_;
@@ -829,22 +832,85 @@ sub ship_confirm {
 
 =cut
 
-sub ship_accept {
-    state $argcheck = compile(
-        Object,
-        Address,
-    );
-    my ($self,$address) = $argcheck->(@_);
+sub _img_if($$) {
+    return ( $_[0] => Net::Async::Webservice::UPS::Response::Image->from_hash($_[1]) ) if $_[1] && %{$_[1]};
+    return;
+}
 
-    my %data = ();
+sub _pair_if($$) {
+    return @_ if $_[1];
+    return;
+}
+
+sub _base64_if($$) {
+    return ($_[0],decode_base64($_[1])) if $_[1];
+    return;
+}
+
+sub ship_accept {
+    state $argcheck = compile( Object, Dict[
+        confirm => ShipmentConfirm,
+        customer_context => Optional[Str],
+    ]);
+    my ($self,$args) = $argcheck->(@_);
+
+    my %data = (
+        ShipmentAcceptRequest => {
+            Request => {
+                TransactionReference => $self->transaction_reference($args),
+                RequestAction => 'ShipAccept',
+            },
+            ShipmentDigest => $args->{confirm}->shipment_digest,
+        },
+    );
 
     $self->xml_request({
         data => \%data,
         url_suffix => '/ShipAccept',
-        XMLin => {
-            ForceArray => [ ],
-        },
     })->transform(
+        done => sub {
+            my ($response) = @_;
+            use Data::Printer;
+
+            my $results = $response->{ShipmentResults};
+
+            my $weight = $results->{BillingWeight};
+            my $charges = $results->{ShipmentCharges};
+
+            return Net::Async::Webservice::UPS::Response::ShipmentAccept->new({
+                unit => $weight->{UnitOfMeasurement}{Code},
+                billing_weight => $weight->{Weight},
+                currency => $charges->{TotalCharges}{CurrencyCode},
+                service_option_charges => $charges->{ServiceOptionsCharges}{MonetaryValue},
+                transportation_charges => $charges->{TransportationCharges}{MonetaryValue},
+                total_charges => $charges->{TotalCharges}{MonetaryValue},
+                shipment_identification_number => $results->{ShipmentIdentificationNumber},
+                _pair_if( pickup_request_number => $results->{PickupRequestNumber} ),
+                _img_if( control_log => $results->{ControlLogReceipt} ),
+                package_results => [ map {
+                    my $pr = $_;
+
+                    Net::Async::Webservice::UPS::Response::PackageResult->new({
+                        tracking_number => $pr->{TrackingNumber},
+                        currency => $pr->{ServiceOptionsCharges}{CurrencyCode},
+                        service_option_charges => $pr->{ServiceOptionsCharges}{MonetaryValue},
+                        _img_if( label => $pr->{LabelImage} ),
+                        ( $pr->{LabelImage}{InternationalSignatureGraphicImage} ?
+                          ( signature => Net::Async::Webservice::UPS::Response::Image->new({
+                              format => $pr->{LabelImage}{ImageFormat}{Code},
+                              data => $pr->{LabelImage}{InternationalSignatureGraphicImage},
+                          }) ) : () ),
+                        _base64_if( html => $pr->{LabelImage}{HTMLImage} ),
+                        _base64_if( pdf417 => $pr->{LabelImage}{PDF417} ),
+                        _img_if( receipt => $pr->{Receipt} ),
+                        _img_if( form_image => $pr->{Form} ),
+                        _pair_if( form_code => $pr->{Form}{Code} ),
+                        _pair_if( form_group_id => $pr->{FormGroupId} ),
+                        _img_if( cod_turn_in => $pr->{CODTurnInPage} ),
+                    });
+                } @{$results->{PackageResults}//[]} ],
+            });
+        },
     );
 }
 
