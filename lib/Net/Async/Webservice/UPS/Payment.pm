@@ -46,7 +46,7 @@ around BUILDARGS => sub {
         }
     }
     elsif ($args->{method} eq 'freight_collect') {
-        if (not ($args->{account_number})) {
+        if (not ($args->{account_number} and $args->{address})) {
             require Carp;
             Carp::croak "account_number required when payment method is 'freight_collect'";
         }
