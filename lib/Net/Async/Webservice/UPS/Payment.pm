@@ -69,15 +69,13 @@ sub as_hash {
         ($self->method eq 'third_party') ? ( BillThirdParty => {
             BillThirdPartyShipper => {
                 AccountNumber => $self->account_number,
-                ThirdPartyShipper => {
-                    Address => $self->address->as_hash('Ship'),
-                },
+                ThirdPartyShipper => $self->address->as_hash('Ship'),
             },
         } ) :
         ($self->method eq 'freight_collect') ? ( FreightCollect => {
             BillReceiver => {
                 AccountNumber => $self->account_number,
-                ( $self->address ? ( Address => $self->address->as_hash('Ship'), ) : () ),
+                %{$self->address->as_hash('Ship')},
             },
         } ) : ()
     };

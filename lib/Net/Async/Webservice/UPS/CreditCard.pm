@@ -80,7 +80,7 @@ sub as_hash {
         Number => $self->number,
         ExpirationDate => sprintf('%02d%02d',$self->expiration_month,$self->expiration_year),
         ( $self->security_code ? ( SecurityCode => $self->security_code ) : () ),
-        Address => $self->address->as_hash('Ship'),
+        %{$self->address->as_hash('Ship')},
     };
 }
 
