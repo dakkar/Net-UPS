@@ -362,6 +362,42 @@ sub test_it {
         ) or note p $addresses;
     };
 
+    subtest 'validate address, non-ASCII' => sub {
+        my $address = Net::Async::Webservice::UPS::Address->new({
+            name        => "Snowman \x{2603}",
+        address     => '233 W 49th St',
+        city        => 'New York',
+        state       => "NY",
+        country_code=> "US",
+        postal_code => "10019",
+#            address     => "St\x{e4}ndehausstra\x{df}e 1",
+#            city        => "D\x{fc}sseldorf",
+#            country_code=> 'DE',
+#            postal_code => '40217',
+        });
+        my $validated = $ups->validate_street_address($address)->get;
+
+        cmp_deeply(
+            $validated,
+            methods(
+                warnings => undef,
+                addresses => [
+                    all(
+                        isa('Net::Async::Webservice::UPS::Address'),
+                        methods(
+                            city => re(qr{\ANew York\z}i),
+                            state => "NY",
+                            country_code=> "US",
+                            postal_code_extended => '7404',
+                            quality => 1,
+                        ),
+                    ),
+                ],
+            ),
+            'sensible address returned',
+        ) or note p $validated;
+    };
+
     my $bill_shipper = Net::Async::Webservice::UPS::Payment->new({
         method => 'prepaid',
         account_number => $ups->account_number,
