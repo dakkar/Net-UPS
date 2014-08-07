@@ -784,6 +784,9 @@ optional string for reference purposes
 Returns an instance of
 L<Net::Async::Webservice::UPS::Response::ShipmentConfirm>.
 
+B<NOTE>: the API of this call may change in the future, let me know if
+features you need are missing or badly understood!
+
 =cut
 
 sub ship_confirm {
