@@ -4,11 +4,28 @@ use 5.010;
 use Types::Standard qw(Str Bool Enum);
 use Net::Async::Webservice::UPS::Types ':types';
 
+# ABSTRACT: a payment method for UPS shipments
+
+=attr C<method>
+
+Enum, one of C<prepaid> C<third_party> C<freight_collect>. Defaults to
+C<prepaid>.
+
+=cut
+
 has method => (
     is => 'ro',
     isa => Enum[qw(prepaid third_party freight_collect)],
     default => 'prepaid',
 );
+
+=attr C<account_number>
+
+A UPS account number to bill, required for C<third_party> and
+C<freight_collect> payment methods. For C<prepaid>, either this or
+L</credit_card> must be set.
+
+=cut
 
 has account_number => (
     is => 'ro',
@@ -16,18 +33,37 @@ has account_number => (
     required => 0,
 );
 
+=attr C<credit_card>
+
+A credit card (instance of L<Net::Async::Webservice::UPS::CreditCard>)
+to bill.  For C<prepaid>, either this or L</account_number> must be
+set.
+
+=cut
+
 has credit_card => (
     is => 'ro',
     isa => CreditCard,
     required => 0,
-    coerce => CreditCard->coercion,
 );
+
+=attr C<address>
+
+An address (instance of L<Net::Async::Webservice::UPS::Address>),
+required for C<third_party> and C<freight_collect> payment methods.
+
+=cut
 
 has address => (
     is => 'ro',
     isa => Address,
     required => 0,
 );
+
+=for Pod::Coverage
+BUILDARGS
+
+=cut
 
 around BUILDARGS => sub {
     my ($orig,$class,@etc) = @_;
@@ -54,6 +90,14 @@ around BUILDARGS => sub {
 
     return $args;
 };
+
+=method C<as_hash>
+
+Returns a hashref that, when passed through L<XML::Simple>, will
+produce the XML fragment needed in UPS requests to represent this
+payment method.
+
+=cut
 
 sub as_hash {
     my ($self) = @_;

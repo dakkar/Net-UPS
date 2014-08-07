@@ -402,6 +402,8 @@ exclude some services (see L<Net::Async::Webservice::UPS::Types/ServiceLabel>)
 defaults to C<rate>, could be C<shop>
 = C<service>
 defaults to C<GROUND>, see L<Net::Async::Webservice::UPS::Service>
+= C<customer_context>
+optional string for reference purposes
 
 The L<Future> returned will yield an instance of
 L<Net::Async::Webservice::UPS::Response::Rate>, or fail with an
@@ -745,11 +747,48 @@ sub validate_street_address {
 
 =method C<ship_confirm>
 
+  my $shipconfirm_response = $usp->ship_confirm({
+     from => $source_contact,
+     to => $destination_contact,
+     description => 'something',
+     payment => $payment_method,
+     packages => \@packages,
+  });
+
+Performs a C<ShipConfirm> request to UPS. The parameters are:
+
+=for :list
+= C<from>
+required, instance of L<Net::Async::Webservice::UPS::Contact>, where the shipments starts from
+= C<to>
+required, instance of L<Net::Async::Webservice::UPS::Contact>, where the shipments has to be delivered to
+= C<shipper>
+optional, instance of L<Net::Async::Webservice::UPS::Shipper>, who is requesting the shipment; if not specified, it's taken to be the same as the C<from> with the L</account_number> of this UPS object
+= C<service>
+the shipping service to use, see L<Net::Async::Webservice::UPS::Types/Service>, defaults to C<GROUND>
+= C<description>
+required string, description of the shipment
+= C<payment>
+required instance of L<Net::Async::Webservice::UPS::Payment>, how to pay for this shipment
+= C<label>
+optional instance of L<Net::Async::Webservice::UPS::Label>, what kind of label to request
+= C<packages>
+an arrayref of L<Net::Async::Webservice::UPS::Package> (or a single package, will be coerced to a 1-element array ref), the packages to ship
+= C<return_service>
+optional, instance of L<Net::Async::Webservice::UPS::ReturnService>, what kind of return service to request
+= C<delivery_confirmation>
+optional, 1 means "signature required", 2 mean "adult signature required"
+= C<customer_context>
+optional string for reference purposes
+
+Returns an instance of
+L<Net::Async::Webservice::UPS::Response::ShipmentConfirm>.
+
 =cut
 
 sub ship_confirm {
     state $argcheck = compile(Object, Dict[
-        from => Optional[Contact],
+        from => Contact,
         to => Contact,
         shipper => Optional[Shipper],
         service => Optional[Service],
@@ -830,6 +869,21 @@ sub ship_confirm {
 
 =method C<ship_accept>
 
+  my $shipaccept_response = $usp->ship_accept({
+      confirm => $shipconfirm_response,
+  });
+
+Performs a C<ShipAccept> request to UPS. The parameters are:
+
+=for :list
+= C<confirm>
+required, instance of L<Net::Async::Webservice::UPS::Response::ShipmentConfirm>,as returned by L</ship_confirm>
+= C<customer_context>
+optional string for reference purposes
+
+Returns an instance of
+L<Net::Async::Webservice::UPS::Response::ShipmentAccept>.
+
 =cut
 
 sub _img_if($$) {
@@ -898,7 +952,7 @@ sub ship_accept {
                         ( $pr->{LabelImage}{InternationalSignatureGraphicImage} ?
                           ( signature => Net::Async::Webservice::UPS::Response::Image->new({
                               format => $pr->{LabelImage}{ImageFormat}{Code},
-                              data => $pr->{LabelImage}{InternationalSignatureGraphicImage},
+                              base64_data => $pr->{LabelImage}{InternationalSignatureGraphicImage},
                           }) ) : () ),
                         _base64_if( html => $pr->{LabelImage}{HTMLImage} ),
                         _base64_if( pdf417 => $pr->{LabelImage}{PDF417} ),

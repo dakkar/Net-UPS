@@ -9,6 +9,7 @@ use Type::Library
                     Rate RateList
                     RequestMode Service ReturnService
                     ServiceCode ServiceLabel
+                    ReturnServiceCode ReturnServiceLabel
                     CreditCardCode CreditCardType
                     PackagingType MeasurementSystem
                     Measure MeasurementUnit Currency
@@ -304,16 +305,11 @@ class_type Payment, { class => 'Net::Async::Webservice::UPS::Payment' };
 
 =head2 C<CreditCard>
 
-Instance of L<Net::Async::Webservice::UPS::CreditCard>, with automatic
-coercion from string (interpreted as a L</CreditCardType>).
+Instance of L<Net::Async::Webservice::UPS::CreditCard>.
 
 =cut
 
 class_type CreditCard, { class => 'Net::Async::Webservice::UPS::CreditCard' };
-coerce CreditCard, from Str, via {
-    require Net::Async::Webservice::UPS::CreditCard;
-    Net::Async::Webservice::UPS::CreditCard->new({ type => $_ });
-};
 
 =head2 C<ImageType>
 
@@ -398,6 +394,36 @@ coerce ReturnService, from Str, via {
     require Net::Async::Webservice::UPS::ReturnService;
     Net::Async::Webservice::UPS::ReturnService->new({label=>$_});
 };
+
+=head2 C<ReturnServiceCode>
+
+Enum, one of C<2> C<3> C<5> C<8> C<9>
+
+=cut
+
+enum ReturnServiceCode,
+    [qw(
+           2
+           3
+           5
+           8
+           9
+   )];
+
+=head2 C<ReturnServiceLabel>
+
+Enum, one of C<PNM> C<RS1> C<RS3> C<ERL> C<PRL>
+
+=cut
+
+enum ReturnServiceLabel,
+    [qw(
+           PNM
+           RS1
+           RS3
+           ERL
+           PRL
+   )];
 
 =head2 C<Rate>
 
