@@ -3,6 +3,7 @@ use Moo;
 use 5.010;
 use Types::Standard qw(Str Int);
 use Net::Async::Webservice::UPS::Types ':types';
+use namespace::autoclean;
 
 # ABSTRACT: a credit card to pay UPS shipments with
 

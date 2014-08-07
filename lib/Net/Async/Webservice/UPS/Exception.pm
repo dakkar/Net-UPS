@@ -19,6 +19,7 @@ L<Net::Async::Webservice::Common::Exception>.
 {package Net::Async::Webservice::UPS::Exception::BadPackage;
  use Moo;
  extends 'Net::Async::Webservice::Common::Exception';
+ use namespace::autoclean;
 
 =head2 C<Net::Async::Webservice::UPS::Exception::BadPackage>
 
@@ -59,6 +60,7 @@ Shows the size of the package, and the stack trace.
 {package Net::Async::Webservice::UPS::Exception::UPSError;
  use Moo;
  extends 'Net::Async::Webservice::Common::Exception';
+ use namespace::autoclean;
 
 =head2 C<Net::Async::Webservice::UPS::Exception::UPSError>
 

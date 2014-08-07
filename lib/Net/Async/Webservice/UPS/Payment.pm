@@ -3,6 +3,7 @@ use Moo;
 use 5.010;
 use Types::Standard qw(Str Bool Enum);
 use Net::Async::Webservice::UPS::Types ':types';
+use namespace::autoclean;
 
 # ABSTRACT: a payment method for UPS shipments
 

@@ -3,6 +3,7 @@ use Moo;
 use 5.010;
 use Types::Standard qw(Str ArrayRef);
 use Net::Async::Webservice::UPS::Types ':types';
+use namespace::autoclean;
 
 # ABSTRACT: shipment rate from UPS
 

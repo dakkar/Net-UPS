@@ -2,6 +2,7 @@ package Net::Async::Webservice::UPS::Label;
 use Moo;
 use 5.010;
 use Net::Async::Webservice::UPS::Types qw(:types);
+use namespace::autoclean;
 
 # ABSTRACT: a label for a shipment request
 

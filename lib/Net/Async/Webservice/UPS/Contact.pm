@@ -4,6 +4,7 @@ use 5.010;
 use Types::Standard qw(Str);
 use Net::Async::Webservice::UPS::Types ':types';
 use Net::Async::Webservice::UPS::Address;
+use namespace::autoclean;
 
 # ABSTRACT: a "contact" for UPS
 

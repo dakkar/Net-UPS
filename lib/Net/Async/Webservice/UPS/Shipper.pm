@@ -4,6 +4,7 @@ use 5.010;
 use Types::Standard qw(Str);
 use Net::Async::Webservice::UPS::Types ':types';
 extends 'Net::Async::Webservice::UPS::Contact';
+use namespace::autoclean;
 
 # ABSTRACT: a contact with an account number
 
