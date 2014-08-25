@@ -3,6 +3,7 @@ use strict;
 use warnings;
 use Carp ('croak');
 use XML::Simple;
+use Encode;
 use LWP::UserAgent;
 use Net::UPS::ErrorHandler;
 use Net::UPS::Rate;
@@ -451,7 +452,7 @@ sub post {
     my $user_agent  = LWP::UserAgent->new();
     $user_agent->env_proxy;
     my $request     = HTTP::Request->new('POST', $url);
-    $request->content( $content );
+    $request->content( encode('utf-8',$content) );
     my $response    = $user_agent->request( $request );
     if ( $response->is_error ) {
         die $response->status_line();
@@ -571,17 +572,21 @@ sub validate_street_address {
 
     my $response_address;
     if ($response->{AddressKeyFormat}) {
+        my $akf = $response->{AddressKeyFormat};
+        if (ref($akf) eq 'ARRAY') {
+            $akf = $akf->[0];
+        }
         $response_address = Net::UPS::Address->new(
             quality => $quality,
-            building_name => $response->{AddressKeyFormat}->{BuildingName},
-            address => $response->{AddressKeyFormat}->{AddressLine}->[0],
-            address2 => $response->{AddressKeyFormat}->{AddressLine}->[1],
-            address3 => $response->{AddressKeyFormat}->{AddressLine}->[2],
-            postal_code => $response->{AddressKeyFormat}->{PostcodePrimaryLow},
-            postal_code_extended => $response->{AddressKeyFormat}->{PostcodeExtendedLow},
-            city => $response->{AddressKeyFormat}->{PoliticalDivision2},
-            state => $response->{AddressKeyFormat}->{PoliticalDivision1},
-            country_code => $response->{AddressKeyFormat}->{CountryCode},
+            building_name => $akf->{BuildingName},
+            address => $akf->{AddressLine}->[0],
+            address2 => $akf->{AddressLine}->[1],
+            address3 => $akf->{AddressLine}->[2],
+            postal_code => $akf->{PostcodePrimaryLow},
+            postal_code_extended => $akf->{PostcodeExtendedLow},
+            city => $akf->{PoliticalDivision2},
+            state => $akf->{PoliticalDivision1},
+            country_code => $akf->{CountryCode},
             is_commercial => ( $response->{AddressClassification}->{Code} eq "1" ) ? 1 : 0,
             is_residential => ( $response->{AddressClassification}->{Code} eq "2" ) ? 1 : 0,
         );
