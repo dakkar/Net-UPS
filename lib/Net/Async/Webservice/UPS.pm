@@ -700,14 +700,15 @@ sub validate_street_address {
                 return Future->new->fail(Net::Async::Webservice::UPS::Exception::UPSError->new({
                     error => {
                         ErrorDescription => 'The Address Matching System is not able to match an address from any other one in the database',
+                        ErrorCode => 'NoCandidates',
                     },
-                    'ups',
-                }));
+                }),'ups');
             }
             if ($response->{AmbiguousAddressIndicator}) {
                 return Future->new->fail(Net::Async::Webservice::UPS::Exception::UPSError->new({
                     error => {
                         ErrorDescription => 'The Address Matching System is not able to explicitly differentiate an address from any other one in the database',
+                        ErrorCode => 'AmbiguousAddress',
                     },
                 }),'ups');
             }
@@ -717,9 +718,10 @@ sub validate_street_address {
                 $quality = 1;
             }
 
-            my $address;
-            if (my $ak = $response->{AddressKeyFormat}) {
-                $address = Net::Async::Webservice::UPS::Address->new({
+            my @addresses;my $aks = $response->{AddressKeyFormat};
+            if (ref($aks) ne 'ARRAY') { $aks = [ $aks ] };
+            for my $ak (@$aks) {
+                push @addresses, Net::Async::Webservice::UPS::Address->new({
                     quality => $quality,
                     building_name => $ak->{BuildingName},
                     address => $ak->{AddressLine}->[0],
@@ -735,7 +737,7 @@ sub validate_street_address {
             }
 
             my $ret = Net::Async::Webservice::UPS::Response::Address->new({
-                addresses => [ $address ? $address : () ],
+                addresses => \@addresses,
                 ( $response->{Error} ? (warnings => $response->{Error}) : () ),
             });
 

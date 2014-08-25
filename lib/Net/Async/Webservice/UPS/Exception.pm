@@ -124,7 +124,7 @@ stack trace.
  sub as_string {
      my ($self) = @_;
 
-     return sprintf 'UPS returned an error: %s, severity %s, code %d, location %s, at %s',
+     return sprintf 'UPS returned an error: %s, severity %s, code %s, location %s, at %s',
          $self->error_description//'<undef>',
          $self->error_severity//'<undef>',
          $self->error_code//'<undef>',
