@@ -9,7 +9,7 @@ BEGIN {
 use strict;
 use warnings;
 
-# this test was generated with Dist::Zilla::Plugin::NoTabsTests 0.05
+# this test was generated with Dist::Zilla::Plugin::NoTabsTests 0.09
 
 use Test::More 0.88;
 use Test::NoTabs;
@@ -21,7 +21,28 @@ my @files = (
     'lib/Net/UPS/Package.pm',
     'lib/Net/UPS/Rate.pm',
     'lib/Net/UPS/Service.pm',
-    'lib/Net/UPS/Tutorial.pm'
+    'lib/Net/UPS/Tutorial.pm',
+    't/02address.t',
+    't/custom-url.t',
+    't/data/address',
+    't/data/address-bad',
+    't/data/address-non-ascii',
+    't/data/address-street-level',
+    't/data/address-street-level-bad',
+    't/data/rate-1-package',
+    't/data/rate-2-packages',
+    't/data/shop-1-package',
+    't/data/shop-2-packages',
+    't/lib/Test/Net/UPS.pm',
+    't/lib/Test/Net/UPS/Factory.pm',
+    't/lib/Test/Net/UPS/NoNetwork.pm',
+    't/lib/Test/Net/UPS/Tracing.pm',
+    't/missing-sizes.t',
+    't/net-ups-live.t',
+    't/net-ups-offline.t',
+    't/net-ups-offline.t.orig',
+    't/net-ups-offline.t.rej',
+    't/oversized.t'
 );
 
 notabs_ok($_) foreach @files;

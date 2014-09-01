@@ -233,6 +233,97 @@ sub test_it {
             'sensible addresses returned',
         ) or note p $addresses;
     };
+
+    subtest 'validate address, failure' => sub {
+        my $address = Net::UPS::Address->new(
+            city        => "Bad Place",
+            state       => "NY",
+            country_code=> "US",
+            postal_code => "998877",
+            is_residential=>1
+        );
+
+        my $addresses = $ups->validate_address($address, {tolerance=>0});
+
+        cmp_deeply(
+            $addresses,
+            [],
+            'sensible failure returned',
+        ) or note p $addresses;
+    };
+
+    subtest 'validate address, street-level' => sub {
+        my $address = Net::UPS::Address->new(
+            name        => 'John Doe',
+            building_name => 'Pearl Hotel',
+            address     => '233 W 49th St',
+            city        => 'New York',
+            state       => "NY",
+            country_code=> "US",
+            postal_code => "10019",
+        );
+        my $addresses = $ups->validate_street_address($address);
+
+        cmp_deeply(
+            $addresses,
+            all(
+                isa('Net::UPS::Address'),
+                methods(
+                    city => re(qr{\ANew York\z}i),
+                    state => "NY",
+                    country_code=> "US",
+                    postal_code_extended => '7404',
+                    quality => 1,
+                ),
+            ),
+            'sensible address returned',
+        ) or note p $addresses;
+    };
+
+    subtest 'validate address, street-level, failure' => sub {
+        my $address = Net::UPS::Address->new(
+            name        => 'Bad Place',
+            address     => '999 Not a Road',
+            city        => 'Bad City',
+            state       => 'NY',
+            country_code=> 'US',
+            postal_code => '998877',
+        );
+        my $addresses = $ups->validate_street_address($address);
+
+        cmp_deeply(
+            $addresses,
+            undef,
+            'sensible failure returned',
+        ) or note p $addresses;
+    };
+
+    subtest 'validate address, non-ASCII' => sub {
+        my $address = Net::UPS::Address->new(
+            name        => "Snowman \x{2603}",
+            address     => '233 W 49th St',
+            city        => 'New York',
+            state       => "NY",
+            country_code=> "US",
+            postal_code => "10019",
+        );
+        my $validated = $ups->validate_street_address($address);
+
+        cmp_deeply(
+            $validated,
+            all(
+                isa('Net::UPS::Address'),
+                methods(
+                    city => re(qr{\ANew York\z}i),
+                    state => "NY",
+                    country_code=> "US",
+                    postal_code_extended => '7404',
+                    quality => 1,
+                ),
+            ),
+            'sensible address returned',
+        ) or note p $validated;
+    };
 }
 
 1;

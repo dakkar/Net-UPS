@@ -1,7 +1,5 @@
 package Net::UPS::Tutorial;
-{
-  $Net::UPS::Tutorial::VERSION = '0.12';
-}
+$Net::UPS::Tutorial::VERSION = '0.13';
 {
   $Net::UPS::Tutorial::DIST = 'Net-UPS';
 }

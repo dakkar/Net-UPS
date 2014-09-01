@@ -5,7 +5,7 @@
       "Gianni Ceccarelli <gianni.ceccarelli@net-a-porter.com>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Dist::Zilla version 5.006, CPAN::Meta::Converter version 2.132830",
+   "generated_by" : "Dist::Zilla version 5.020, CPAN::Meta::Converter version 2.142060",
    "license" : [
       "perl_5"
    ],
@@ -22,7 +22,7 @@
    "prereqs" : {
       "configure" : {
          "requires" : {
-            "ExtUtils::MakeMaker" : "6.30"
+            "ExtUtils::MakeMaker" : "0"
          }
       },
       "develop" : {
@@ -36,6 +36,7 @@
          "requires" : {
             "Carp" : "0",
             "Class::Struct" : "0.58",
+            "Encode" : "0",
             "File::Spec" : "0",
             "IO::File" : "0",
             "LWP::UserAgent" : "0",
@@ -68,6 +69,6 @@
          "web" : "https://github.com/NET-A-PORTER/Net-UPS.git"
       }
    },
-   "version" : "0.12"
+   "version" : "0.13"
 }
 
