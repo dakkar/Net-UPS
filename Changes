@@ -2,6 +2,8 @@ Revision history for Perl module Net::UPS
 ==============================================
 
 {{$NEXT}}
+
+0.13 2014-09-01
    * incorporate patch from RT #98219, in case AddressKeyFormat is
      returned multiple times
    * more tests for address validation
