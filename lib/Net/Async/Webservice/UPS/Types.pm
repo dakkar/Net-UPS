@@ -274,6 +274,7 @@ coerce Address, from Str, via {
     require Net::Async::Webservice::UPS::Address;
     Net::Async::Webservice::UPS::Address->new({postal_code => $_});
 };
+Address->coercion->freeze;
 
 =head2 C<Contact>
 
@@ -286,6 +287,7 @@ coerce Contact, from Address, via {
     require Net::Async::Webservice::UPS::Contact;
     Net::Async::Webservice::UPS::Contact->new({address=>$_});
 };
+Contact->coercion->freeze;
 
 =head2 C<Shipper>
 
@@ -332,6 +334,7 @@ coerce Image, from HashRef, via {
     require Net::Async::Webservice::UPS::Response::Image;
     Net::Async::Webservice::UPS::Response::Image->from_hash($_);
 };
+Image->coercion->freeze;
 
 =head2 C<Label>
 
@@ -345,6 +348,7 @@ coerce Label, from Str, via {
     require Net::Async::Webservice::UPS::Label;
     Net::Async::Webservice::UPS::Label->new({ code => $_ });
 };
+Label->coercion->freeze;
 
 =head2 C<Package>
 
@@ -360,6 +364,7 @@ to a singleton array.
 class_type Package, { class => 'Net::Async::Webservice::UPS::Package' };
 declare PackageList, as ArrayRef[Package];
 coerce PackageList, from Package, via { [ $_ ] };
+PackageList->coercion->freeze;
 
 =head2 C<PackageResult>
 
@@ -381,6 +386,7 @@ coerce Service, from Str, via {
     require Net::Async::Webservice::UPS::Service;
     Net::Async::Webservice::UPS::Service->new({label=>$_});
 };
+Service->coercion->freeze;
 
 =head2 C<ReturnService>
 
@@ -394,6 +400,7 @@ coerce ReturnService, from Str, via {
     require Net::Async::Webservice::UPS::ReturnService;
     Net::Async::Webservice::UPS::ReturnService->new({label=>$_});
 };
+ReturnService->coercion->freeze;
 
 =head2 C<ReturnServiceCode>
 
@@ -439,6 +446,7 @@ singleton array.
 class_type Rate, { class => 'Net::Async::Webservice::UPS::Rate' };
 declare RateList, as ArrayRef[Rate];
 coerce RateList, from Rate, via { [ $_ ] };
+RateList->coercion->freeze;
 
 =head2 C<ShipmentConfirm>
 
