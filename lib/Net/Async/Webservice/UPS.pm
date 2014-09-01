@@ -563,7 +563,7 @@ C<$address> is an instance of L<Net::Async::Webservice::UPS::Address>,
 or a postcode string that will be coerced to an address.
 
 Optional parameter: a tolerance (float, between 0 and 1). Returned
-addresses with quality below the tolerance will be filtered out.
+addresses with quality below 1 minus tolerance will be filtered out.
 
 The L<Future> returned will yield an instance of
 L<Net::Async::Webservice::UPS::Response::Address>, or fail with an
