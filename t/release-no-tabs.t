@@ -40,8 +40,6 @@ my @files = (
     't/missing-sizes.t',
     't/net-ups-live.t',
     't/net-ups-offline.t',
-    't/net-ups-offline.t.orig',
-    't/net-ups-offline.t.rej',
     't/oversized.t'
 );
 
