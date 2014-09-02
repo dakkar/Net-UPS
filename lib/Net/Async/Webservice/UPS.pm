@@ -1,4 +1,8 @@
 package Net::Async::Webservice::UPS;
+$Net::Async::Webservice::UPS::VERSION = '1.0.4';
+{
+  $Net::Async::Webservice::UPS::DIST = 'Net-Async-Webservice-UPS';
+}
 use Moo;
 use XML::Simple;
 use Types::Standard 1.000003 qw(Str Int Bool Object Dict Optional ArrayRef HashRef Undef);
@@ -27,52 +31,6 @@ use 5.010;
 
 # ABSTRACT: UPS API client, non-blocking
 
-=head1 SYNOPSIS
-
- use IO::Async::Loop;
- use Net::Async::Webservice::UPS;
-
- my $loop = IO::Async::Loop->new;
-
- my $ups = Net::Async::Webservice::UPS->new({
-   config_file => $ENV{HOME}.'/.naws_ups.conf',
-   loop => $loop,
- });
-
- $ups->validate_address($postcode)->then(sub {
-   my ($response) = @_;
-   say $_->postal_code for @{$response->addresses};
-   return Future->wrap();
- });
-
- $loop->run;
-
-Alternatively:
-
- use Net::Async::Webservice::UPS;
-
- my $ups = Net::Async::Webservice::UPS->new({
-   config_file => $ENV{HOME}.'/.naws_ups.conf',
-   user_agent => LWP::UserAgent->new,
- });
-
- my $response = $ups->validate_address($postcode)->get;
-
- say $_->postal_code for @{$response->addresses};
-
-=head1 DESCRIPTION
-
-This class implements some of the methods of the UPS API, using
-L<Net::Async::HTTP> as a user agent I<by default> (you can still pass
-something like L<LWP::UserAgent> and it will work). All methods that
-perform API calls return L<Future>s (if using a synchronous user
-agent, all the Futures will be returned already completed).
-
-B<NOTE>: I've kept many names and codes from the original L<Net::UPS>,
-so the API of this distribution may look a bit strange. It should make
-it simpler to migrate from L<Net::UPS>, though.
-
-=cut
 
 my %code_for_pickup_type = (
     DAILY_PICKUP            => '01',
@@ -98,14 +56,6 @@ my %base_urls = (
     test => 'https://wwwcie.ups.com/ups.app/xml',
 );
 
-=attr C<live_mode>
-
-Boolean, defaults to false. When set to true, the live API endpoint
-will be used, otherwise the test one will. Flipping this attribute
-will reset L</base_url>, so you generally don't want to touch this if
-you're using some custom API endpoint.
-
-=cut
 
 has live_mode => (
     is => 'rw',
@@ -114,20 +64,6 @@ has live_mode => (
     default => sub { 0 },
 );
 
-=attr C<base_url>
-
-A L<URI> object, coercible from a string. The base URL to use to send
-API requests to (actual requests will be C<POST>ed to an actual URL
-built from this by appending the appropriate service path). Defaults
-to the standard UPS endpoints:
-
-=for :list
-* C<https://onlinetools.ups.com/ups.app/xml> for live
-* C<https://wwwcie.ups.com/ups.app/xml> for testing
-
-See also L</live_mode>.
-
-=cut
 
 has base_url => (
     is => 'lazy',
@@ -147,15 +83,6 @@ sub _build_base_url {
     return $base_urls{$self->live_mode ? 'live' : 'test'};
 }
 
-=attr C<user_id>
-
-=attr C<password>
-
-=attr C<access_key>
-
-Strings, required. Authentication credentials.
-
-=cut
 
 has user_id => (
     is => 'ro',
@@ -173,34 +100,18 @@ has access_key => (
     required => 1,
 );
 
-=attr C<account_number>
-
-String. Used in some requests as "shipper number".
-
-=cut
 
 has account_number => (
     is => 'ro',
     isa => Str,
 );
 
-=attr C<customer_classification>
-
-String, usually one of C<WHOLESALE>, C<OCCASIONAL>, C<RETAIL>. Used
-when requesting rates.
-
-=cut
 
 has customer_classification => (
     is => 'rw',
     isa => CustomerClassification,
 );
 
-=attr C<pickup_type>
-
-String, defaults to C<ONE_TIME>. Used when requesting rates.
-
-=cut
 
 has pickup_type => (
     is => 'rw',
@@ -208,110 +119,18 @@ has pickup_type => (
     default => sub { 'ONE_TIME' },
 );
 
-=attr C<cache>
-
-Responses are cached if this is set. You can pass your own cache
-object (that implements the C<get> and C<set> methods like L<CHI>
-does), or use the C<cache_life> and C<cache_root> constructor
-parameters to get a L<CHI> instance based on L<CHI::Driver::File>.
-
-=cut
 
 has cache => (
     is => 'ro',
     isa => Cache|Undef,
 );
 
-=method C<does_caching>
-
-Returns a true value if caching is enabled.
-
-=cut
 
 sub does_caching {
     my ($self) = @_;
     return defined $self->cache;
 }
 
-=attr C<user_agent>
-
-A user agent object, looking either like L<Net::Async::HTTP> (has
-C<do_request> and C<POST>) or like L<LWP::UserAgent> (has C<request>
-and C<post>). You can pass the C<loop> constructor parameter to get a
-default L<Net::Async::HTTP> instance.
-
-=method C<new>
-
-Async:
-
-  my $ups = Net::Async::Webservice::UPS->new({
-     loop => $loop,
-     config_file => $file_name,
-     cache_life => 5,
-  });
-
-Sync:
-
-  my $ups = Net::Async::Webservice::UPS->new({
-     user_agent => LWP::UserAgent->new,
-     config_file => $file_name,
-     cache_life => 5,
-  });
-
-In addition to passing all the various attributes values, you can use
-a few shortcuts.
-
-=for :list
-= C<loop>
-a L<IO::Async::Loop>; a locally-constructed L<Net::Async::HTTP> will be registered to it and set as L</user_agent>
-= C<config_file>
-a path name; will be parsed with L<Config::Any>, and the values used as if they had been passed in to the constructor
-= C<cache_life>
-lifetime, in I<minutes>, of cache entries; a L</cache> will be built automatically if this is set (using L<CHI> with the C<File> driver)
-= C<cache_root>
-where to store the cache files for the default cache object, defaults to C<naws_ups> under your system's temporary directory
-
-A few more examples:
-
-=over 4
-
-=item *
-
-no config file, no cache, async:
-
-   ->new({
-     user_id=>$user,password=>$pw,access_key=>$ak,
-     loop=>$loop,
-   }),
-
-=item *
-
-no config file, no cache, custom user agent (sync or async):
-
-   ->new({
-     user_id=>$user,password=>$pw,access_key=>$ak,
-     user_agent=>$ua,
-   }),
-
-it's your job to register the custom user agent to the event loop, if
-you're using an async agent
-
-=item *
-
-config file, async, custom cache:
-
-
-   ->new({
-     loop=>$loop,
-     cache=>CHI->new(...),
-   }),
-
-=back
-
-=for Pod::Coverage
-BUILDARGS
-
-=cut
 
 with 'Net::Async::Webservice::Common::WithUserAgent';
 with 'Net::Async::Webservice::Common::WithConfigFile';
@@ -339,12 +158,6 @@ around BUILDARGS => sub {
     return $ret;
 };
 
-=method C<transaction_reference>
-
-Constant data used to fill something in requests. I don't know what
-it's for, I just copied it from L<Net::UPS>.
-
-=cut
 
 sub transaction_reference {
     my ($args) = @_;
@@ -356,11 +169,6 @@ sub transaction_reference {
     };
 }
 
-=method C<access_as_xml>
-
-Returns a XML document with the credentials.
-
-=cut
 
 sub access_as_xml {
     my $self = shift;
@@ -373,45 +181,6 @@ sub access_as_xml {
     }, NoAttr=>1, KeepRoot=>1, XMLDecl=>1);
 }
 
-=method C<request_rate>
-
-  $ups->request_rate({
-    from => $address_a,
-    to => $address_b,
-    packages => [ $package_1, $package_2 ],
-  }) ==> (Net::Async::Webservice::UPS::Response::Rate)
-
-C<from> and C<to> are instances of
-L<Net::Async::Webservice::UPS::Address>, or postcode strings that will
-be coerced to addresses.
-
-C<packages> is an arrayref of L<Net::Async::Webservice::UPS::Package>
-(or a single package, will be coerced to a 1-element array ref).
-
-I<NOTE>: the C<id> field of the packages you pass in will be modified,
-and set to their position in the array.
-
-Optional parameters:
-
-=for :list
-= C<limit_to>
-only accept some services (see L<Net::Async::Webservice::UPS::Types/ServiceLabel>)
-= C<exclude>
-exclude some services (see L<Net::Async::Webservice::UPS::Types/ServiceLabel>)
-= C<mode>
-defaults to C<rate>, could be C<shop>
-= C<service>
-defaults to C<GROUND>, see L<Net::Async::Webservice::UPS::Service>
-= C<customer_context>
-optional string for reference purposes
-
-The L<Future> returned will yield an instance of
-L<Net::Async::Webservice::UPS::Response::Rate>, or fail with an
-exception.
-
-Identical requests can be cached.
-
-=cut
 
 sub request_rate {
     state $argcheck = compile(Object, Dict[
@@ -551,27 +320,6 @@ sub request_rate {
     );
 }
 
-=method C<validate_address>
-
-  $ups->validate_address($address)
-    ==> (Net::Async::Webservice::UPS::Response::Address)
-
-  $ups->validate_address($address,$tolerance)
-    ==> (Net::Async::Webservice::UPS::Response::Address)
-
-C<$address> is an instance of L<Net::Async::Webservice::UPS::Address>,
-or a postcode string that will be coerced to an address.
-
-Optional parameter: a tolerance (float, between 0 and 1). Returned
-addresses with quality below 1 minus tolerance will be filtered out.
-
-The L<Future> returned will yield an instance of
-L<Net::Async::Webservice::UPS::Response::Address>, or fail with an
-exception.
-
-Identical requests can be cached.
-
-=cut
 
 sub validate_address {
     state $argcheck = compile(
@@ -640,21 +388,6 @@ sub validate_address {
     );
 }
 
-=method C<validate_street_address>
-
-  $ups->validate_street_address($address)
-    ==> (Net::Async::Webservice::UPS::Response::Address)
-
-C<$address> is an instance of L<Net::Async::Webservice::UPS::Address>,
-or a postcode string that will be coerced to an address.
-
-The L<Future> returned will yield an instance of
-L<Net::Async::Webservice::UPS::Response::Address>, or fail with an
-exception.
-
-Identical requests can be cached.
-
-=cut
 
 sub validate_street_address {
     state $argcheck = compile(
@@ -747,49 +480,6 @@ sub validate_street_address {
     );
 }
 
-=method C<ship_confirm>
-
-  my $shipconfirm_response = $usp->ship_confirm({
-     from => $source_contact,
-     to => $destination_contact,
-     description => 'something',
-     payment => $payment_method,
-     packages => \@packages,
-  });
-
-Performs a C<ShipConfirm> request to UPS. The parameters are:
-
-=for :list
-= C<from>
-required, instance of L<Net::Async::Webservice::UPS::Contact>, where the shipments starts from
-= C<to>
-required, instance of L<Net::Async::Webservice::UPS::Contact>, where the shipments has to be delivered to
-= C<shipper>
-optional, instance of L<Net::Async::Webservice::UPS::Shipper>, who is requesting the shipment; if not specified, it's taken to be the same as the C<from> with the L</account_number> of this UPS object
-= C<service>
-the shipping service to use, see L<Net::Async::Webservice::UPS::Types/Service>, defaults to C<GROUND>
-= C<description>
-required string, description of the shipment
-= C<payment>
-required instance of L<Net::Async::Webservice::UPS::Payment>, how to pay for this shipment
-= C<label>
-optional instance of L<Net::Async::Webservice::UPS::Label>, what kind of label to request
-= C<packages>
-an arrayref of L<Net::Async::Webservice::UPS::Package> (or a single package, will be coerced to a 1-element array ref), the packages to ship
-= C<return_service>
-optional, instance of L<Net::Async::Webservice::UPS::ReturnService>, what kind of return service to request
-= C<delivery_confirmation>
-optional, 1 means "signature required", 2 mean "adult signature required"
-= C<customer_context>
-optional string for reference purposes
-
-Returns an instance of
-L<Net::Async::Webservice::UPS::Response::ShipmentConfirm>.
-
-B<NOTE>: the API of this call may change in the future, let me know if
-features you need are missing or badly understood!
-
-=cut
 
 sub ship_confirm {
     state $argcheck = compile(Object, Dict[
@@ -872,24 +562,6 @@ sub ship_confirm {
     );
 }
 
-=method C<ship_accept>
-
-  my $shipaccept_response = $usp->ship_accept({
-      confirm => $shipconfirm_response,
-  });
-
-Performs a C<ShipAccept> request to UPS. The parameters are:
-
-=for :list
-= C<confirm>
-required, instance of L<Net::Async::Webservice::UPS::Response::ShipmentConfirm>,as returned by L</ship_confirm>
-= C<customer_context>
-optional string for reference purposes
-
-Returns an instance of
-L<Net::Async::Webservice::UPS::Response::ShipmentAccept>.
-
-=cut
 
 sub _img_if($$) {
     return ( $_[0] => Net::Async::Webservice::UPS::Response::Image->from_hash($_[1]) ) if $_[1] && %{$_[1]};
@@ -973,32 +645,6 @@ sub ship_accept {
     );
 }
 
-=method C<xml_request>
-
-  $ups->xml_request({
-    url_suffix => $string,
-    data => \%request_data,
-    XMLout => \%xml_simple_out_options,
-    XMLin => \%xml_simple_in_options,
-  }) ==> ($parsed_response);
-
-This method is mostly internal, you shouldn't need to call it.
-
-It builds a request XML document by concatenating the output of
-L</access_as_xml> with whatever L<XML::Simple> produces from the given
-C<data> and C<XMLout> options.
-
-It then posts (possibly asynchronously) this to the URL obtained
-concatenating L</base_url> with C<url_suffix> (see the L</post>
-method). If the request is successful, it parses the body (with
-L<XML::Simple> using the C<XMLin> options) and completes the returned
-future with the result.
-
-If the parsed response contains a non-zero
-C</Response/ResponseStatusCode>, the returned future will fail with a
-L<Net::Async::Webservice::UPS::Exception::UPSError> instance.
-
-=cut
 
 sub xml_request {
     state $argcheck = compile(
@@ -1051,26 +697,9 @@ sub xml_request {
     );
 }
 
-=method C<post>
-
-  $ups->post($url_suffix,$body) ==> ($decoded_content)
-
-Posts the given C<$body> to the URL obtained concatenating
-L</base_url> with C<$url_suffix>. If the request is successful, it
-completes the returned future with the decoded content of the
-response, otherwise it fails the future with a
-L<Net::Async::Webservice::Common::Exception::HTTPError> instance.
-
-=cut
 
 with 'Net::Async::Webservice::Common::WithRequestWrapper';
 
-=method C<generate_cache_key>
-
-Generates a cache key (a string) identifying a request. Two requests
-with the same cache key should return the same response.
-
-=cut
 
 sub generate_cache_key {
     state $argcheck = compile(Object, Str, ArrayRef[Cacheable],Optional[HashRef]);
@@ -1112,3 +741,457 @@ sub _shipper_from_contact {
 }
 
 1;
+
+__END__
+
+=pod
+
+=encoding UTF-8
+
+=head1 NAME
+
+Net::Async::Webservice::UPS - UPS API client, non-blocking
+
+=head1 VERSION
+
+version 1.0.4
+
+=head1 SYNOPSIS
+
+ use IO::Async::Loop;
+ use Net::Async::Webservice::UPS;
+
+ my $loop = IO::Async::Loop->new;
+
+ my $ups = Net::Async::Webservice::UPS->new({
+   config_file => $ENV{HOME}.'/.naws_ups.conf',
+   loop => $loop,
+ });
+
+ $ups->validate_address($postcode)->then(sub {
+   my ($response) = @_;
+   say $_->postal_code for @{$response->addresses};
+   return Future->wrap();
+ });
+
+ $loop->run;
+
+Alternatively:
+
+ use Net::Async::Webservice::UPS;
+
+ my $ups = Net::Async::Webservice::UPS->new({
+   config_file => $ENV{HOME}.'/.naws_ups.conf',
+   user_agent => LWP::UserAgent->new,
+ });
+
+ my $response = $ups->validate_address($postcode)->get;
+
+ say $_->postal_code for @{$response->addresses};
+
+=head1 DESCRIPTION
+
+This class implements some of the methods of the UPS API, using
+L<Net::Async::HTTP> as a user agent I<by default> (you can still pass
+something like L<LWP::UserAgent> and it will work). All methods that
+perform API calls return L<Future>s (if using a synchronous user
+agent, all the Futures will be returned already completed).
+
+B<NOTE>: I've kept many names and codes from the original L<Net::UPS>,
+so the API of this distribution may look a bit strange. It should make
+it simpler to migrate from L<Net::UPS>, though.
+
+=head1 ATTRIBUTES
+
+=head2 C<live_mode>
+
+Boolean, defaults to false. When set to true, the live API endpoint
+will be used, otherwise the test one will. Flipping this attribute
+will reset L</base_url>, so you generally don't want to touch this if
+you're using some custom API endpoint.
+
+=head2 C<base_url>
+
+A L<URI> object, coercible from a string. The base URL to use to send
+API requests to (actual requests will be C<POST>ed to an actual URL
+built from this by appending the appropriate service path). Defaults
+to the standard UPS endpoints:
+
+=over 4
+
+=item *
+
+C<https://onlinetools.ups.com/ups.app/xml> for live
+
+=item *
+
+C<https://wwwcie.ups.com/ups.app/xml> for testing
+
+=back
+
+See also L</live_mode>.
+
+=head2 C<user_id>
+
+=head2 C<password>
+
+=head2 C<access_key>
+
+Strings, required. Authentication credentials.
+
+=head2 C<account_number>
+
+String. Used in some requests as "shipper number".
+
+=head2 C<customer_classification>
+
+String, usually one of C<WHOLESALE>, C<OCCASIONAL>, C<RETAIL>. Used
+when requesting rates.
+
+=head2 C<pickup_type>
+
+String, defaults to C<ONE_TIME>. Used when requesting rates.
+
+=head2 C<cache>
+
+Responses are cached if this is set. You can pass your own cache
+object (that implements the C<get> and C<set> methods like L<CHI>
+does), or use the C<cache_life> and C<cache_root> constructor
+parameters to get a L<CHI> instance based on L<CHI::Driver::File>.
+
+=head2 C<user_agent>
+
+A user agent object, looking either like L<Net::Async::HTTP> (has
+C<do_request> and C<POST>) or like L<LWP::UserAgent> (has C<request>
+and C<post>). You can pass the C<loop> constructor parameter to get a
+default L<Net::Async::HTTP> instance.
+
+=head1 METHODS
+
+=head2 C<does_caching>
+
+Returns a true value if caching is enabled.
+
+=head2 C<new>
+
+Async:
+
+  my $ups = Net::Async::Webservice::UPS->new({
+     loop => $loop,
+     config_file => $file_name,
+     cache_life => 5,
+  });
+
+Sync:
+
+  my $ups = Net::Async::Webservice::UPS->new({
+     user_agent => LWP::UserAgent->new,
+     config_file => $file_name,
+     cache_life => 5,
+  });
+
+In addition to passing all the various attributes values, you can use
+a few shortcuts.
+
+=over 4
+
+=item C<loop>
+
+a L<IO::Async::Loop>; a locally-constructed L<Net::Async::HTTP> will be registered to it and set as L</user_agent>
+
+=item C<config_file>
+
+a path name; will be parsed with L<Config::Any>, and the values used as if they had been passed in to the constructor
+
+=item C<cache_life>
+
+lifetime, in I<minutes>, of cache entries; a L</cache> will be built automatically if this is set (using L<CHI> with the C<File> driver)
+
+=item C<cache_root>
+
+where to store the cache files for the default cache object, defaults to C<naws_ups> under your system's temporary directory
+
+=back
+
+A few more examples:
+
+=over 4
+
+=item *
+
+no config file, no cache, async:
+
+   ->new({
+     user_id=>$user,password=>$pw,access_key=>$ak,
+     loop=>$loop,
+   }),
+
+=item *
+
+no config file, no cache, custom user agent (sync or async):
+
+   ->new({
+     user_id=>$user,password=>$pw,access_key=>$ak,
+     user_agent=>$ua,
+   }),
+
+it's your job to register the custom user agent to the event loop, if
+you're using an async agent
+
+=item *
+
+config file, async, custom cache:
+
+   ->new({
+     loop=>$loop,
+     cache=>CHI->new(...),
+   }),
+
+=back
+
+=head2 C<transaction_reference>
+
+Constant data used to fill something in requests. I don't know what
+it's for, I just copied it from L<Net::UPS>.
+
+=head2 C<access_as_xml>
+
+Returns a XML document with the credentials.
+
+=head2 C<request_rate>
+
+  $ups->request_rate({
+    from => $address_a,
+    to => $address_b,
+    packages => [ $package_1, $package_2 ],
+  }) ==> (Net::Async::Webservice::UPS::Response::Rate)
+
+C<from> and C<to> are instances of
+L<Net::Async::Webservice::UPS::Address>, or postcode strings that will
+be coerced to addresses.
+
+C<packages> is an arrayref of L<Net::Async::Webservice::UPS::Package>
+(or a single package, will be coerced to a 1-element array ref).
+
+I<NOTE>: the C<id> field of the packages you pass in will be modified,
+and set to their position in the array.
+
+Optional parameters:
+
+=over 4
+
+=item C<limit_to>
+
+only accept some services (see L<Net::Async::Webservice::UPS::Types/ServiceLabel>)
+
+=item C<exclude>
+
+exclude some services (see L<Net::Async::Webservice::UPS::Types/ServiceLabel>)
+
+=item C<mode>
+
+defaults to C<rate>, could be C<shop>
+
+=item C<service>
+
+defaults to C<GROUND>, see L<Net::Async::Webservice::UPS::Service>
+
+=item C<customer_context>
+
+optional string for reference purposes
+
+=back
+
+The L<Future> returned will yield an instance of
+L<Net::Async::Webservice::UPS::Response::Rate>, or fail with an
+exception.
+
+Identical requests can be cached.
+
+=head2 C<validate_address>
+
+  $ups->validate_address($address)
+    ==> (Net::Async::Webservice::UPS::Response::Address)
+
+  $ups->validate_address($address,$tolerance)
+    ==> (Net::Async::Webservice::UPS::Response::Address)
+
+C<$address> is an instance of L<Net::Async::Webservice::UPS::Address>,
+or a postcode string that will be coerced to an address.
+
+Optional parameter: a tolerance (float, between 0 and 1). Returned
+addresses with quality below 1 minus tolerance will be filtered out.
+
+The L<Future> returned will yield an instance of
+L<Net::Async::Webservice::UPS::Response::Address>, or fail with an
+exception.
+
+Identical requests can be cached.
+
+=head2 C<validate_street_address>
+
+  $ups->validate_street_address($address)
+    ==> (Net::Async::Webservice::UPS::Response::Address)
+
+C<$address> is an instance of L<Net::Async::Webservice::UPS::Address>,
+or a postcode string that will be coerced to an address.
+
+The L<Future> returned will yield an instance of
+L<Net::Async::Webservice::UPS::Response::Address>, or fail with an
+exception.
+
+Identical requests can be cached.
+
+=head2 C<ship_confirm>
+
+  my $shipconfirm_response = $usp->ship_confirm({
+     from => $source_contact,
+     to => $destination_contact,
+     description => 'something',
+     payment => $payment_method,
+     packages => \@packages,
+  });
+
+Performs a C<ShipConfirm> request to UPS. The parameters are:
+
+=over 4
+
+=item C<from>
+
+required, instance of L<Net::Async::Webservice::UPS::Contact>, where the shipments starts from
+
+=item C<to>
+
+required, instance of L<Net::Async::Webservice::UPS::Contact>, where the shipments has to be delivered to
+
+=item C<shipper>
+
+optional, instance of L<Net::Async::Webservice::UPS::Shipper>, who is requesting the shipment; if not specified, it's taken to be the same as the C<from> with the L</account_number> of this UPS object
+
+=item C<service>
+
+the shipping service to use, see L<Net::Async::Webservice::UPS::Types/Service>, defaults to C<GROUND>
+
+=item C<description>
+
+required string, description of the shipment
+
+=item C<payment>
+
+required instance of L<Net::Async::Webservice::UPS::Payment>, how to pay for this shipment
+
+=item C<label>
+
+optional instance of L<Net::Async::Webservice::UPS::Label>, what kind of label to request
+
+=item C<packages>
+
+an arrayref of L<Net::Async::Webservice::UPS::Package> (or a single package, will be coerced to a 1-element array ref), the packages to ship
+
+=item C<return_service>
+
+optional, instance of L<Net::Async::Webservice::UPS::ReturnService>, what kind of return service to request
+
+=item C<delivery_confirmation>
+
+optional, 1 means "signature required", 2 mean "adult signature required"
+
+=item C<customer_context>
+
+optional string for reference purposes
+
+=back
+
+Returns an instance of
+L<Net::Async::Webservice::UPS::Response::ShipmentConfirm>.
+
+B<NOTE>: the API of this call may change in the future, let me know if
+features you need are missing or badly understood!
+
+=head2 C<ship_accept>
+
+  my $shipaccept_response = $usp->ship_accept({
+      confirm => $shipconfirm_response,
+  });
+
+Performs a C<ShipAccept> request to UPS. The parameters are:
+
+=over 4
+
+=item C<confirm>
+
+required, instance of L<Net::Async::Webservice::UPS::Response::ShipmentConfirm>,as returned by L</ship_confirm>
+
+=item C<customer_context>
+
+optional string for reference purposes
+
+=back
+
+Returns an instance of
+L<Net::Async::Webservice::UPS::Response::ShipmentAccept>.
+
+=head2 C<xml_request>
+
+  $ups->xml_request({
+    url_suffix => $string,
+    data => \%request_data,
+    XMLout => \%xml_simple_out_options,
+    XMLin => \%xml_simple_in_options,
+  }) ==> ($parsed_response);
+
+This method is mostly internal, you shouldn't need to call it.
+
+It builds a request XML document by concatenating the output of
+L</access_as_xml> with whatever L<XML::Simple> produces from the given
+C<data> and C<XMLout> options.
+
+It then posts (possibly asynchronously) this to the URL obtained
+concatenating L</base_url> with C<url_suffix> (see the L</post>
+method). If the request is successful, it parses the body (with
+L<XML::Simple> using the C<XMLin> options) and completes the returned
+future with the result.
+
+If the parsed response contains a non-zero
+C</Response/ResponseStatusCode>, the returned future will fail with a
+L<Net::Async::Webservice::UPS::Exception::UPSError> instance.
+
+=head2 C<post>
+
+  $ups->post($url_suffix,$body) ==> ($decoded_content)
+
+Posts the given C<$body> to the URL obtained concatenating
+L</base_url> with C<$url_suffix>. If the request is successful, it
+completes the returned future with the decoded content of the
+response, otherwise it fails the future with a
+L<Net::Async::Webservice::Common::Exception::HTTPError> instance.
+
+=head2 C<generate_cache_key>
+
+Generates a cache key (a string) identifying a request. Two requests
+with the same cache key should return the same response.
+
+=for Pod::Coverage BUILDARGS
+
+=head1 AUTHORS
+
+=over 4
+
+=item *
+
+Gianni Ceccarelli <gianni.ceccarelli@net-a-porter.com>
+
+=item *
+
+Sherzod B. Ruzmetov <sherzodr@cpan.org>
+
+=back
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2014 by Gianni Ceccarelli <gianni.ceccarelli@net-a-porter.com>.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+=cut
