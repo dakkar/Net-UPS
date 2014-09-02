@@ -1,4 +1,6 @@
 {{$NEXT}}
+
+1.0.4     2014-09-02 09:54:21+01:00 Europe/London
  - bump requirement of Types::Standard to get fix for RT #98362; it
    caused spurious parameter checking failures
 
