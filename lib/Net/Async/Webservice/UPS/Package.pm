@@ -86,7 +86,8 @@ has weight => (
 
 =attr C<id>
 
-Integer, usually only used internally when requesting rates.
+Ortional integer, may be used to link package-level response parts to
+the packages in a request.
 
 =cut
 

@@ -507,16 +507,15 @@ sub test_it {
                 transportation_charges => num($confirm->transportation_charges),
                 total_charges => num($confirm->total_charges),
                 shipment_identification_number => $confirm->shipment_identification_number,
-                package_results => [
-                    (
-                        all(
-                            isa('Net::Async::Webservice::UPS::Response::PackageResult'),
-                            methods(
-                                label => isa('Net::Async::Webservice::UPS::Response::Image'),
-                            ),
-                        )
-                    ) x @packages
-                ],
+                package_results => [ map {
+                    all(
+                        isa('Net::Async::Webservice::UPS::Response::PackageResult'),
+                        methods(
+                            label => isa('Net::Async::Webservice::UPS::Response::Image'),
+                            package => $_,
+                        ),
+                    )
+                } @packages ],
             ),
             'shipment accept worked',
         );

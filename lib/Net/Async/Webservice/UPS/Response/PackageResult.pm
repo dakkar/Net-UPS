@@ -161,4 +161,18 @@ has cod_turn_in => (
     required => 0,
 );
 
+=attr C<package>
+
+Reference to the package given to the
+L<Net::Async::Webservice::UPS/ship_confirm> request, to which this
+result element refers to.
+
+=cut
+
+has package => (
+    is => 'ro',
+    isa => Package,
+    required => 1,
+);
+
 1;
