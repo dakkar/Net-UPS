@@ -930,7 +930,6 @@ sub ship_accept {
     })->transform(
         done => sub {
             my ($response) = @_;
-            use Data::Printer;
 
             my $results = $response->{ShipmentResults};
 
