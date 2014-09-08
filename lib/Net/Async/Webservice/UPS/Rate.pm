@@ -21,7 +21,7 @@ Either C<KGS> or C<LBS>, unit for the L</billing_weight>.
 
 has unit => (
     is => 'ro',
-    isa => MeasurementUnit,
+    isa => WeightMeasurementUnit,
     required => 1,
 );
 

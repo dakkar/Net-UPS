@@ -4,6 +4,7 @@ use Type::Params qw(compile);
 use Types::Standard qw(Int Object);
 use Net::Async::Webservice::UPS::Types ':types';
 use Net::Async::Webservice::UPS::Exception;
+use Carp;
 use namespace::autoclean;
 use 5.010;
 
@@ -23,23 +24,66 @@ has packaging_type => (
     default => sub { 'PACKAGE' },
 );
 
-=attr C<measurement_system>
+=attr C<linear_unit>
 
-Either C<metric> (centimeters and kilograms) or C<english> (inches and
-pounds), required.
+Either C<CM> or C<IN>, required.
+
+You can either pass this attribute directly, or use the
+C<measurement_system> shortcut constructor parameter: if you pass C<<
+measurement_system => 'english' >>, C<linear_unit> will be assumed to
+be C<IN>; if you pass C<< measurement_system => 'metric' >>, it will
+be assumed to be C<CM>.
 
 =cut
 
-has measurement_system => (
+has linear_unit => (
     is => 'ro',
-    isa => MeasurementSystem,
+    isa => SizeMeasurementUnit,
     required => 1,
 );
+
+=method C<weight_unit>
+
+Either C<KGS> or C<LBS>, required.
+
+You can either pass this attribute directly, or use the
+C<measurement_system> shortcut constructor parameter: if you pass C<<
+measurement_system => 'english' >>, C<weight_unit> will be assumed to
+be C<LBS>; if you pass C<< measurement_system => 'metric' >>, it will
+be assumed to be C<KGS>.
+
+=cut
+
+has weight_unit => (
+    is => 'ro',
+    isa => WeightMeasurementUnit,
+    required => 1,
+);
+
+around BUILDARGS => sub {
+    my ($orig,$self,@etc) = @_;
+
+    my $args = $self->$orig(@etc);
+    if (defined (my $ms = $args->{measurement_system})) {
+        if ($ms eq 'english') {
+            $args->{linear_unit} ||= 'IN';
+            $args->{weight_unit} ||= 'LBS';
+        }
+        elsif ($ms eq 'metric') {
+            $args->{linear_unit} ||= 'CM';
+            $args->{weight_unit} ||= 'KGS';
+        }
+        else {
+            croak qq{Bad value "$ms" for measurement_system};
+        }
+    };
+    return $args;
+};
 
 =attr C<length>
 
 Length of the package, in centimeters or inches depending on
-L</measurement_system>.
+L</linear_unit>.
 
 =cut
 
@@ -51,7 +95,7 @@ has length => (
 =attr C<width>
 
 Width of the package, in centimeters or inches depending on
-L</measurement_system>.
+L</linear_unit>.
 
 =cut
 
@@ -63,7 +107,7 @@ has width => (
 =attr C<height>
 
 Height of the package, in centimeters or inches depending on
-L</measurement_system>.
+L</linear_unit>.
 
 =cut
 
@@ -75,7 +119,7 @@ has height => (
 =attr C<weight>
 
 Weight of the package, in kilograms or pounds depending on
-L</measurement_system>.
+L</weight_unit>.
 
 =cut
 
@@ -105,32 +149,6 @@ my %code_for_packaging_type = (
     UPS_25KG_BOX    => '24',
     UPS_10KG_BOX    => '25'
 );
-
-=method C<linear_unit>
-
-Returns C<CM> or C<IN> depending on L</measurement_system>.
-
-=cut
-
-sub linear_unit {
-    state $argcheck = compile(Object);
-    my ($self) = $argcheck->(@_);
-
-    $self->measurement_system eq 'metric' ? 'CM' : 'IN';
-}
-
-=method C<weight_unit>
-
-Returns C<KGS> or C<LBS> depending on L</measurement_system>.
-
-=cut
-
-sub weight_unit {
-    state $argcheck = compile(Object);
-    my ($self) = $argcheck->(@_);
-
-    $self->measurement_system eq 'metric' ? 'KGS' : 'LBS';
-}
 
 =method C<as_hash>
 
@@ -206,22 +224,36 @@ sub is_oversized {
     my $girth = ((2 * $sides[0]) + (2 * $sides[1]));
     my $size = $len + $girth;
 
-    my ($max_len,$max_weight,$max_size,
+    my ($max_len,$max_size,
         $min_size,
-        $os1_size,$os1_weight,
-        $os2_size,$os2_weight,
-        $os3_size,$os3_weight) =
-            $self->measurement_system eq 'english' ?
-                ( 108, 150, 165,
+        $os1_size,
+        $os2_size,
+        $os3_size,) =
+            $self->linear_unit eq 'IN' ?
+                ( 108, 165,
                   84,
-                  108, 30,
-                  130, 70,
-                  165, 90 ) :
-                ( 270, 70, 419,
+                  108,
+                  130,
+                  165, ) :
+                ( 270, 419,
                   210,
-                  270, 10,
-                  330, 32,
-                  419, 40 );
+                  270,
+                  330,
+                  419, );
+
+    my ($max_weight,
+        $os1_weight,
+        $os2_weight,
+        $os3_weight) =
+            $self->weight_unit eq 'LBS' ?
+                ( 150,
+                  30,
+                  70,
+                  90, ) :
+                ( 70,
+                  10,
+                  32,
+                  40, );
 
     if ($len > $max_len or $self->weight > $max_weight or $size > $max_size) {
         Net::Async::Webservice::UPS::Exception::BadPackage->throw({package=>$self});
@@ -250,7 +282,7 @@ sub cache_id {
     my ($self) = $argcheck->(@_);
 
     return join ':',
-        $self->packaging_type,$self->measurement_system,
+        $self->packaging_type,$self->linear_unit,$self->weight_unit,
         $self->length||0, $self->width||0, $self->height||0,
         $self->weight||0,;
 }

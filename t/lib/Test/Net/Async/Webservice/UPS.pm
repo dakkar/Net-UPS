@@ -25,7 +25,7 @@ sub package_comparator {
         all(
             isa('Net::Async::Webservice::UPS::Package'),
             methods(
-                map { $_ => $p->$_ } qw(length width height weight packaging_type measurement_system)
+                map { $_ => $p->$_ } qw(length width height weight packaging_type linear_unit weight_unit)
             )
         );
     } @p;

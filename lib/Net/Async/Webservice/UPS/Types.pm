@@ -12,7 +12,7 @@ use Type::Library
                     ReturnServiceCode ReturnServiceLabel
                     CreditCardCode CreditCardType
                     PackagingType MeasurementSystem
-                    Measure MeasurementUnit Currency
+                    Measure SizeMeasurementUnit WeightMeasurementUnit Currency
                     Tolerance Payment ImageType Image
                     Contact Shipper CreditCard Label
                     ShipmentConfirm PackageResult
@@ -203,18 +203,28 @@ enum MeasurementSystem,
            english
    )];
 
-=head2 C<MeasurementUnit>
+=head2 C<SizeMeasurementUnit>
 
-Enum, one of C<LBS> C<KGS> C<IN> C<CM>
+Enum, one of C<IN> C<CM>
 
 =cut
 
-enum MeasurementUnit,
+enum SizeMeasurementUnit,
+    [qw(
+           IN
+           CM
+   )];
+
+=head2 C<WeightMeasurementUnit>
+
+Enum, one of C<LBS> C<KGS>
+
+=cut
+
+enum WeightMeasurementUnit,
     [qw(
            LBS
            KGS
-           IN
-           CM
    )];
 
 =head2 C<Currency>

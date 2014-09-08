@@ -8,14 +8,14 @@ use namespace::autoclean;
 
 =attr C<unit>
 
-Either C<metric> (centimeters and kilograms) or C<english> (inches and
-pounds), required.
+Either C<KGS> or C<LBS>, unit of measurement for the
+L</billing_weight>. Required.
 
 =cut
 
 has unit => (
     is => 'ro',
-    isa => MeasurementUnit,
+    isa => WeightMeasurementUnit,
     required => 1,
 );
 
