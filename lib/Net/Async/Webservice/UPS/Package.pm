@@ -1,7 +1,7 @@
 package Net::Async::Webservice::UPS::Package;
 use Moo;
 use Type::Params qw(compile);
-use Types::Standard qw(Int Object);
+use Types::Standard qw(Str Object);
 use Net::Async::Webservice::UPS::Types ':types';
 use Net::Async::Webservice::UPS::Exception;
 use Carp;
@@ -135,14 +135,14 @@ has weight => (
 
 =attr C<id>
 
-Ortional integer, may be used to link package-level response parts to
+Optional string, may be used to link package-level response parts to
 the packages in a request.
 
 =cut
 
 has id => (
     is => 'rw',
-    isa => Int,
+    isa => Str,
 );
 
 my %code_for_packaging_type = (
