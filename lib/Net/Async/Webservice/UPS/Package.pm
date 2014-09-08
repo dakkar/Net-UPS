@@ -60,6 +60,11 @@ has weight_unit => (
     required => 1,
 );
 
+=for Pod::Coverage
+BUILDARGS
+
+=cut
+
 around BUILDARGS => sub {
     my ($orig,$self,@etc) = @_;
 
