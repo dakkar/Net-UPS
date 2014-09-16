@@ -687,7 +687,7 @@ sub validate_street_address {
         data => \%data,
         url_suffix => '/XAV',
         XMLin => {
-            ForceArray => [ 'AddressValidationResponse','AddressLine' ],
+            ForceArray => [ 'AddressValidationResponse','AddressLine', 'AddressKeyFormat' ],
         },
     })->then(
         sub {
@@ -716,9 +716,8 @@ sub validate_street_address {
                 $quality = 1;
             }
 
-            my @addresses;my $aks = $response->{AddressKeyFormat};
-            if (ref($aks) ne 'ARRAY') { $aks = [ $aks ] };
-            for my $ak (@$aks) {
+            my @addresses;
+            for my $ak (@{$response->{AddressKeyFormat}}) {
                 push @addresses, Net::Async::Webservice::UPS::Address->new({
                     quality => $quality,
                     building_name => $ak->{BuildingName},
@@ -927,6 +926,9 @@ sub ship_accept {
     $self->xml_request({
         data => \%data,
         url_suffix => '/ShipAccept',
+        XMLin => {
+            ForceArray => [ 'PackageResults' ],
+        },
     })->transform(
         done => sub {
             my ($response) = @_;
