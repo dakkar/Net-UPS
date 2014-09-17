@@ -325,11 +325,11 @@ class_type CreditCard, { class => 'Net::Async::Webservice::UPS::CreditCard' };
 
 =head2 C<ImageType>
 
-Enum, one of C<EPL>, C<ZPL>, C<SPL>, C<STARPL>, C<GIF>.
+Enum, one of C<EPL>, C<ZPL>, C<SPL>, C<STARPL>, C<GIF>, C<HTML>.
 
 =cut
 
-enum ImageType, [qw(EPL ZPL SPL STARPL GIF)];
+enum ImageType, [qw(EPL ZPL SPL STARPL GIF HTML)];
 
 =head2 C<Image>
 

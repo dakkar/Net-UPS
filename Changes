@@ -1,4 +1,5 @@
 {{$NEXT}}
+ - fix parsing receipt image for ship_accept calls on return shipments
  - packages now have a 'description' field, which is required for
  - better error messages when constructing credit cards and services
    with just the code or just the label / type, and an invalid value

@@ -964,7 +964,7 @@ sub ship_accept {
                           }) ) : () ),
                         _base64_if( html => $pr->{LabelImage}{HTMLImage} ),
                         _base64_if( pdf417 => $pr->{LabelImage}{PDF417} ),
-                        _img_if( receipt => $pr->{Receipt} ),
+                        _img_if( receipt => $pr->{Receipt}{Image} ),
                         _img_if( form_image => $pr->{Form} ),
                         _pair_if( form_code => $pr->{Form}{Code} ),
                         _pair_if( form_group_id => $pr->{FormGroupId} ),
