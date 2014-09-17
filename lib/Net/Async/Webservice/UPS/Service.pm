@@ -140,9 +140,17 @@ around BUILDARGS => sub {
     my $args = $class->$orig(@etc);
     if ($args->{code} and not $args->{label}) {
         $args->{label} = $label_for_code{$args->{code}};
+        if (!defined $args->{label}) {
+            require Carp;
+            Carp::croak "Bad service code $args->{code}";
+        }
     }
     elsif ($args->{label} and not $args->{code}) {
         $args->{code} = $code_for_label{$args->{label}};
+        if (!defined $args->{code}) {
+            require Carp;
+            Carp::croak "Bad service label $args->{label}";
+        }
     }
     return $args;
 };
