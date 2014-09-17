@@ -80,6 +80,7 @@ sub test_it {
             length=>34, width=>24, height=>1.5,
             weight=>1,
             measurement_system => 'english',
+            description => 'some stuff',
         ),
         Net::Async::Webservice::UPS::Package->new(
             length=>34, width=>24, height=>1.5,

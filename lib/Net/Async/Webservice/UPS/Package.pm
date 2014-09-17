@@ -4,7 +4,6 @@ use Type::Params qw(compile);
 use Types::Standard qw(Str Object);
 use Net::Async::Webservice::UPS::Types ':types';
 use Net::Async::Webservice::UPS::Exception;
-use Carp;
 use namespace::autoclean;
 use 5.010;
 
@@ -79,7 +78,8 @@ around BUILDARGS => sub {
             $args->{weight_unit} ||= 'KGS';
         }
         else {
-            croak qq{Bad value "$ms" for measurement_system};
+            require Carp;
+            Carp::croak qq{Bad value "$ms" for measurement_system};
         }
     };
     return $args;
@@ -145,6 +145,19 @@ has id => (
     isa => Str,
 );
 
+=attr C<description>
+
+Optional string, description of the package; required when the package
+is used in a return shipment.
+
+
+=cut
+
+has description => (
+    is => 'rw',
+    isa => Str,
+);
+
 my %code_for_packaging_type = (
     LETTER          => '01',
     PACKAGE         => '02',
@@ -172,6 +185,10 @@ sub as_hash {
             Code => $code_for_packaging_type{$self->packaging_type},
         },
     );
+
+    if ($self->description) {
+        $data{Description} = $self->description;
+    }
 
     if ( $self->length || $self->width || $self->height ) {
         $data{Dimensions} = {
