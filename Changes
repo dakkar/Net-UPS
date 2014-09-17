@@ -4,6 +4,7 @@
  - better error messages when constructing credit cards and services
    with just the code or just the label / type, and an invalid value
    is passed
+ - add 'customer_context' to all response objects
 
 1.0.6     2014-09-16 17:37:39+01:00 Europe/London
  - fix RT #98933, you can now book a shipment with 1 package

@@ -347,7 +347,7 @@ it's for, I just copied it from L<Net::UPS>.
 =cut
 
 sub transaction_reference {
-    my ($args) = @_;
+    my ($self,$args) = @_;
     our $VERSION; # this, and the ||0 later, are to make it work
                   # before dzil munges it
     return {
@@ -538,6 +538,7 @@ sub request_rate {
             @services = sort { $a->total_charges <=> $b->total_charges } @services;
 
             my $ret = Net::Async::Webservice::UPS::Response::Rate->new({
+                customer_context => $response->{Response}{TransactionReference}{CustomerContext},
                 services => \@services,
                 ( $response->{Error} ? (warnings => $response->{Error}) : () ),
             });
@@ -628,6 +629,7 @@ sub validate_address {
 
 
             my $ret = Net::Async::Webservice::UPS::Response::Address->new({
+                customer_context => $response->{Response}{TransactionReference}{CustomerContext},
                 addresses => \@addresses,
                 ( $response->{Error} ? (warnings => $response->{Error}) : () ),
             });
@@ -734,6 +736,7 @@ sub validate_street_address {
             }
 
             my $ret = Net::Async::Webservice::UPS::Response::Address->new({
+                customer_context => $response->{Response}{TransactionReference}{CustomerContext},
                 addresses => \@addresses,
                 ( $response->{Error} ? (warnings => $response->{Error}) : () ),
             });
@@ -856,6 +859,7 @@ sub ship_confirm {
             my $charges = $response->{ShipmentCharges};
 
             return Net::Async::Webservice::UPS::Response::ShipmentConfirm->new({
+                customer_context => $response->{Response}{TransactionReference}{CustomerContext},
                 unit => $weight->{UnitOfMeasurement}{Code},
                 billing_weight => $weight->{Weight},
                 currency => $charges->{TotalCharges}{CurrencyCode},
@@ -939,6 +943,7 @@ sub ship_accept {
             my $charges = $results->{ShipmentCharges};
 
             return Net::Async::Webservice::UPS::Response::ShipmentAccept->new({
+                customer_context => $response->{Response}{TransactionReference}{CustomerContext},
                 unit => $weight->{UnitOfMeasurement}{Code},
                 billing_weight => $weight->{Weight},
                 currency => $charges->{TotalCharges}{CurrencyCode},

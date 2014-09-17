@@ -143,6 +143,7 @@ sub test_it {
     my $rate1;
     subtest 'rating a package via postcodes' => sub {
         $rate1 = $ups->request_rate({
+            customer_context => 'test 1',
             from => $postal_codes[0],
             to => $postal_codes[1],
             packages => $packages[0],
@@ -158,10 +159,13 @@ sub test_it {
             [package_comparator($packages[0])],
             'service refers to the right package'
         );
+        cmp_deeply($rate1->customer_context,'test 1','context passed ok');
     };
 
     subtest 'rating a package via addresss' => sub {
         my $rate2 = $ups->request_rate({
+            # need this, otherwise the result is different from $rate1
+            customer_context => 'test 1',
             from => $addresses[0],
             to => $addresses[1],
             packages => $packages[0],
@@ -469,6 +473,7 @@ sub test_it {
 
     subtest 'book shipment' => sub {
         my $confirm = $ups->ship_confirm({
+            customer_context => 'test ship1',
             from => $shipper,
             to => $destination,
             shipper => $shipper,
@@ -483,6 +488,7 @@ sub test_it {
                 billing_weight => num(3),
                 unit => 'LBS',
                 currency => 'USD',
+                customer_context => 'test ship1',
             ),
             'shipment confirm worked',
         );
@@ -495,12 +501,14 @@ sub test_it {
         ok($confirm->shipment_identification_number,'we have an id number');
 
         my $accept = $ups->ship_accept({
+            customer_context => 'test acc1',
             confirm => $confirm,
         })->get;
 
         cmp_deeply(
             $accept,
             methods(
+                customer_context => 'test acc1',
                 billing_weight => num(3),
                 unit => 'LBS',
                 currency => 'USD',

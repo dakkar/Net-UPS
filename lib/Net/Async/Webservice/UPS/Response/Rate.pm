@@ -4,6 +4,8 @@ use Types::Standard qw(ArrayRef HashRef);
 use Net::Async::Webservice::UPS::Types qw(:types);
 use namespace::autoclean;
 
+extends 'Net::Async::Webservice::UPS::Response';
+
 # ABSTRACT: response for request_rate
 
 =head1 DESCRIPTION

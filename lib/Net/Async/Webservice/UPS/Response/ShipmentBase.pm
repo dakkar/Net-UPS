@@ -4,6 +4,8 @@ use Types::Standard qw(Str);
 use Net::Async::Webservice::UPS::Types qw(:types);
 use namespace::autoclean;
 
+extends 'Net::Async::Webservice::UPS::Response';
+
 # ABSTRACT: base class for UPS shipment responses
 
 =attr C<unit>
