@@ -1,4 +1,8 @@
 package Net::Async::Webservice::UPS::Address;
+$Net::Async::Webservice::UPS::Address::VERSION = '1.0.7';
+{
+  $Net::Async::Webservice::UPS::Address::DIST = 'Net-Async-Webservice-UPS';
+}
 use Moo;
 use 5.010;
 use Types::Standard qw(Str Int Bool StrictNum);
@@ -7,11 +11,6 @@ use namespace::autoclean;
 
 # ABSTRACT: an address for UPS
 
-=attr C<city>
-
-String with the name of the city, optional.
-
-=cut
 
 has city => (
     is => 'ro',
@@ -19,11 +18,6 @@ has city => (
     required => 0,
 );
 
-=attr C<postal_code>
-
-String with the post code of the address, required.
-
-=cut
 
 has postal_code => (
     is => 'ro',
@@ -31,17 +25,6 @@ has postal_code => (
     required => 1,
 );
 
-=attr C<postal_code_extended>
-
-String with the extended post code of the address, optional. If a
-postcode matching C<< \d+-\d+ >> is passed in to the constructor, the
-first group of digits is assigned to L</postal_code> and the second
-one to L</postal_code_extended>.
-
-=for Pod::Coverage
-BUILDARGS
-
-=cut
 
 has postal_code_extended => (
     is => 'ro',
@@ -63,11 +46,6 @@ around BUILDARGS => sub {
     return $args;
 };
 
-=attr C<state>
-
-String with the name of the state, optional.
-
-=cut
 
 has state => (
     is => 'ro',
@@ -75,11 +53,6 @@ has state => (
     required => 0,
 );
 
-=attr C<country_code>
-
-String with the 2 letter country code, optional (defaults to C<US>).
-
-=cut
 
 has country_code => (
     is => 'ro',
@@ -88,11 +61,6 @@ has country_code => (
     default => 'US',
 );
 
-=attr C<name>
-
-String with the recipient name, optional.
-
-=cut
 
 has name => (
     is => 'ro',
@@ -100,11 +68,6 @@ has name => (
     required => 0,
 );
 
-=attr C<building_name>
-
-String with the building name, optional.
-
-=cut
 
 has building_name => (
     is => 'ro',
@@ -112,11 +75,6 @@ has building_name => (
     required => 0,
 );
 
-=attr C<address>
-
-String with the first line of the address, optional.
-
-=cut
 
 has address => (
     is => 'ro',
@@ -124,11 +82,6 @@ has address => (
     required => 0,
 );
 
-=attr C<address2>
-
-String with the second line of address, optional.
-
-=cut
 
 has address2 => (
     is => 'ro',
@@ -136,11 +89,6 @@ has address2 => (
     required => 0,
 );
 
-=attr C<address3>
-
-String with the third line of the address, optional.
-
-=cut
 
 has address3 => (
     is => 'ro',
@@ -148,11 +96,6 @@ has address3 => (
     required => 0,
 );
 
-=attr C<is_residential>
-
-Boolean, indicating whether this address is residential. Optional.
-
-=cut
 
 has is_residential => (
     is => 'ro',
@@ -160,14 +103,6 @@ has is_residential => (
     required => 0,
 );
 
-=attr C<quality>
-
-This should only be set in objects that are returned as part of a
-L<Net::Async::Webservice::UPS::Response::Address>. It's a float
-between 0 and 1 expressing how good a match this address is for the
-one provided.
-
-=cut
 
 has quality => (
     is => 'ro',
@@ -175,12 +110,6 @@ has quality => (
     required => 0,
 );
 
-=method C<is_exact_match>
-
-True if L</quality> is 1. This method exists for compatibility with
-L<Net::UPS::Address>.
-
-=cut
 
 sub is_exact_match {
     my $self = shift;
@@ -188,12 +117,6 @@ sub is_exact_match {
     return ($self->quality == 1);
 }
 
-=method C<is_very_close_match>
-
-True if L</quality> is >= 0.95. This method exists for compatibility
-with L<Net::UPS::Address>.
-
-=cut
 
 sub is_very_close_match {
     my $self = shift;
@@ -201,12 +124,6 @@ sub is_very_close_match {
     return ($self->quality >= 0.95);
 }
 
-=method C<is_close_match>
-
-True if L</quality> is >=0.9. This method exists for compatibility
-with L<Net::UPS::Address>.
-
-=cut
 
 sub is_close_match {
     my $self = shift;
@@ -214,13 +131,6 @@ sub is_close_match {
     return ($self->quality >= 0.90);
 }
 
-=method C<is_possible_match>
-
-True if L</quality> is >= 0.9 (yes, the same as
-L</is_close_match>). This method exists for compatibility with
-L<Net::UPS::Address>.
-
-=cut
 
 sub is_possible_match {
     my $self = shift;
@@ -228,12 +138,6 @@ sub is_possible_match {
     return ($self->quality >= 0.90);
 }
 
-=method C<is_poor_match>
-
-True if L</quality> is <= 0.69. This method exists for compatibility
-with L<Net::UPS::Address>.
-
-=cut
 
 sub is_poor_match {
     my $self = shift;
@@ -241,15 +145,6 @@ sub is_poor_match {
     return ($self->quality <= 0.69);
 }
 
-=method C<as_hash>
-
-Returns a hashref that, when passed through L<XML::Simple>, will
-produce the XML fragment needed in UPS requests to represent this
-address. Takes one parameter, either C<'AV'> or C<'XAV'>, to select
-which representation to use (C<'XAV'> is the "street level validation"
-variant).
-
-=cut
 
 sub as_hash {
     my ($self, $shape) = @_;
@@ -302,11 +197,6 @@ sub as_hash {
     }
 }
 
-=method C<cache_id>
-
-Returns a string identifying this address.
-
-=cut
 
 sub cache_id {
     my ($self) = @_;
@@ -324,3 +214,138 @@ sub cache_id {
 }
 
 1;
+
+__END__
+
+=pod
+
+=encoding UTF-8
+
+=head1 NAME
+
+Net::Async::Webservice::UPS::Address - an address for UPS
+
+=head1 VERSION
+
+version 1.0.7
+
+=head1 ATTRIBUTES
+
+=head2 C<city>
+
+String with the name of the city, optional.
+
+=head2 C<postal_code>
+
+String with the post code of the address, required.
+
+=head2 C<postal_code_extended>
+
+String with the extended post code of the address, optional. If a
+postcode matching C<< \d+-\d+ >> is passed in to the constructor, the
+first group of digits is assigned to L</postal_code> and the second
+one to L</postal_code_extended>.
+
+=head2 C<state>
+
+String with the name of the state, optional.
+
+=head2 C<country_code>
+
+String with the 2 letter country code, optional (defaults to C<US>).
+
+=head2 C<name>
+
+String with the recipient name, optional.
+
+=head2 C<building_name>
+
+String with the building name, optional.
+
+=head2 C<address>
+
+String with the first line of the address, optional.
+
+=head2 C<address2>
+
+String with the second line of address, optional.
+
+=head2 C<address3>
+
+String with the third line of the address, optional.
+
+=head2 C<is_residential>
+
+Boolean, indicating whether this address is residential. Optional.
+
+=head2 C<quality>
+
+This should only be set in objects that are returned as part of a
+L<Net::Async::Webservice::UPS::Response::Address>. It's a float
+between 0 and 1 expressing how good a match this address is for the
+one provided.
+
+=head1 METHODS
+
+=head2 C<is_exact_match>
+
+True if L</quality> is 1. This method exists for compatibility with
+L<Net::UPS::Address>.
+
+=head2 C<is_very_close_match>
+
+True if L</quality> is >= 0.95. This method exists for compatibility
+with L<Net::UPS::Address>.
+
+=head2 C<is_close_match>
+
+True if L</quality> is >=0.9. This method exists for compatibility
+with L<Net::UPS::Address>.
+
+=head2 C<is_possible_match>
+
+True if L</quality> is >= 0.9 (yes, the same as
+L</is_close_match>). This method exists for compatibility with
+L<Net::UPS::Address>.
+
+=head2 C<is_poor_match>
+
+True if L</quality> is <= 0.69. This method exists for compatibility
+with L<Net::UPS::Address>.
+
+=head2 C<as_hash>
+
+Returns a hashref that, when passed through L<XML::Simple>, will
+produce the XML fragment needed in UPS requests to represent this
+address. Takes one parameter, either C<'AV'> or C<'XAV'>, to select
+which representation to use (C<'XAV'> is the "street level validation"
+variant).
+
+=head2 C<cache_id>
+
+Returns a string identifying this address.
+
+=for Pod::Coverage BUILDARGS
+
+=head1 AUTHORS
+
+=over 4
+
+=item *
+
+Gianni Ceccarelli <gianni.ceccarelli@net-a-porter.com>
+
+=item *
+
+Sherzod B. Ruzmetov <sherzodr@cpan.org>
+
+=back
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2014 by Gianni Ceccarelli <gianni.ceccarelli@net-a-porter.com>.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+=cut
