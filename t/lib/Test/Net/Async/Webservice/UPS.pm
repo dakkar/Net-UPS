@@ -7,6 +7,7 @@ use Net::Async::Webservice::UPS::Package;
 use Net::Async::Webservice::UPS::Address;
 use Net::Async::Webservice::UPS::Payment;
 use Net::Async::Webservice::UPS::Shipper;
+use Net::Async::Webservice::UPS::QVSubscription;
 
 sub conf_file {
     my $upsrc = $ENV{NAWS_UPS_CONFIG} || File::Spec->catfile($ENV{HOME}, '.naws_ups.conf');
@@ -788,6 +789,61 @@ sub test_it {
                     fail("@_");
                 }
                 return Future->wrap();
+            },
+        )->get;
+    };
+
+    subtest 'quantum view, no args' => sub {
+        $ups->qv_events({})->then(
+            sub {
+                my ($events) = @_;
+                note p $events;
+                pass("got something");
+                return Future->wrap();
+            },
+            sub {
+                my ($failure) = @_;
+
+                cmp_deeply(
+                    $failure,
+                    methods(
+                        error_code => 'NoCandidates',
+                    ),
+                    'sensible failure returned',
+                ) or note p $failure;
+                return Future->wrap();
+
+            },
+        )->get;
+    };
+
+    subtest 'quantum view, error conditions' => sub {
+        $ups->qv_events({
+            subscriptions => [
+                Net::Async::Webservice::UPS::QVSubscription->new({
+                    name => 'invalid1',
+                }),
+                Net::Async::Webservice::UPS::QVSubscription->new({
+                    name => 'invalid2',
+                }),
+            ],
+        })->then(
+            sub {
+                fail("unexpected success: @_");
+                return Future->wrap();
+            },
+            sub {
+                my ($failure) = @_;
+
+                cmp_deeply(
+                    $failure,
+                    methods(
+                        error_code => 'NoCandidates',
+                    ),
+                    'sensible failure returned',
+                ) or note p $failure;
+                return Future->wrap();
+
             },
         )->get;
     };

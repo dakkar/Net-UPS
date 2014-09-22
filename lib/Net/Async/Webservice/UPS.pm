@@ -981,6 +981,43 @@ sub ship_accept {
     );
 }
 
+sub qv_events {
+    state $argcheck = compile( Object, Dict[
+        subscriptions => Optional[ArrayRef[QVSubscription]],
+        bookmark => Optional[Str],
+        customer_context => Optional[Str],
+    ]);
+
+    my ($self,$args) = $argcheck->(@_);
+
+    my %data = (
+        QuantumViewRequest => {
+            Request => {
+                TransactionReference => $self->transaction_reference($args),
+                RequestAction => 'QVEvents',
+            },
+            ( $args->{subscriptions} ? ( SubscriptionRequest => [
+                map { $_->as_hash } @{$args->{subscriptions}}
+            ] ) : () ),
+        },
+        _pair_if(Bookmark => $args->{bookmark}),
+    );
+
+    $self->xml_request({
+        data => \%data,
+        url_suffix => '/QVEvents',
+        XMLin => {
+            ForceArray => [ 'QuantumViewEvents' ],
+        },
+    })->transform(
+        done => sub {
+            my ($response) = @_;
+
+            return $response;
+        }
+    );
+}
+
 =method C<xml_request>
 
   $ups->xml_request({

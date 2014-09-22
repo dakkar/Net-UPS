@@ -16,6 +16,7 @@ use Type::Library
                     Tolerance Payment ImageType Image
                     Contact Shipper CreditCard Label
                     ShipmentConfirm PackageResult
+                    QVSubscription
               );
 use Type::Utils -all;
 use Types::Standard -types;
@@ -465,6 +466,8 @@ Instance of L<Net::Async::Webservice::UPS::Response::ShipmentConfirm>.
 =cut
 
 class_type ShipmentConfirm, { class => 'Net::Async::Webservice::UPS::Response::ShipmentConfirm' };
+
+class_type QVSubscription, { class => 'Net::Async::Webservice::UPS::QVSubscription' };
 
 =head2 C<Cache>
 
