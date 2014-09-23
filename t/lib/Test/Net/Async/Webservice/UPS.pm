@@ -32,6 +32,14 @@ sub package_comparator {
     } @p;
 }
 
+my $file_for_next_test = sub {
+    my ($ua,$file) = @_;
+    if ($ua->can('file_for_next_test')) {
+        $ua->file_for_next_test($file);
+    }
+    return;
+};
+
 sub test_it {
     my ($ups) = @_;
 
@@ -143,6 +151,7 @@ sub test_it {
 
     my $rate1;
     subtest 'rating a package via postcodes' => sub {
+        $ups->user_agent->$file_for_next_test('t/data/rate-1-package');
         $ups->request_rate({
             customer_context => 'test 1',
             from => $postal_codes[0],
@@ -173,6 +182,7 @@ sub test_it {
     };
 
     subtest 'rating a package via addresss' => sub {
+        $ups->user_agent->$file_for_next_test('t/data/rate-1-package-addr');
         $ups->request_rate({
             # need this, otherwise the result is different from $rate1
             customer_context => 'test 1',
@@ -205,6 +215,7 @@ sub test_it {
     };
 
     subtest 'rating multiple packages' => sub {
+        $ups->user_agent->$file_for_next_test('t/data/rate-2-packages');
         $ups->request_rate({
             from => $postal_codes[0],
             to => $postal_codes[1],
@@ -241,6 +252,7 @@ sub test_it {
     };
 
     subtest 'shop for rates, single package' => sub {
+        $ups->user_agent->$file_for_next_test('t/data/shop-1-package');
         $ups->request_rate({
             from => $addresses[0],
             to => $addresses[1],
@@ -289,6 +301,7 @@ sub test_it {
     };
 
     subtest 'shop for rates, multiple packages' => sub {
+        $ups->user_agent->$file_for_next_test('t/data/shop-2-packages');
         $ups->request_rate({
             from => $addresses[0],
             to => $addresses[1],
@@ -365,7 +378,7 @@ sub test_it {
             postal_code => "48823",
             is_residential=>1
         });
-
+        $ups->user_agent->$file_for_next_test('t/data/address');
         $ups->validate_address($address, 0)->then(
             sub {
                 my ($addresses) = @_;
@@ -414,7 +427,7 @@ sub test_it {
             postal_code => "998877",
             is_residential=>1
         });
-
+        $ups->user_agent->$file_for_next_test('t/data/address-bad');
         $ups->validate_address($address, 0)->then(
             sub {
                 my ($addresses) = @_;
@@ -437,6 +450,7 @@ sub test_it {
     };
 
     subtest 'validate address, street-level' => sub {
+        $ups->user_agent->$file_for_next_test('t/data/address-street-level');
         $ups->validate_street_address($street_addresses[1])->then(
             sub {
                 my ($addresses) = @_;
@@ -478,6 +492,7 @@ sub test_it {
             country_code=> 'US',
             postal_code => '998877',
         });
+        $ups->user_agent->$file_for_next_test('t/data/address-street-level-bad');
         $ups->validate_street_address($address)->then(
             sub {
                 fail("unexpected success: @_");
@@ -511,6 +526,7 @@ sub test_it {
 #            country_code=> 'DE',
 #            postal_code => '40217',
         });
+        $ups->user_agent->$file_for_next_test('t/data/address-non-ascii');
         $ups->validate_street_address($address)->then(
             sub {
                 my ($validated) = @_;
@@ -562,6 +578,7 @@ sub test_it {
     });
 
     subtest 'book shipment' => sub {
+        $ups->user_agent->$file_for_next_test('t/data/ship-confirm-1');
         $ups->ship_confirm({
             customer_context => 'test ship1',
             from => $shipper,
@@ -592,6 +609,7 @@ sub test_it {
                 );
                 ok($confirm->shipment_digest,'we have a digest');
                 ok($confirm->shipment_identification_number,'we have an id number');
+                $ups->user_agent->$file_for_next_test('t/data/ship-accept-1');
                 return $ups->ship_accept({
                     customer_context => 'test acc1',
                     confirm => $confirm,
@@ -641,6 +659,7 @@ sub test_it {
     };
 
     subtest 'book shipment, 1 package' => sub {
+        $ups->user_agent->$file_for_next_test('t/data/ship-confirm-2');
         $ups->ship_confirm({
             from => $shipper,
             to => $destination,
@@ -670,6 +689,7 @@ sub test_it {
                 ok($confirm->shipment_digest,'we have a digest');
                 ok($confirm->shipment_identification_number,'we have an id number');
 
+                $ups->user_agent->$file_for_next_test('t/data/ship-accept-2');
                 return $ups->ship_accept({
                     confirm => $confirm,
                 })->then(sub{return Future->wrap($confirm,@_)});
@@ -717,6 +737,7 @@ sub test_it {
     };
 
     subtest 'book return shipment, 1 package' => sub {
+        $ups->user_agent->$file_for_next_test('t/data/ship-confirm-3');
         $ups->ship_confirm({
             from => $destination,
             to => $shipper,
@@ -746,7 +767,7 @@ sub test_it {
                 );
                 ok($confirm->shipment_digest,'we have a digest');
                 ok($confirm->shipment_identification_number,'we have an id number');
-
+                $ups->user_agent->$file_for_next_test('t/data/ship-accept-3');
                 return $ups->ship_accept({
                     confirm => $confirm,
                 })->then(sub{return Future->wrap($confirm,@_)});
@@ -794,6 +815,7 @@ sub test_it {
     };
 
     subtest 'quantum view, no args' => sub {
+        $ups->user_agent->$file_for_next_test('t/data/qv-1');
         $ups->qv_events({})->then(
             sub {
                 my ($events) = @_;
@@ -818,6 +840,7 @@ sub test_it {
     };
 
     subtest 'quantum view, error conditions' => sub {
+        $ups->user_agent->$file_for_next_test('t/data/qv-error-1');
         $ups->qv_events({
             subscriptions => [
                 Net::Async::Webservice::UPS::QVSubscription->new({
