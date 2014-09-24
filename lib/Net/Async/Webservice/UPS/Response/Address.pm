@@ -26,16 +26,4 @@ has addresses => (
     required => 1,
 );
 
-=attr C<warnings>
-
-Hashref of warnings extracted from the UPS response.
-
-=cut
-
-has warnings => (
-    is => 'ro',
-    isa => HashRef,
-    required => 0,
-);
-
 1;

@@ -869,7 +869,7 @@ sub ship_confirm {
                 shipment_digest => $response->{ShipmentDigest},
                 shipment_identification_number => $response->{ShipmentIdentificationNumber},
                 packages => $packages,
-            });
+                ( $response->{Error} ? (warnings => $response->{Error}) : () ),            });
         },
     );
 }
@@ -976,7 +976,7 @@ sub ship_accept {
                         _img_if( cod_turn_in => $pr->{CODTurnInPage} ),
                     });
                 } @{$results->{PackageResults}//[]},@$packages ],
-            });
+                ( $response->{Error} ? (warnings => $response->{Error}) : () ),            });
         },
     );
 }

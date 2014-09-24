@@ -16,4 +16,16 @@ has customer_context => (
     isa => Str,
 );
 
+=attr C<warnings>
+
+Hashref of warnings extracted from the UPS response.
+
+=cut
+
+has warnings => (
+    is => 'ro',
+    isa => HashRef,
+    required => 0,
+);
+
 1;
