@@ -54,7 +54,7 @@ sub cache_id {
     my ($self) = @_;
 
     return join ':',
-        $self->account_number,
+        ($self->account_number||''),
         $self->address->cache_id;
 }
 
