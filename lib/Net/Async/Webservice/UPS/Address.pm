@@ -3,6 +3,7 @@ use Moo;
 use 5.010;
 use Types::Standard qw(Str Int Bool StrictNum);
 use Net::Async::Webservice::UPS::Types ':types';
+use Net::Async::Webservice::UPS::Response::Utils ':all';
 use namespace::autoclean;
 
 # ABSTRACT: an address for UPS
@@ -234,35 +235,19 @@ variant).
 
 =cut
 
-our $_implied_arg;
-sub _out_if {
-    my ($key,$attr) = @_;
-    if ($_implied_arg->$attr) {
-        return ($key => $_implied_arg->$attr);
-    }
-    return;
-}
-sub _in_if {
-    my ($attr,$key) = @_;
-    if ($_implied_arg->{$key}) {
-        return ($attr => $_implied_arg->{$key});
-    }
-    return;
-}
-
 sub as_hash {
     my ($self, $shape) = @_;
     $shape //= 'AV';
 
-    local $_implied_arg = $self;
+    set_implied_argument($self);
 
     if ($shape eq 'AV') {
         return {
             Address => {
                 CountryCode => $self->country_code || "US",
                 PostalCode  => $self->postal_code,
-                _out_if(City=>'city'),
-                _out_if(StateProvinceCode=>'state'),
+                out_if(City=>'city'),
+                out_if(StateProvinceCode=>'state'),
                 ( $self->is_residential ? ( ResidentialAddressIndicator => undef ) : () ),
             }
         };
@@ -272,16 +257,16 @@ sub as_hash {
             AddressKeyFormat => {
                 CountryCode => $self->country_code || "US",
                 PostcodePrimaryLow  => $self->postal_code,
-                _out_if(PostcodeExtendedLow=>'postal_code_extended'),
-                _out_if(ConsigneeName=>'name'),
-                _out_if(BuildingName=>'building_name'),
+                out_if(PostcodeExtendedLow=>'postal_code_extended'),
+                out_if(ConsigneeName=>'name'),
+                out_if(BuildingName=>'building_name'),
                 AddressLine  => [
                     ( $self->address ? $self->address : () ),
                     ( $self->address2 ? $self->address2 : () ),
                     ( $self->address3 ? $self->address3 : () ),
                 ],
-                _out_if(PoliticalDivision1=>'state'),
-                _out_if(PoliticalDivision2=>'city'),
+                out_if(PoliticalDivision1=>'state'),
+                out_if(PoliticalDivision2=>'city'),
             }
         }
     }
@@ -290,11 +275,11 @@ sub as_hash {
             Address => {
                 CountryCode => $self->country_code || "US",
                 PostalCode  => $self->postal_code,
-                _out_if(AddressLine1=>'address'),
-                _out_if(AddressLine2=>'address2'),
-                _out_if(AddressLine3=>'address3'),
-                _out_if(City=>'city'),
-                _out_if(StateProvinceCode=>'state'),
+                out_if(AddressLine1=>'address'),
+                out_if(AddressLine2=>'address2'),
+                out_if(AddressLine3=>'address3'),
+                out_if(City=>'city'),
+                out_if(StateProvinceCode=>'state'),
             }
         }
     }
@@ -307,10 +292,7 @@ sub BUILDARGS {
     my ($class,@etc) = @_;
     my $hashref = $class->next::method(@etc);
 
-    if ($hashref->{Address} or $hashref->{AddressKeyFormat}) {
-        $hashref = $hashref->{Address} || $hashref->{AddressKeyFormat};
-    }
-    else {
+    if (not $hashref->{Address} and not $hashref->{AddressKeyFormat}) {
         if ($hashref->{postal_code}
                 and not defined $hashref->{postal_code_extended}
                     and $hashref->{postal_code} =~ m{\A(\d+)-(\d+)\z}) {
@@ -322,36 +304,39 @@ sub BUILDARGS {
         return $hashref;
     }
 
-    local $_implied_arg = $hashref;
+    my $data = $hashref->{Address} || $hashref->{AddressKeyFormat};
+    set_implied_argument($data);
 
     return {
         country_code => 'US', # default,
-        _in_if(country_code=>'CountryCode'),
-        _in_if(postal_code=>'PostalCode'),
-        _in_if(postal_code=>'PostcodePrimaryLow'),
-        _in_if(city=>'City'),
-        _in_if(city=>'PoliticalDivision2'),
-        _in_if(state=>'StateProvinceCode'),
-        _in_if(state=>'PoliticalDivision1'),
-        _in_if(postal_code_extended=>'PostcodeExtendedLow'),
-        _in_if(name=>'ConsigneeName'),
-        _in_if(building_name=>'BuildingName'),
-        _in_if(address=>'AddressLine1'),
-        _in_if(address2=>'AddressLine2'),
-        _in_if(address3=>'AddressLine3'),
+        pair_if(quality=>$hashref->{Quality}),
+        in_if(country_code=>'CountryCode'),
+        in_if(postal_code=>'PostalCode'),
+        in_if(postal_code=>'PostcodePrimaryLow'),
+        in_if(city=>'City'),
+        in_if(city=>'PoliticalDivision2'),
+        in_if(state=>'StateProvinceCode'),
+        in_if(state=>'PoliticalDivision1'),
+        in_if(postal_code_extended=>'PostcodeExtendedLow'),
+        in_if(name=>'ConsigneeName'),
+        in_if(building_name=>'BuildingName'),
+        in_if(address=>'AddressLine1'),
+        in_if(address2=>'AddressLine2'),
+        in_if(address3=>'AddressLine3'),
 
-        ( exists $hashref->{ResidentialAddressIndicator} ? ( is_residential => 1 ) : () ),
+        ( exists $data->{ResidentialAddressIndicator} ? ( is_residential => 1 ) : () ),
+        ( exists $data->{AddressClassification} ? ( is_residential => $data->{AddressClassification}{Code} eq 2 ? 1 : 0 ) : () ),
 
-        ( $hashref->{StreetName} || $hashref->{StreetNumberLow} || $hashref->{StreetType} ? (
+        ( $data->{StreetName} || $data->{StreetNumberLow} || $data->{StreetType} ? (
             address => join(
                 ' ',grep { defined }
-                    @{$hashref}{qw(StreetNumberLow StreetName {StreetType)})
+                    @{$data}{qw(StreetNumberLow StreetName {StreetType)})
                 ) : () ),
 
-        ( ref($hashref->{AddressLine}) eq 'ARRAY' ? (
-            ( $hashref->{AddressLine}[0] ? ( address => $hashref->{AddressLine}[0] ) : () ),
-            ( $hashref->{AddressLine}[1] ? ( address2 => $hashref->{AddressLine}[1] ) : () ),
-            ( $hashref->{AddressLine}[2] ? ( address3 => $hashref->{AddressLine}[2] ) : () ),
+        ( ref($data->{AddressLine}) eq 'ARRAY' ? (
+            ( $data->{AddressLine}[0] ? ( address => $data->{AddressLine}[0] ) : () ),
+            ( $data->{AddressLine}[1] ? ( address2 => $data->{AddressLine}[1] ) : () ),
+            ( $data->{AddressLine}[2] ? ( address3 => $data->{AddressLine}[2] ) : () ),
         ) : () ),
     };
 }

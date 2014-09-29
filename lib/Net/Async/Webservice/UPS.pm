@@ -520,11 +520,7 @@ sub request_rate {
                     # TODO check this pairwise
                     rates => [ pairwise {
                         Net::Async::Webservice::UPS::Rate->new({
-                            billing_weight  => $a->{BillingWeight}{Weight},
-                            unit            => $a->{BillingWeight}{UnitOfMeasurement}{Code},
-                            total_charges   => $a->{TotalCharges}{MonetaryValue},
-                            total_charges_currency => $a->{TotalCharges}{CurrencyCode},
-                            weight          => $a->{Weight},
+                            %$a,
                             rated_package   => $b,
                             from            => $args->{from},
                             to              => $args->{to},
@@ -538,9 +534,8 @@ sub request_rate {
             @services = sort { $a->total_charges <=> $b->total_charges } @services;
 
             my $ret = Net::Async::Webservice::UPS::Response::Rate->new({
-                customer_context => $response->{Response}{TransactionReference}{CustomerContext},
+                %$response,
                 services => \@services,
-                ( $response->{Error} ? (warnings => $response->{Error}) : () ),
             });
 
             $self->cache->set($cache_key,$ret) if $self->does_caching;
@@ -617,21 +612,15 @@ sub validate_address {
             for my $address (@{$response->{AddressValidationResult}}) {
                 next if $address->{Quality} < (1 - $tolerance);
                 for my $possible_postal_code ($address->{PostalCodeLowEnd} .. $address->{PostalCodeHighEnd}) {
-                    push @addresses, Net::Async::Webservice::UPS::Address->new({
-                        quality         => $address->{Quality},
-                        postal_code     => $possible_postal_code,
-                        city            => $address->{Address}->{City},
-                        state           => $address->{Address}->{StateProvinceCode},
-                        country_code    => "US",
-                    });
+                    $address->{Address}{PostalCode} = $possible_postal_code;
+                    push @addresses, Net::Async::Webservice::UPS::Address->new($address);
                 }
             }
 
 
             my $ret = Net::Async::Webservice::UPS::Response::Address->new({
-                customer_context => $response->{Response}{TransactionReference}{CustomerContext},
+                %$response,
                 addresses => \@addresses,
-                ( $response->{Error} ? (warnings => $response->{Error}) : () ),
             });
 
             $self->cache->set($cache_key,$ret) if $self->does_caching;
@@ -721,24 +710,14 @@ sub validate_street_address {
             my @addresses;
             for my $ak (@{$response->{AddressKeyFormat}}) {
                 push @addresses, Net::Async::Webservice::UPS::Address->new({
-                    quality => $quality,
-                    building_name => $ak->{BuildingName},
-                    address => $ak->{AddressLine}->[0],
-                    address2 => $ak->{AddressLine}->[1],
-                    address3 => $ak->{AddressLine}->[2],
-                    postal_code => $ak->{PostcodePrimaryLow},
-                    postal_code_extended => $ak->{PostcodeExtendedLow},
-                    city => $ak->{PoliticalDivision2},
-                    state => $ak->{PoliticalDivision1},
-                    country_code => $ak->{CountryCode},
-                    is_residential => ( $response->{AddressClassification}->{Code} eq "2" ) ? 1 : 0,
+                    AddressKeyFormat => $ak,
+                    Quality => $quality,
                 });
             }
 
             my $ret = Net::Async::Webservice::UPS::Response::Address->new({
-                customer_context => $response->{Response}{TransactionReference}{CustomerContext},
+                %$response,
                 addresses => \@addresses,
-                ( $response->{Error} ? (warnings => $response->{Error}) : () ),
             });
 
             $self->cache->set($cache_key,$ret) if $self->does_caching;
@@ -855,21 +834,10 @@ sub ship_confirm {
         done => sub {
             my ($response) = @_;
 
-            my $weight = $response->{BillingWeight};
-            my $charges = $response->{ShipmentCharges};
-
             return Net::Async::Webservice::UPS::Response::ShipmentConfirm->new({
-                customer_context => $response->{Response}{TransactionReference}{CustomerContext},
-                unit => $weight->{UnitOfMeasurement}{Code},
-                billing_weight => $weight->{Weight},
-                currency => $charges->{TotalCharges}{CurrencyCode},
-                service_option_charges => $charges->{ServiceOptionsCharges}{MonetaryValue},
-                transportation_charges => $charges->{TransportationCharges}{MonetaryValue},
-                total_charges => $charges->{TotalCharges}{MonetaryValue},
-                shipment_digest => $response->{ShipmentDigest},
-                shipment_identification_number => $response->{ShipmentIdentificationNumber},
+                %$response,
                 packages => $packages,
-                ( $response->{Error} ? (warnings => $response->{Error}) : () ),            });
+            });
         },
     );
 }
@@ -892,21 +860,6 @@ Returns an instance of
 L<Net::Async::Webservice::UPS::Response::ShipmentAccept>.
 
 =cut
-
-sub _img_if($$) {
-    return ( $_[0] => Net::Async::Webservice::UPS::Response::Image->new($_[1]) ) if $_[1] && %{$_[1]};
-    return;
-}
-
-sub _pair_if($$) {
-    return @_ if $_[1];
-    return;
-}
-
-sub _base64_if($$) {
-    return ($_[0],decode_base64($_[1])) if $_[1];
-    return;
-}
 
 sub ship_accept {
     state $argcheck = compile( Object, Dict[
@@ -937,46 +890,10 @@ sub ship_accept {
         done => sub {
             my ($response) = @_;
 
-            my $results = $response->{ShipmentResults};
-
-            my $weight = $results->{BillingWeight};
-            my $charges = $results->{ShipmentCharges};
-
             return Net::Async::Webservice::UPS::Response::ShipmentAccept->new({
-                customer_context => $response->{Response}{TransactionReference}{CustomerContext},
-                unit => $weight->{UnitOfMeasurement}{Code},
-                billing_weight => $weight->{Weight},
-                currency => $charges->{TotalCharges}{CurrencyCode},
-                service_option_charges => $charges->{ServiceOptionsCharges}{MonetaryValue},
-                transportation_charges => $charges->{TransportationCharges}{MonetaryValue},
-                total_charges => $charges->{TotalCharges}{MonetaryValue},
-                shipment_identification_number => $results->{ShipmentIdentificationNumber},
-                _pair_if( pickup_request_number => $results->{PickupRequestNumber} ),
-                _img_if( control_log => $results->{ControlLogReceipt} ),
-                package_results => [ pairwise {
-                    my ($pr,$pack) = ($a, $b);
-
-                    Net::Async::Webservice::UPS::Response::PackageResult->new({
-                        package => $pack,
-                        tracking_number => $pr->{TrackingNumber},
-                        currency => $pr->{ServiceOptionsCharges}{CurrencyCode},
-                        service_option_charges => $pr->{ServiceOptionsCharges}{MonetaryValue},
-                        _img_if( label => $pr->{LabelImage} ),
-                        ( $pr->{LabelImage}{InternationalSignatureGraphicImage} ?
-                          ( signature => Net::Async::Webservice::UPS::Response::Image->new({
-                              format => $pr->{LabelImage}{ImageFormat}{Code},
-                              base64_data => $pr->{LabelImage}{InternationalSignatureGraphicImage},
-                          }) ) : () ),
-                        _base64_if( html => $pr->{LabelImage}{HTMLImage} ),
-                        _base64_if( pdf417 => $pr->{LabelImage}{PDF417} ),
-                        _img_if( receipt => $pr->{Receipt}{Image} ),
-                        _img_if( form_image => $pr->{Form} ),
-                        _pair_if( form_code => $pr->{Form}{Code} ),
-                        _pair_if( form_group_id => $pr->{FormGroupId} ),
-                        _img_if( cod_turn_in => $pr->{CODTurnInPage} ),
-                    });
-                } @{$results->{PackageResults}//[]},@$packages ],
-                ( $response->{Error} ? (warnings => $response->{Error}) : () ),            });
+                packages => $packages,
+                %$response,
+            });
         },
     );
 }

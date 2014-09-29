@@ -28,4 +28,19 @@ has warnings => (
     required => 0,
 );
 
+sub BUILDARGS {
+    my ($class,@etc) = @_;
+
+    my $hashref = $class->next::method(@etc);
+    if ($hashref->{Response}) {
+        return {
+            customer_context => $hashref->{Response}{TransactionReference}{CustomerContext},
+            ( $hashref->{Error} ? (warnings => $hashref->{Error}) : () ),
+        }
+    }
+    else {
+        return $hashref;
+    }
+}
+
 1;

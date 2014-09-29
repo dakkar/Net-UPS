@@ -113,4 +113,25 @@ has to => (
     required => 1,
 );
 
+sub BUILDARGS {
+    my ($class,@etc) = @_;
+    my $hashref = $class->next::method(@etc);
+
+    if ($hashref->{BillingWeight}) {
+        return {
+            billing_weight  => $hashref->{BillingWeight}{Weight},
+            unit            => $hashref->{BillingWeight}{UnitOfMeasurement}{Code},
+            total_charges   => $hashref->{TotalCharges}{MonetaryValue},
+            total_charges_currency => $hashref->{TotalCharges}{CurrencyCode},
+            weight          => $hashref->{Weight},
+            rated_package   => $hashref->{rated_package},
+            from            => $hashref->{from},
+            to              => $hashref->{to},
+        }
+    }
+    else {
+        return $hashref,
+    }
+}
+
 1;

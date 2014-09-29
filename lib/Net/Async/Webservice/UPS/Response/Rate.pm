@@ -27,4 +27,17 @@ has services => (
     required => 1,
 );
 
+sub BUILDARGS {
+    my ($class,$hashref) = @_;
+    if (@_>2) { shift; $hashref={@_} };
+
+    my $ret = $class->next::method($hashref);
+
+    if ($hashref->{services} and not $ret->{services}) {
+        $ret->{services} = $hashref->{services};
+    }
+
+    return $ret;
+}
+
 1;

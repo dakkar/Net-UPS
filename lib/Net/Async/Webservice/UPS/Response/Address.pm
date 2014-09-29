@@ -26,4 +26,17 @@ has addresses => (
     required => 1,
 );
 
+sub BUILDARGS {
+    my ($class,$hashref) = @_;
+    if (@_>2) { shift; $hashref={@_} };
+
+    my $ret = $class->next::method($hashref);
+
+    if ($hashref->{addresses} and not $ret->{addresses}) {
+        $ret->{addresses} = $hashref->{addresses};
+    }
+
+    return $ret;
+}
+
 1;
