@@ -175,7 +175,7 @@ sub test_it {
                 return Future->wrap();
             },
             sub {
-                fail("@_");
+                fail("@_");diag p @_;
                 return Future->wrap();
             }
         )->get;
@@ -208,7 +208,7 @@ sub test_it {
                 return Future->wrap();
             },
             sub {
-                fail("@_");
+                fail("@_");diag p @_;
                 return Future->wrap();
             },
         )->get;
@@ -245,7 +245,7 @@ sub test_it {
                 return Future->wrap();
             },
             sub {
-                fail("@_");
+                fail("@_");diag p @_;
                 return Future->wrap();
             },
         )->get;
@@ -294,7 +294,7 @@ sub test_it {
                 return Future->wrap();
             },
             sub {
-                fail("@_");
+                fail("@_");diag p @_;
                 return Future->wrap();
             },
         )->get
@@ -364,7 +364,7 @@ sub test_it {
                 return Future->wrap();
             },
             sub {
-                fail("@_");
+                fail("@_");diag p @_;
                 return Future->wrap();
             },
         )->get;
@@ -413,7 +413,7 @@ sub test_it {
                 return Future->wrap();
             },
             sub {
-                fail("@_");
+                fail("@_");diag p @_;
                 return Future->wrap();
             },
         )->get;
@@ -443,7 +443,7 @@ sub test_it {
                 return Future->wrap();
             },
             sub {
-                fail("@_");
+                fail("@_");diag p @_;
                 return Future->wrap();
             },
         )->get;
@@ -477,7 +477,7 @@ sub test_it {
                 return Future->wrap();
             },
             sub {
-                fail("@_");
+                fail("@_");diag p @_;
                 return Future->wrap();
             },
         )->get;
@@ -553,7 +553,7 @@ sub test_it {
                 return Future->wrap();
             },
             sub {
-                fail("@_");
+                fail("@_");diag p @_;
                 return Future->wrap();
             },
         )->get;
@@ -616,7 +616,7 @@ sub test_it {
                 })->then(sub{return Future->wrap($confirm,@_)});
             },
             sub {
-                fail("@_");
+                fail("@_");diag p @_;
                 return Future->fail('test');
             },
         )->then(
@@ -651,7 +651,7 @@ sub test_it {
             sub {
                 if ($_[0] ne 'test') {
                     # failure in ->accept, not in ->confirm
-                    fail("@_");
+                    fail("@_");diag p @_;
                 }
                 return Future->wrap();
             },
@@ -695,7 +695,7 @@ sub test_it {
                 })->then(sub{return Future->wrap($confirm,@_)});
             },
             sub {
-                fail("@_");
+                fail("@_");diag p @_;
                 return Future->fail('test');
             },
         )->then(
@@ -729,7 +729,7 @@ sub test_it {
             sub {
                 if ($_[0] ne 'test') {
                     # failure in ->accept, not in ->confirm
-                    fail("@_");
+                    fail("@_");diag p @_;
                 }
                 return Future->wrap();
             },
@@ -773,7 +773,7 @@ sub test_it {
                 })->then(sub{return Future->wrap($confirm,@_)});
             },
             sub {
-                fail("@_");
+                fail("@_");diag p @_;
                 return Future->fail('test');
             },
         )->then(
@@ -807,7 +807,7 @@ sub test_it {
             sub {
                 if ($_[0] ne 'test') {
                     # failure in ->accept, not in ->confirm
-                    fail("@_");
+                    fail("@_");diag p @_;
                 }
                 return Future->wrap();
             },
