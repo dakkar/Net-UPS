@@ -1,6 +1,6 @@
 package Net::Async::Webservice::UPS::Response;
 use Moo;
-use Types::Standard qw(Str);
+use Types::Standard qw(Str HashRef);
 use namespace::autoclean;
 
 # ABSTRACT: base class with fields common to all UPS responses
