@@ -32,15 +32,11 @@ sub BUILDARGS {
     my $ret = $class->next::method($hashref);
 
     if ($hashref->{QuantumViewEvents}) {
-        require Net::Async::Webservice::UPS::Response::QV::Event;
         my $data = $hashref->{QuantumViewEvents};
-        my $events = $data->{SubscriptionEvents};
-        if (ref($events) ne 'ARRAY') { $events = [ $events ] }
+        set_implied_argument($data);
         $ret = {
             %$ret,
-            events => [ map {
-                Net::Async::Webservice::UPS::Response::QV::Event->new($_)
-            } @{$events} ],
+            in_object_array_if(events => 'SubscriptionEvents', 'Net::Async::Webservice::UPS::Response::QV::Event' ),
             subscriber_id => $data->{SubscriberID},
             pair_if(bookmark => $hashref->{Bookmark}),
         };

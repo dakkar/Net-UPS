@@ -1,10 +1,12 @@
 package Net::Async::Webservice::UPS::Response::QV::Generic;
 use Moo;
+use 5.010;
 use Types::Standard qw(Str ArrayRef HashRef);
 use Net::Async::Webservice::UPS::Types qw(:types);
 use Net::Async::Webservice::UPS::Response::Utils qw(:all);
 use Types::DateTime DateTime => { -as => 'DateTimeT' };
 use DateTime::Format::Strptime;
+use List::AllUtils 'any';
 use namespace::autoclean;
 
 has activity_type => (
@@ -24,12 +26,12 @@ has shipper_number => (
 
 has package_reference => (
     is => 'ro',
-    isa => QVReference,
+    isa => ArrayRef[QVReference],
 );
 
 has shipment_reference => (
     is => 'ro',
-    isa => QVReference,
+    isa => ArrayRef[QVReference],
 );
 
 has service => (
@@ -82,8 +84,7 @@ sub BUILDARGS {
     my ($class,$hashref) = @_;
     if (@_>2) { shift; $hashref={@_} };
 
-    if ($hashref->{...}) {
-        require Net::Async::Webservice::UPS::Response::QV::Reference;
+    if (any { /^[A-Z]/ } keys %$hashref) {
         state $date_parser = DateTime::Format::Strptime->new(
             pattern => '%Y%m%d',
         );
@@ -93,8 +94,8 @@ sub BUILDARGS {
             in_if(activity_type=>'ActivityType'),
             in_if(tracking_number=>'TrackingNumber'),
             in_if(shipper_number=>'ShipperNumber'),
-            in_object_if(shipment_reference => 'ShipmentReferenceNumber', 'Net::Async::Webservice::UPS::Response::QV::Reference'),
-            in_object_if(package_reference => 'PackageReferenceNumber', 'Net::Async::Webservice::UPS::Response::QV::Reference'),
+            in_object_array_if(shipment_reference => 'ShipmentReferenceNumber', 'Net::Async::Webservice::UPS::Response::QV::Reference'),
+            in_object_array_if(package_reference => 'PackageReferenceNumber', 'Net::Async::Webservice::UPS::Response::QV::Reference'),
             in_if(service => 'Service'),
             in_datetime_if(date_time => 'Activity'),
             pair_if(bill_to_account_number => $hashref->{BillToAccount}{Number}),

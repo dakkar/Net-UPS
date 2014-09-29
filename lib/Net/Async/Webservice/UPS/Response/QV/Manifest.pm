@@ -1,6 +1,6 @@
 package Net::Async::Webservice::UPS::Response::QV::Manifest;
 use Moo;
-use Types::Standard qw(Str ArrayRef HashRef);
+use Types::Standard qw(Str Bool ArrayRef HashRef);
 use Net::Async::Webservice::UPS::Types qw(:types);
 use Types::DateTime DateTime => { -as => 'DateTimeT' };
 use namespace::autoclean;

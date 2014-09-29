@@ -22,14 +22,14 @@ has city => (
 
 =attr C<postal_code>
 
-String with the post code of the address, required.
+String with the post code of the address, usually required.
 
 =cut
 
 has postal_code => (
     is => 'ro',
     isa => Str,
-    required => 1,
+    required => 0,
 );
 
 =attr C<postal_code_extended>

@@ -16,8 +16,8 @@ use Type::Library
                     Tolerance Payment ImageType Image
                     Contact Shipper CreditCard Label
                     ShipmentConfirm PackageResult
-                    QVSubscription QVEvent QVFile QVDelivery
-                    QVOrigin QVManifest QVException QVReference
+                    QVSubscription QVEvent QVFile QVDelivery QVGeneric
+                    QVOrigin QVManifest QVPackage QVException QVReference
               );
 use Type::Utils -all;
 use Types::Standard -types;
@@ -468,13 +468,15 @@ Instance of L<Net::Async::Webservice::UPS::Response::ShipmentConfirm>.
 
 class_type ShipmentConfirm, { class => 'Net::Async::Webservice::UPS::Response::ShipmentConfirm' };
 
-class_type QVSubscription, { class => 'Net::Async::Webservice::UPS::QV::Subscription' };
+class_type QVSubscription, { class => 'Net::Async::Webservice::UPS::QVSubscription' };
 
 class_type QVEvent, { class => 'Net::Async::Webservice::UPS::Response::QV::Event' };
 class_type QVFile, { class => 'Net::Async::Webservice::UPS::Response::QV::File' };
 class_type QVDelivery, { class => 'Net::Async::Webservice::UPS::Response::QV::Delivery' };
+class_type QVGeneric, { class => 'Net::Async::Webservice::UPS::Response::QV::Generic' };
 class_type QVOrigin, { class => 'Net::Async::Webservice::UPS::Response::QV::Origin' };
 class_type QVManifest, { class => 'Net::Async::Webservice::UPS::Response::QV::Manifest' };
+class_type QVPackage, { class => 'Net::Async::Webservice::UPS::Response::QV::Package' };
 class_type QVException, { class => 'Net::Async::Webservice::UPS::Response::QV::Exception' };
 class_type QVReference, { class => 'Net::Async::Webservice::UPS::Response::QV::Reference' };
 

@@ -19,8 +19,7 @@ use Net::Async::Webservice::UPS::Response::Rate;
 use Net::Async::Webservice::UPS::Response::Address;
 use Net::Async::Webservice::UPS::Response::ShipmentConfirm;
 use Net::Async::Webservice::UPS::Response::ShipmentAccept;
-use Net::Async::Webservice::UPS::Response::PackageResult;
-use Net::Async::Webservice::UPS::Response::Image;
+use Net::Async::Webservice::UPS::Response::QV;
 use MIME::Base64;
 use Future;
 use 5.010;
@@ -916,21 +915,17 @@ sub qv_events {
             ( $args->{subscriptions} ? ( SubscriptionRequest => [
                 map { $_->as_hash } @{$args->{subscriptions}}
             ] ) : () ),
+            ($args->{bookmark} ? (Bookmark => $args->{bookmark}) : () ),
         },
-        _pair_if(Bookmark => $args->{bookmark}),
     );
 
     $self->xml_request({
         data => \%data,
         url_suffix => '/QVEvents',
-        XMLin => {
-            ForceArray => [ 'QuantumViewEvents' ],
-        },
     })->transform(
         done => sub {
             my ($response) = @_;
-
-            return $response;
+            return Net::Async::Webservice::UPS::Response::QV->new($response);
         }
     );
 }

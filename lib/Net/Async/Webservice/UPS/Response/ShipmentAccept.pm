@@ -60,6 +60,7 @@ sub BUILDARGS {
     my $ret = $class->next::method($hashref);
 
     if ($hashref->{ShipmentResults}) {
+        require Net::Async::Webservice::UPS::Response::PackageResult;
 
         my $results = $hashref->{ShipmentResults};
         my $weight = $results->{BillingWeight};

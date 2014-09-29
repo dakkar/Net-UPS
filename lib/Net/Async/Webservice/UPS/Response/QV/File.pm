@@ -20,7 +20,7 @@ has status => (
 has origins => (
     is => 'ro',
     isa => ArrayRef[QVOrigin],
-    required => 1,
+    required => 0,
 );
 
 has generics => (
@@ -47,23 +47,6 @@ has exceptions => (
     required => 0,
 );
 
-# Manifests are not yet supported
-
-my %typemap = (
-    Origin => 'Net::Async::Webservice::UPS::Response::QV::Origin',
-    Generic => 'Net::Async::Webservice::UPS::Response::QV::Generic',
-    Delivery => 'Net::Async::Webservice::UPS::Response::QV::Delivery',
-    #Manifest => 'Net::Async::Webservice::UPS::Response::QV::Manifest',
-    Exception => 'Net::Async::Webservice::UPS::Response::QV::Exception',
-);
-my %slotmap = (
-    Origin => 'origins',
-    Generic => 'generics',
-    Delivery => 'deliveries',
-    #Manifest => 'manifests',
-    Exception => 'exceptions',
-);
-
 sub BUILDARGS {
     my ($class,$hashref) = @_;
     if (@_>2) { shift; $hashref={@_} };
@@ -71,25 +54,16 @@ sub BUILDARGS {
     if ($hashref->{FileName}) {
         set_implied_argument($hashref);
 
-        my $ret = {
+        return {
             in_if(filename => 'FileName'),
             in_if(status => 'StatusType'),
+            in_object_array_if(origins=>'Origin','Net::Async::Webservice::UPS::Response::QV::Origin'),
+            in_object_array_if(generics=>'Generic','Net::Async::Webservice::UPS::Response::QV::Generic'),
+            in_object_array_if(deliveries=>'Delivery','Net::Async::Webservice::UPS::Response::QV::Delivery'),
+            # Manifests are not yet supported
+            #in_object_array_if(manifests=>'Manifest','Net::Async::Webservice::UPS::Response::QV::Manifest'),
+            in_object_array_if(exceptions=>'Exception','Net::Async::Webservice::UPS::Response::QV::Exception'),
         };
-        for my $k (sort keys %typemap) {
-            my $slot = $slotmap{$k};
-            my $class = $typemap{$k};
-
-            if ($hashref->{$k}) {
-                my $array = $hashref->{$k};
-                if (ref($array) ne 'ARRAY') {
-                    $array = [ $array ];
-                }
-
-                $ret->{$slot} = [ map {
-                    $class->new($_)
-                } @{$array} ];
-            }
-        }
     }
     return $hashref;
 }

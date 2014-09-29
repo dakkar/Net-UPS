@@ -44,7 +44,7 @@ sub as_hash {
         my $method = "${f}_date";
         if ($self->$method) {
             my $date = $self->$method->clone->set_time_zone('UTC');
-            $sr->{DateTimeRange}{"\U${f}\EDateTime"} =
+            $sr->{DateTimeRange}{"\u${f}DateTime"} =
                 $date->strftime('%Y%m%d%H%M%S');
         }
     }

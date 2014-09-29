@@ -819,40 +819,100 @@ sub test_it {
         $ups->qv_events({})->then(
             sub {
                 my ($events) = @_;
-                note p $events;
-                pass("got something");
+                cmp_deeply(
+                    $events,
+                    all(
+                        isa('Net::Async::Webservice::UPS::Response::QV'),
+                        methods(
+                            subscriber_id => $ups->user_id,
+                            events => array_each(all(
+                                isa('Net::Async::Webservice::UPS::Response::QV::Event'),
+                                methods(
+                                    files => array_each(all(
+                                        isa('Net::Async::Webservice::UPS::Response::QV::File'),
+                                        methods(
+                                            filename => ignore(),
+                                        ),
+                                    )),
+                                ),
+                            )),
+                            warnings => superhashof({
+                                ErrorCode => 336000,
+                            }),
+                        ),
+                    ),
+                    'sensible response',
+                );
                 return Future->wrap();
             },
             sub {
-                my ($failure) = @_;
-
-                cmp_deeply(
-                    $failure,
-                    methods(
-                        error_code => 'NoCandidates',
-                    ),
-                    'sensible failure returned',
-                ) or note p $failure;
+                fail("@_");diag p @_;
                 return Future->wrap();
 
             },
         )->get;
     };
 
-    subtest 'quantum view, error conditions' => sub {
-        $ups->user_agent->$file_for_next_test('t/data/qv-error-1');
+    my $bookmark;
+
+    subtest 'quantum view, date-time' => sub {
+        $ups->user_agent->$file_for_next_test('t/data/qv-datetime-1');
+
         $ups->qv_events({
             subscriptions => [
                 Net::Async::Webservice::UPS::QVSubscription->new({
-                    name => 'invalid1',
-                }),
-                Net::Async::Webservice::UPS::QVSubscription->new({
-                    name => 'invalid2',
+                    begin_date => '2002-02-08T00:00:00',
+                    end_date => '2002-02-08T13:32:48',
                 }),
             ],
         })->then(
             sub {
+                my ($events) = @_;
+                cmp_deeply(
+                    $events,
+                    all(
+                        isa('Net::Async::Webservice::UPS::Response::QV'),
+                        methods(
+                            subscriber_id => $ups->user_id,
+                            events => array_each(all(
+                                isa('Net::Async::Webservice::UPS::Response::QV::Event'),
+                                methods(
+                                    files => array_each(all(
+                                        isa('Net::Async::Webservice::UPS::Response::QV::File'),
+                                        methods(
+                                            filename => ignore(),
+                                        ),
+                                    )),
+                                ),
+                            )),
+                            warnings => superhashof({
+                                ErrorCode => 336000,
+                            }),
+                            bookmark => re(qr{\A.+\z}),
+                        ),
+                    ),
+                    'sensible response',
+                );
+                $bookmark = $events->bookmark;
+                return Future->wrap();
+            },
+            sub {
+                fail("@_");diag p @_;
+                return Future->wrap();
+
+            },
+        )->get;
+    };
+
+    subtest 'quantum view, bookmark' => sub {
+        $ups->user_agent->$file_for_next_test('t/data/qv-datetime-1');
+
+        $ups->qv_events({
+            bookmark => $bookmark,
+        })->then(
+            sub {
                 fail("unexpected success: @_");
+                diag p @_;
                 return Future->wrap();
             },
             sub {
@@ -861,10 +921,56 @@ sub test_it {
                 cmp_deeply(
                     $failure,
                     methods(
-                        error_code => 'NoCandidates',
+                        error_code => 330015,
                     ),
-                    'sensible failure returned',
+                    'bookmark correctly invalid without subscription specs',
                 ) or note p $failure;
+
+                return Future->wrap();
+            },
+        )->get;
+
+        $ups->qv_events({
+            subscriptions => [
+                Net::Async::Webservice::UPS::QVSubscription->new({
+                    begin_date => '2002-02-08T00:00:00',
+                    end_date => '2002-02-08T13:32:48',
+                }),
+            ],
+            bookmark => $bookmark,
+        })->then(
+            sub {
+                my ($events) = @_;
+                cmp_deeply(
+                    $events,
+                    all(
+                        isa('Net::Async::Webservice::UPS::Response::QV'),
+                        methods(
+                            subscriber_id => $ups->user_id,
+                            events => array_each(all(
+                                isa('Net::Async::Webservice::UPS::Response::QV::Event'),
+                                methods(
+                                    files => array_each(all(
+                                        isa('Net::Async::Webservice::UPS::Response::QV::File'),
+                                        methods(
+                                            filename => ignore(),
+                                        ),
+                                    )),
+                                ),
+                            )),
+                            warnings => superhashof({
+                                ErrorCode => 336000,
+                            }),
+                            bookmark => undef,
+                        ),
+                    ),
+                    'sensible response',
+                );
+                $bookmark = $events->bookmark;
+                return Future->wrap();
+            },
+            sub {
+                fail("@_");diag p @_;
                 return Future->wrap();
 
             },

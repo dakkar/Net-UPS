@@ -1,5 +1,6 @@
 package Net::Async::Webservice::UPS::Response::QV::Event;
 use Moo;
+use 5.010;
 use Types::Standard qw(Str ArrayRef HashRef);
 use Net::Async::Webservice::UPS::Types qw(:types);
 use Net::Async::Webservice::UPS::Response::Utils ':all';
@@ -48,13 +49,10 @@ sub BUILDARGS {
     if (@_>2) { shift; $hashref={@_} };
 
     if ($hashref->{Name}) {
-        require Net::Async::Webservice::UPS::Response::QV::File;
         state $date_parser = DateTime::Format::Strptime->new(
-            pattern => '%m-%d-%Y-%H-%M',
+            pattern => '%Y%m%d%H%M%S',
         );
         set_implied_argument($hashref);
-        my $files = $hashref->{SubscriptionFile};
-        if (ref($files) ne 'ARRAY') { $files = [ $files ] };
 
         return {
             in_if(name=>'Name'),
@@ -62,9 +60,7 @@ sub BUILDARGS {
             in_if(status=>'SubscriptionStatus'),
             ( $hashref->{DateRange}{BeginDate} ? ( begin_date => $date_parser->parse_datetime($hashref->{DateRange}{BeginDate}) ) : () ),
             ( $hashref->{DateRange}{EndDate} ? ( end_date => $date_parser->parse_datetime($hashref->{DateRange}{EndDate}) ) : () ),
-            files => [ map {
-                Net::Async::Webservice::UPS::Response::QV::File->new($_)
-              } @{$files} ],
+            in_object_array_if(files=>'SubscriptionFile','Net::Async::Webservice::UPS::Response::QV::File'),
         };
     }
     return $hashref;
