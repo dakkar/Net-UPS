@@ -35,7 +35,7 @@ sub BUILDARGS {
     if ($hashref->{Response}) {
         return {
             customer_context => $hashref->{Response}{TransactionReference}{CustomerContext},
-            ( $hashref->{Error} ? (warnings => $hashref->{Error}) : () ),
+            ( $hashref->{Response}{Error} ? (warnings => $hashref->{Response}{Error}) : () ),
         }
     }
     else {
