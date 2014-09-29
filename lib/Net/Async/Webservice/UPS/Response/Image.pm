@@ -50,26 +50,31 @@ around BUILDARGS => sub {
     return $args;
 };
 
-=method C<from_hash>
+=method C<BUILDARGS>
 
   my $miage = Net::Async::Webservice::UPS::Response::Image
-                ->from_hash($piece_of_ups_response);
+                ->new($piece_of_ups_response);
 
-Constructor, takes a hashref with at least a key matching
-C</ImageFormat$/> and a key of C<GraphicImage>, and extracts the
-image.
+If you call the constructor with a hashref with at least a key
+matching C</ImageFormat$/> and a key of C<GraphicImage>, this will
+extract the image.
 
 =cut
 
-sub from_hash {
+sub BUILDARGS {
     my ($class,$hash) = @_;
 
     my ($format_key) = grep {/ImageFormat$/} keys %$hash;
 
-    return $class->new({
-        format => $hash->{$format_key}{Code},
-        base64_data => $hash->{GraphicImage},
-    });
+    if ($format_key) {
+        return {
+            format => $hash->{$format_key}{Code},
+            base64_data => $hash->{GraphicImage},
+        };
+    }
+    else {
+        return $hash;
+    }
 }
 
 1;

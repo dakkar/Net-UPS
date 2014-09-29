@@ -894,7 +894,7 @@ L<Net::Async::Webservice::UPS::Response::ShipmentAccept>.
 =cut
 
 sub _img_if($$) {
-    return ( $_[0] => Net::Async::Webservice::UPS::Response::Image->from_hash($_[1]) ) if $_[1] && %{$_[1]};
+    return ( $_[0] => Net::Async::Webservice::UPS::Response::Image->new($_[1]) ) if $_[1] && %{$_[1]};
     return;
 }
 
