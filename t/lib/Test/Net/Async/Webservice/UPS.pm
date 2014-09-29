@@ -905,7 +905,7 @@ sub test_it {
     };
 
     subtest 'quantum view, bookmark' => sub {
-        $ups->user_agent->$file_for_next_test('t/data/qv-datetime-1');
+        $ups->user_agent->$file_for_next_test('t/data/qv-bookmark-fail');
 
         $ups->qv_events({
             bookmark => $bookmark,
@@ -930,6 +930,7 @@ sub test_it {
             },
         )->get;
 
+        $ups->user_agent->$file_for_next_test('t/data/qv-bookmark');
         $ups->qv_events({
             subscriptions => [
                 Net::Async::Webservice::UPS::QVSubscription->new({

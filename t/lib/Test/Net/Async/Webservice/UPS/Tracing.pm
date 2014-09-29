@@ -31,6 +31,7 @@ around do_request => sub {
     my ($fh,$filename);
     if ($self->filename) {
         open $fh, '>', $self->filename;
+        $self->filename(undef);
     }
     else {
         ($fh,$filename) = tempfile("net-ups-$sec-$usec-XXXX");
