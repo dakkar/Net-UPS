@@ -38,9 +38,6 @@ postcode matching C<< \d+-\d+ >> is passed in to the constructor, the
 first group of digits is assigned to L</postal_code> and the second
 one to L</postal_code_extended>.
 
-=for Pod::Coverage
-BUILDARGS
-
 =cut
 
 has postal_code_extended => (
@@ -48,20 +45,6 @@ has postal_code_extended => (
     isa => Str,
     required => 0,
 );
-
-around BUILDARGS => sub {
-    my ($orig,$class,@etc) = @_;
-    my $args = $class->$orig(@etc);
-    if ($args->{postal_code}
-            and not defined $args->{postal_code_extended}
-                and $args->{postal_code} =~ m{\A(\d+)-(\d+)\z}) {
-        $args->{postal_code} = $1;
-        $args->{postal_code_extended} = $2;
-    }
-    my @undef_k = grep {not defined $args->{$_} } keys %$args;
-    delete @$args{@undef_k};
-    return $args;
-};
 
 =attr C<state>
 
@@ -251,17 +234,35 @@ variant).
 
 =cut
 
+our $_implied_arg;
+sub _out_if {
+    my ($key,$attr) = @_;
+    if ($_implied_arg->$attr) {
+        return ($key => $_implied_arg->$attr);
+    }
+    return;
+}
+sub _in_if {
+    my ($attr,$key) = @_;
+    if ($_implied_arg->{$key}) {
+        return ($attr => $_implied_arg->{$key});
+    }
+    return;
+}
+
 sub as_hash {
     my ($self, $shape) = @_;
     $shape //= 'AV';
+
+    local $_implied_arg = $self;
 
     if ($shape eq 'AV') {
         return {
             Address => {
                 CountryCode => $self->country_code || "US",
                 PostalCode  => $self->postal_code,
-                ( $self->city ? ( City => $self->city) : () ),
-                ( $self->state ? ( StateProvinceCode => $self->state) : () ),
+                _out_if(City=>'city'),
+                _out_if(StateProvinceCode=>'state'),
                 ( $self->is_residential ? ( ResidentialAddressIndicator => undef ) : () ),
             }
         };
@@ -271,16 +272,16 @@ sub as_hash {
             AddressKeyFormat => {
                 CountryCode => $self->country_code || "US",
                 PostcodePrimaryLow  => $self->postal_code,
-                ( $self->postal_code_extended ? ( PostcodeExtendedLow => $self->postal_code_extended ) : () ),
-                ( $self->name ? ( ConsigneeName => $self->name ) : () ),
-                ( $self->building_name ? ( BuildingName => $self->building_name ) : () ),
+                _out_if(PostcodeExtendedLow=>'postal_code_extended'),
+                _out_if(ConsigneeName=>'name'),
+                _out_if(BuildingName=>'building_name'),
                 AddressLine  => [
                     ( $self->address ? $self->address : () ),
                     ( $self->address2 ? $self->address2 : () ),
                     ( $self->address3 ? $self->address3 : () ),
                 ],
-                ( $self->state ? ( PoliticalDivision1 => $self->state ) : () ),
-                ( $self->city ? ( PoliticalDivision2 => $self->city ) : () ),
+                _out_if(PoliticalDivision1=>'state'),
+                _out_if(PoliticalDivision2=>'city'),
             }
         }
     }
@@ -289,17 +290,70 @@ sub as_hash {
             Address => {
                 CountryCode => $self->country_code || "US",
                 PostalCode  => $self->postal_code,
-                ( $self->address ? ( AddressLine1 => $self->address ) : () ),
-                ( $self->address2 ? ( AddressLine3 => $self->address2 ) : () ),
-                ( $self->address3 ? ( AddressLine3 => $self->address3 ) : () ),
-                ( $self->city ? ( City => $self->city) : () ),
-                ( $self->state ? ( StateProvinceCode => $self->state) : () ),
+                _out_if(AddressLine1=>'address'),
+                _out_if(AddressLine2=>'address2'),
+                _out_if(AddressLine3=>'address3'),
+                _out_if(City=>'city'),
+                _out_if(StateProvinceCode=>'state'),
             }
         }
     }
     else {
         die "bad address to_hash shape $shape";
     }
+}
+
+sub BUILDARGS {
+    my ($class,@etc) = @_;
+    my $hashref = $class->next::method(@etc);
+
+    if ($hashref->{Address} or $hashref->{AddressKeyFormat}) {
+        $hashref = $hashref->{Address} || $hashref->{AddressKeyFormat};
+    }
+    else {
+        if ($hashref->{postal_code}
+                and not defined $hashref->{postal_code_extended}
+                    and $hashref->{postal_code} =~ m{\A(\d+)-(\d+)\z}) {
+            $hashref->{postal_code} = $1;
+            $hashref->{postal_code_extended} = $2;
+        }
+        my @undef_k = grep {not defined $hashref->{$_} } keys %$hashref;
+        delete @$hashref{@undef_k};
+        return $hashref;
+    }
+
+    local $_implied_arg = $hashref;
+
+    return {
+        country_code => 'US', # default,
+        _in_if(country_code=>'CountryCode'),
+        _in_if(postal_code=>'PostalCode'),
+        _in_if(postal_code=>'PostcodePrimaryLow'),
+        _in_if(city=>'City'),
+        _in_if(city=>'PoliticalDivision2'),
+        _in_if(state=>'StateProvinceCode'),
+        _in_if(state=>'PoliticalDivision1'),
+        _in_if(postal_code_extended=>'PostcodeExtendedLow'),
+        _in_if(name=>'ConsigneeName'),
+        _in_if(building_name=>'BuildingName'),
+        _in_if(address=>'AddressLine1'),
+        _in_if(address2=>'AddressLine2'),
+        _in_if(address3=>'AddressLine3'),
+
+        ( exists $hashref->{ResidentialAddressIndicator} ? ( is_residential => 1 ) : () ),
+
+        ( $hashref->{StreetName} || $hashref->{StreetNumberLow} || $hashref->{StreetType} ? (
+            address => join(
+                ' ',grep { defined }
+                    @{$hashref}{qw(StreetNumberLow StreetName {StreetType)})
+                ) : () ),
+
+        ( ref($hashref->{AddressLine}) eq 'ARRAY' ? (
+            ( $hashref->{AddressLine}[0] ? ( address => $hashref->{AddressLine}[0] ) : () ),
+            ( $hashref->{AddressLine}[1] ? ( address2 => $hashref->{AddressLine}[1] ) : () ),
+            ( $hashref->{AddressLine}[2] ? ( address3 => $hashref->{AddressLine}[2] ) : () ),
+        ) : () ),
+    };
 }
 
 =method C<cache_id>
