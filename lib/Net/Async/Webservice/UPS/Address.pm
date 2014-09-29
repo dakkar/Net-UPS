@@ -292,7 +292,9 @@ sub BUILDARGS {
     my ($class,@etc) = @_;
     my $hashref = $class->next::method(@etc);
 
-    if (not $hashref->{Address} and not $hashref->{AddressKeyFormat}) {
+    my $data = $hashref->{Address} || $hashref->{AddressKeyFormat} || $hashref->{AddressArtifactFormat};
+
+    if (not $data) {
         if ($hashref->{postal_code}
                 and not defined $hashref->{postal_code_extended}
                     and $hashref->{postal_code} =~ m{\A(\d+)-(\d+)\z}) {
@@ -304,7 +306,6 @@ sub BUILDARGS {
         return $hashref;
     }
 
-    my $data = $hashref->{Address} || $hashref->{AddressKeyFormat};
     set_implied_argument($data);
 
     return {
