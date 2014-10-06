@@ -5,6 +5,8 @@ use namespace::autoclean;
 
 # ABSTRACT: base class with fields common to all UPS responses
 
+=for Pod::Coverage BUILDARGS
+
 =attr C<customer_context>
 
 A string, usually whatever was passed to the request as C<customer_context>.

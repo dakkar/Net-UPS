@@ -8,6 +8,8 @@ use namespace::autoclean;
 
 # ABSTRACT: an address for UPS
 
+=for Pod::Coverage BUILDARGS
+
 =attr C<city>
 
 String with the name of the city, optional.
@@ -284,7 +286,7 @@ sub as_hash {
         }
     }
     else {
-        die "bad address to_hash shape $shape";
+        die "bad address as_hash shape $shape";
     }
 }
 

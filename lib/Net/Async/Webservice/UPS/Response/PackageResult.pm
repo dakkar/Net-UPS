@@ -7,6 +7,8 @@ use namespace::autoclean;
 
 # ABSTRACT: information about a package in a booked shipment
 
+=for Pod::Coverage BUILDARGS
+
 =head1 DESCRIPTION
 
 Instances of this class are returned as part of

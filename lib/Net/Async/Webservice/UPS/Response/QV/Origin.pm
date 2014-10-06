@@ -9,44 +9,120 @@ use DateTime::Format::Strptime;
 use List::AllUtils 'any';
 use namespace::autoclean;
 
+# ABSTRACT: a Quantum View "origin" event
+
+=for Pod::Coverage BUILDARGS
+
+=head1 DESCRIPTION
+
+Object representing the
+C<QuantumViewEvents/SubscriptionEvents/SubscriptionFile/Origin>
+elements in the Quantum View response. Attribute descriptions come
+from the official UPS documentation.
+
+=attr C<package_reference>
+
+Optional array of
+L<Net::Async::Webservice::UPS::Response::QV::Reference>, package-level
+reference numbers.
+
+=cut
+
 has package_reference => (
     is => 'ro',
     isa => ArrayRef[QVReference],
 );
+
+=attr C<shipment_reference>
+
+Optional array of
+L<Net::Async::Webservice::UPS::Response::QV::Reference>, shipment-level
+reference numbers.
+
+=cut
 
 has shipment_reference => (
     is => 'ro',
     isa => ArrayRef[QVReference],
 );
 
+=attr C<shipper_number>
+
+Optional string, shipper's six digit alphanumeric account number.
+
+=cut
+
 has shipper_number => (
     is => 'ro',
     isa => Str,
 );
+
+=attr C<tracking_number>
+
+Optional string, package's 1Z tracking number.
+
+=cut
 
 has tracking_number => (
     is => 'ro',
     isa => Str,
 );
 
+=attr C<date_time>
+
+Optional L<DateTime>, date and time that the package is picked up at
+the origin, most probably with a floating timezone.
+
+=cut
+
 has date_time => (
     is => 'ro',
     isa => DateTimeT,
 );
+
+=attr C<activity_location>
+
+Optional L<Net::Async::Webservice::UPS::Address>, geographic location
+where an activity occurred during a movement of a package or shipment.
+
+=cut
 
 has activity_location => (
     is => 'ro',
     isa => Address,
 );
 
+=attr C<bill_to_account_number>
+
+Optional string, the UPS Account number to which the shipping charges
+were billed.
+
+=cut
+
 has bill_to_account_number => (
     is => 'ro',
     isa => Str,
 );
+
+=attr C<bill_to_account_option>
+
+Optional string, indicates how shipping charges for the package were
+billed. Valid Values: 01 Shipper, 02 Consignee Billing , 03 Third
+Party, 04 Freight Collect.
+
+=cut
+
 has bill_to_account_option => (
     is => 'ro',
     isa => Str,
 );
+
+=attr C<scheduled_delivery_date_time>
+
+Optional L<DateTime>, scheduled delivery date for destination address,
+most probably with a floating timezone.
+
+=cut
 
 has scheduled_delivery_date_time => (
     is => 'ro',

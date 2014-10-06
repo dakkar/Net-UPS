@@ -9,72 +9,196 @@ use DateTime::Format::Strptime;
 use List::AllUtils 'any';
 use namespace::autoclean;
 
-has activity_type => (
-    is => 'ro',
-    isa => Str,
-);
+# ABSTRACT: a Quantum View "generic" event
 
-has tracking_number => (
-    is => 'ro',
-    isa => Str,
-);
+=for Pod::Coverage BUILDARGS
 
-has shipper_number => (
-    is => 'ro',
-    isa => Str,
-);
+=head1 DESCRIPTION
+
+Object representing the
+C<QuantumViewEvents/SubscriptionEvents/SubscriptionFile/Generic>
+elements in the Quantum View response. Attribute descriptions come
+from the official UPS documentation.
+
+=attr C<package_reference>
+
+Optional array of
+L<Net::Async::Webservice::UPS::Response::QV::Reference>, package-level
+reference numbers.
+
+=cut
 
 has package_reference => (
     is => 'ro',
     isa => ArrayRef[QVReference],
 );
 
+=attr C<shipment_reference>
+
+Optional array of
+L<Net::Async::Webservice::UPS::Response::QV::Reference>, shipment-level
+reference numbers.
+
+=cut
+
 has shipment_reference => (
     is => 'ro',
     isa => ArrayRef[QVReference],
 );
 
-has service => (
+=attr C<shipper_number>
+
+Optional string, shipper's six digit alphanumeric account number.
+
+=cut
+
+has shipper_number => (
     is => 'ro',
-    isa => HashRef,
+    isa => Str,
 );
+
+=attr C<tracking_number>
+
+Optional string, package's 1Z tracking number.
+
+=cut
+
+has tracking_number => (
+    is => 'ro',
+    isa => Str,
+);
+
+=attr C<date_time>
+
+Optional L<DateTime>, date and time of package activity, most probably
+with a floating timezone.. If L</activity_type> is C<TC> then this is
+the date of first USPS scan.
+
+=cut
 
 has date_time => (
     is => 'ro',
     isa => DateTimeT,
 );
 
+=attr C<activity_type>
+
+Optional string, unique identifier that defines the type of
+activity. C<VM> = Void for Manifest C<UR> = Undeliverable
+Returns. C<IR> = Invoice Removal Successful. C<TC> = Transport Company
+USPS scan C<PS> = 'Postal Service Possession Scan'. C<FN> = UPS Access
+Point/Alternate Delivery Location Email Notification Failure. C<DS> =
+Destination Scan.
+
+=cut
+
+has activity_type => (
+    is => 'ro',
+    isa => Str,
+);
+
+=attr C<service>
+
+Optional hashref, service code (key C<Code>) and description (key
+C<Description>, optional).
+
+=cut
+
+has service => (
+    is => 'ro',
+    isa => HashRef,
+);
+
+=attr C<rescheduled_delivery_date>
+
+Optional string,
+
+=cut
+
 has rescheduled_delivery_date => (
     is => 'ro',
     isa => DateTimeT,
 );
 
+=attr C<bill_to_account_number>
+
+Optional string, the UPS Account number to which the shipping charges
+were billed.
+
+=cut
+
 has bill_to_account_number => (
     is => 'ro',
     isa => Str,
 );
+
+=attr C<bill_to_account_option>
+
+Optional string, indicates how shipping charges for the package were
+billed. Valid Values: 01 Shipper, 02 Consignee Billing , 03 Third
+Party, 04 Freight Collect, 99 International Bill Option.
+
+=cut
+
 has bill_to_account_option => (
     is => 'ro',
     isa => Str,
 );
 
+=attr C<ship_to_location_id>
+
+Optional string, location name that the package is shipped to.
+
+=cut
+
 has ship_to_location_id => (
     is => 'ro',
     isa => Str,
 );
+
+=attr C<ship_to_receiving_name>
+
+Optional string, alias of the location where the package is received.
+
+=cut
+
 has ship_to_receiving_name => (
     is => 'ro',
     isa => Str,
 );
+
+=attr C<ship_to_bookmark>
+
+Optional string. If the package data is not inside this
+L<Net::Async::Webservice::UPS::Response::QV>, it will be in the
+response you get by repeating the call to
+L<Net::Async::Webservice::UPS/qv_events> with this bookmark.
+
+=cut
+
 has ship_to_bookmark => (
     is => 'ro',
     isa => Str,
 );
 
+=attr C<failure_email>
+
+Optional string, email address that failed when an attempt was made to
+send email to the customer.
+
+=cut
+
 has failure_email => (
     is => 'ro',
     isa => Str,
 );
+
+=attr C<failure_code>
+
+Optional string, failure notification code.
+
+=cut
+
 has failure_code => (
     is => 'ro',
     isa => Str,

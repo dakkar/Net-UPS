@@ -727,13 +727,13 @@ sub validate_street_address {
 
 =method C<ship_confirm>
 
-  my $shipconfirm_response = $usp->ship_confirm({
+  $ups->ship_confirm({
      from => $source_contact,
      to => $destination_contact,
      description => 'something',
      payment => $payment_method,
      packages => \@packages,
-  });
+  }) ==> $shipconfirm_response
 
 Performs a C<ShipConfirm> request to UPS. The parameters are:
 
@@ -761,7 +761,7 @@ optional, 1 means "signature required", 2 mean "adult signature required"
 = C<customer_context>
 optional string for reference purposes
 
-Returns an instance of
+Returns a L<Future> yielding an instance of
 L<Net::Async::Webservice::UPS::Response::ShipmentConfirm>.
 
 B<NOTE>: the API of this call may change in the future, let me know if
@@ -843,9 +843,9 @@ sub ship_confirm {
 
 =method C<ship_accept>
 
-  my $shipaccept_response = $usp->ship_accept({
+  $ups->ship_accept({
       confirm => $shipconfirm_response,
-  });
+  }) ==> $shipaccept_response
 
 Performs a C<ShipAccept> request to UPS. The parameters are:
 
@@ -855,7 +855,7 @@ required, instance of L<Net::Async::Webservice::UPS::Response::ShipmentConfirm>,
 = C<customer_context>
 optional string for reference purposes
 
-Returns an instance of
+Returns a L<Future> yielding an instance of
 L<Net::Async::Webservice::UPS::Response::ShipmentAccept>.
 
 =cut
@@ -896,6 +896,29 @@ sub ship_accept {
         },
     );
 }
+
+=method C<qv_events>
+
+  $ups->qv_events({
+      subscriptions => [ Net::Async::Webservice::UPS::QVSubscription->new(
+        name => 'MySubscription',
+      ) ],
+  }) ==> $qv_response
+
+Performs a C<QVEvennts> request to UPS. The parameters are:
+
+=for :list
+= C<subscriptions>
+optional, array of L<Net::Async::Webservice::UPS::QVSubscription>, specifying what you want to retrieve
+= C<bookmark>
+optional, string retrieved from a previous call, used for pagination (see L<Net::Async::Webservice::UPS::Response::QV>)
+= C<customer_context>
+optional string for reference purposes
+
+Returns a L<Future> yielding an instance of
+L<Net::Async::Webservice::UPS::Response::QV>.
+
+=cut
 
 sub qv_events {
     state $argcheck = compile( Object, Dict[

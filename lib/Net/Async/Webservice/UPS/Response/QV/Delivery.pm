@@ -9,58 +9,151 @@ use DateTime::Format::Strptime;
 use List::AllUtils 'any';
 use namespace::autoclean;
 
+# ABSTRACT: a Quantum View "delivery" event
+
+=for Pod::Coverage BUILDARGS
+
+=head1 DESCRIPTION
+
+Object representing the
+C<QuantumViewEvents/SubscriptionEvents/SubscriptionFile/Delivery>
+elements in the Quantum View response. Attribute descriptions come
+from the official UPS documentation.
+
+=attr C<package_reference>
+
+Optional array of
+L<Net::Async::Webservice::UPS::Response::QV::Reference>, package-level
+reference numbers.
+
+=cut
+
 has package_reference => (
     is => 'ro',
     isa => ArrayRef[QVReference],
 );
+
+=attr C<shipment_reference>
+
+Optional array of
+L<Net::Async::Webservice::UPS::Response::QV::Reference>, shipment-level
+reference numbers.
+
+=cut
 
 has shipment_reference => (
     is => 'ro',
     isa => ArrayRef[QVReference],
 );
 
+=attr C<shipper_number>
+
+Optional string, shipper's six digit alphanumeric account number.
+
+=cut
+
 has shipper_number => (
     is => 'ro',
     isa => Str,
 );
+
+=attr C<tracking_number>
+
+Optional string, package's 1Z tracking number.
+
+=cut
 
 has tracking_number => (
     is => 'ro',
     isa => Str,
 );
 
+=attr C<date_time>
+
+Optional L<DateTime>, date and time that the package is delivered,
+most probably with a floating timezone.
+
+=cut
+
 has date_time => (
     is => 'ro',
     isa => DateTimeT,
 );
+
+=attr C<activity_location>
+
+Optional L<Net::Async::Webservice::UPS::Address>, geographic location
+where an activity occurred during a movement of a package or shipment.
+
+=cut
 
 has activity_location => (
     is => 'ro',
     isa => Address,
 );
 
+=attr C<delivery_location>
+
+Optional L<Net::Async::Webservice::UPS::Address>, location where
+package is delivered.
+
+=cut
+
 has delivery_location => (
     is => 'ro',
     isa => Address,
 );
 
+=attr C<delivery_location_code>
+
+Optional string, Location Code for delivered package.
+
+=cut
+
 has delivery_location_code => (
     is => 'ro',
     isa => Str,
 );
+
+=attr C<delivery_location_descripton>
+
+Optional string, description of the location where package is delivered.
+
+=cut
+
 has delivery_location_descripton => (
     is => 'ro',
     isa => Str,
 );
+
+=attr C<signed_for_by>
+
+Optional string, the person who signed for the package.
+
+=cut
+
 has signed_for_by => (
     is => 'ro',
     isa => Str,
 );
 
+=attr C<driver_release>
+
+Optional string, information about driver release note / signature.
+
+=cut
+
 has driver_release => (
     is => 'ro',
     isa => Str,
 );
+
+=attr C<cod_currency>
+
+Optional string, the IATA currency code associated with the COD amount
+for the package.
+
+=cut
 
 has cod_currency => (
     is => 'ro',
@@ -68,25 +161,60 @@ has cod_currency => (
     required => 0,
 );
 
+=attr C<cod_value>
+
+Optional string, the monetary amount of the COD.
+
+=cut
+
 has cod_value => (
     is => 'ro',
     isa => Measure,
     required => 0,
 );
 
+=attr C<bill_to_account_number>
+
+Optional string, the UPS Account number to which the shipping charges
+were billed.
+
+=cut
+
 has bill_to_account_number => (
     is => 'ro',
     isa => Str,
 );
+
+=attr C<bill_to_account_option>
+
+Optional string, indicates how shipping charges for the package were
+billed. Valid Values: 01 Shipper, 02 Consignee Billing , 03 Third
+Party, 04 Freight Collect.
+
+=cut
+
 has bill_to_account_option => (
     is => 'ro',
     isa => Str,
 );
 
+=attr C<access_point_location_id>
+
+Optional string, the UPS Access Point Location ID.
+
+=cut
+
 has access_point_location_id => (
     is => 'ro',
     isa => Str,
 );
+
+=attr C<last_pickup>
+
+Optional string, last pickup by Date from the UPS Access Point
+Location (yes, a string, the format does not seem to be specified)
+
+=cut
 
 has last_pickup => (
     is => 'ro',

@@ -7,6 +7,8 @@ use namespace::autoclean;
 
 # ABSTRACT: shipment rate from UPS
 
+=for Pod::Coverage BUILDARGS
+
 =head1 DESCRIPTION
 
 Objects of this class are usually only seen inside
