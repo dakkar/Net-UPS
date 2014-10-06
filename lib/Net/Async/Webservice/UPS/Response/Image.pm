@@ -1,4 +1,8 @@
 package Net::Async::Webservice::UPS::Response::Image;
+$Net::Async::Webservice::UPS::Response::Image::VERSION = '1.1.0';
+{
+  $Net::Async::Webservice::UPS::Response::Image::DIST = 'Net-Async-Webservice-UPS';
+}
 use Moo;
 use Types::Standard qw(Str);
 use Net::Async::Webservice::UPS::Types qw(:types);
@@ -7,12 +11,6 @@ use namespace::autoclean;
 
 # ABSTRACT: an image in a UPS response
 
-=attr C<format>
-
-Enum of type L<Net::Async::Webservice::UPS::Types/ImageType>, one of
-C<EPL>, C<ZPL>, C<SPL>, C<STARPL>, C<GIF>.
-
-=cut
 
 has format => (
     is => 'ro',
@@ -20,13 +18,6 @@ has format => (
     required => 0,
 );
 
-=attr C<data>
-
-String of bytes, containing the actual image data. You can pass the
-argument C<base64_data> to the constructor instead of C<data>, to have
-it decoded automatically.
-
-=cut
 
 has data => (
     is => 'ro',
@@ -34,10 +25,6 @@ has data => (
     required => 0,
 );
 
-=for Pod::Coverage
-BUILDARGS
-
-=cut
 
 around BUILDARGS => sub {
     my ($orig,$class,@etc) = @_;
@@ -50,16 +37,6 @@ around BUILDARGS => sub {
     return $args;
 };
 
-=method C<BUILDARGS>
-
-  my $miage = Net::Async::Webservice::UPS::Response::Image
-                ->new($piece_of_ups_response);
-
-If you call the constructor with a hashref with at least a key
-matching C</ImageFormat$/> and a key of C<GraphicImage>, this will
-extract the image.
-
-=cut
 
 sub BUILDARGS {
     my ($class,$hash) = @_;
@@ -78,3 +55,66 @@ sub BUILDARGS {
 }
 
 1;
+
+__END__
+
+=pod
+
+=encoding UTF-8
+
+=head1 NAME
+
+Net::Async::Webservice::UPS::Response::Image - an image in a UPS response
+
+=head1 VERSION
+
+version 1.1.0
+
+=head1 ATTRIBUTES
+
+=head2 C<format>
+
+Enum of type L<Net::Async::Webservice::UPS::Types/ImageType>, one of
+C<EPL>, C<ZPL>, C<SPL>, C<STARPL>, C<GIF>.
+
+=head2 C<data>
+
+String of bytes, containing the actual image data. You can pass the
+argument C<base64_data> to the constructor instead of C<data>, to have
+it decoded automatically.
+
+=head1 METHODS
+
+=head2 C<BUILDARGS>
+
+  my $miage = Net::Async::Webservice::UPS::Response::Image
+                ->new($piece_of_ups_response);
+
+If you call the constructor with a hashref with at least a key
+matching C</ImageFormat$/> and a key of C<GraphicImage>, this will
+extract the image.
+
+=for Pod::Coverage BUILDARGS
+
+=head1 AUTHORS
+
+=over 4
+
+=item *
+
+Gianni Ceccarelli <gianni.ceccarelli@net-a-porter.com>
+
+=item *
+
+Sherzod B. Ruzmetov <sherzodr@cpan.org>
+
+=back
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2014 by Gianni Ceccarelli <gianni.ceccarelli@net-a-porter.com>.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+=cut

@@ -1,4 +1,8 @@
 package Net::Async::Webservice::UPS::Package;
+$Net::Async::Webservice::UPS::Package::VERSION = '1.1.0';
+{
+  $Net::Async::Webservice::UPS::Package::DIST = 'Net-Async-Webservice-UPS';
+}
 use Moo;
 use Type::Params qw(compile);
 use Types::Standard qw(Str Object);
@@ -9,13 +13,6 @@ use 5.010;
 
 # ABSTRACT: a package for UPS
 
-=attr C<packaging_type>
-
-Type of packaging (see
-L<Net::Async::Webservice::UPS::Types/PackagingType>), defaults to
-C<PACKAGE>.
-
-=cut
 
 has packaging_type => (
     is => 'ro',
@@ -23,17 +20,6 @@ has packaging_type => (
     default => sub { 'PACKAGE' },
 );
 
-=attr C<linear_unit>
-
-Either C<CM> or C<IN>, required.
-
-You can either pass this attribute directly, or use the
-C<measurement_system> shortcut constructor parameter: if you pass C<<
-measurement_system => 'english' >>, C<linear_unit> will be assumed to
-be C<IN>; if you pass C<< measurement_system => 'metric' >>, it will
-be assumed to be C<CM>.
-
-=cut
 
 has linear_unit => (
     is => 'ro',
@@ -41,17 +27,6 @@ has linear_unit => (
     required => 1,
 );
 
-=method C<weight_unit>
-
-Either C<KGS> or C<LBS>, required.
-
-You can either pass this attribute directly, or use the
-C<measurement_system> shortcut constructor parameter: if you pass C<<
-measurement_system => 'english' >>, C<weight_unit> will be assumed to
-be C<LBS>; if you pass C<< measurement_system => 'metric' >>, it will
-be assumed to be C<KGS>.
-
-=cut
 
 has weight_unit => (
     is => 'ro',
@@ -59,10 +34,6 @@ has weight_unit => (
     required => 1,
 );
 
-=for Pod::Coverage
-BUILDARGS
-
-=cut
 
 around BUILDARGS => sub {
     my ($orig,$self,@etc) = @_;
@@ -85,73 +56,36 @@ around BUILDARGS => sub {
     return $args;
 };
 
-=attr C<length>
-
-Length of the package, in centimeters or inches depending on
-L</linear_unit>.
-
-=cut
 
 has length => (
     is => 'ro',
     isa => Measure,
 );
 
-=attr C<width>
-
-Width of the package, in centimeters or inches depending on
-L</linear_unit>.
-
-=cut
 
 has width => (
     is => 'ro',
     isa => Measure,
 );
 
-=attr C<height>
-
-Height of the package, in centimeters or inches depending on
-L</linear_unit>.
-
-=cut
 
 has height => (
     is => 'ro',
     isa => Measure,
 );
 
-=attr C<weight>
-
-Weight of the package, in kilograms or pounds depending on
-L</weight_unit>.
-
-=cut
 
 has weight => (
     is => 'ro',
     isa => Measure,
 );
 
-=attr C<id>
-
-Optional string, may be used to link package-level response parts to
-the packages in a request.
-
-=cut
 
 has id => (
     is => 'rw',
     isa => Str,
 );
 
-=attr C<description>
-
-Optional string, description of the package; required when the package
-is used in a return shipment.
-
-
-=cut
 
 has description => (
     is => 'rw',
@@ -168,13 +102,6 @@ my %code_for_packaging_type = (
     UPS_10KG_BOX    => '25'
 );
 
-=method C<as_hash>
-
-Returns a hashref that, when passed through L<XML::Simple>, will
-produce the XML fragment needed in UPS requests to represent this
-package.
-
-=cut
 
 sub as_hash {
     state $argcheck = compile(Object);
@@ -224,14 +151,6 @@ sub as_hash {
     return \%data;
 }
 
-=method C<is_oversized>
-
-Returns an I<integer> indicating whether this package is to be
-considered "oversized", and if so, in which oversize class it fits.
-
-Mostly used internally by L</as_hash>.
-
-=cut
 
 sub is_oversized {
     state $argcheck = compile(Object);
@@ -293,11 +212,6 @@ sub is_oversized {
     }
 }
 
-=method C<cache_id>
-
-Returns a string identifying this package.
-
-=cut
 
 sub cache_id {
     state $argcheck = compile(Object);
@@ -311,3 +225,118 @@ sub cache_id {
 
 1;
 
+__END__
+
+=pod
+
+=encoding UTF-8
+
+=head1 NAME
+
+Net::Async::Webservice::UPS::Package - a package for UPS
+
+=head1 VERSION
+
+version 1.1.0
+
+=head1 ATTRIBUTES
+
+=head2 C<packaging_type>
+
+Type of packaging (see
+L<Net::Async::Webservice::UPS::Types/PackagingType>), defaults to
+C<PACKAGE>.
+
+=head2 C<linear_unit>
+
+Either C<CM> or C<IN>, required.
+
+You can either pass this attribute directly, or use the
+C<measurement_system> shortcut constructor parameter: if you pass C<<
+measurement_system => 'english' >>, C<linear_unit> will be assumed to
+be C<IN>; if you pass C<< measurement_system => 'metric' >>, it will
+be assumed to be C<CM>.
+
+=head2 C<length>
+
+Length of the package, in centimeters or inches depending on
+L</linear_unit>.
+
+=head2 C<width>
+
+Width of the package, in centimeters or inches depending on
+L</linear_unit>.
+
+=head2 C<height>
+
+Height of the package, in centimeters or inches depending on
+L</linear_unit>.
+
+=head2 C<weight>
+
+Weight of the package, in kilograms or pounds depending on
+L</weight_unit>.
+
+=head2 C<id>
+
+Optional string, may be used to link package-level response parts to
+the packages in a request.
+
+=head2 C<description>
+
+Optional string, description of the package; required when the package
+is used in a return shipment.
+
+=head1 METHODS
+
+=head2 C<weight_unit>
+
+Either C<KGS> or C<LBS>, required.
+
+You can either pass this attribute directly, or use the
+C<measurement_system> shortcut constructor parameter: if you pass C<<
+measurement_system => 'english' >>, C<weight_unit> will be assumed to
+be C<LBS>; if you pass C<< measurement_system => 'metric' >>, it will
+be assumed to be C<KGS>.
+
+=head2 C<as_hash>
+
+Returns a hashref that, when passed through L<XML::Simple>, will
+produce the XML fragment needed in UPS requests to represent this
+package.
+
+=head2 C<is_oversized>
+
+Returns an I<integer> indicating whether this package is to be
+considered "oversized", and if so, in which oversize class it fits.
+
+Mostly used internally by L</as_hash>.
+
+=head2 C<cache_id>
+
+Returns a string identifying this package.
+
+=for Pod::Coverage BUILDARGS
+
+=head1 AUTHORS
+
+=over 4
+
+=item *
+
+Gianni Ceccarelli <gianni.ceccarelli@net-a-porter.com>
+
+=item *
+
+Sherzod B. Ruzmetov <sherzodr@cpan.org>
+
+=back
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2014 by Gianni Ceccarelli <gianni.ceccarelli@net-a-porter.com>.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+=cut

@@ -1,5 +1,3 @@
-{{$NEXT}}
-
 1.1.0     2014-10-06 17:21:38+01:00 Europe/London
  - add support for retrieving Quantum View events (the 'manifest' part
    of the response is still not supported)
