@@ -1,4 +1,8 @@
 package Net::Async::Webservice::UPS::Response::QV::Delivery;
+$Net::Async::Webservice::UPS::Response::QV::Delivery::VERSION = '1.1.1';
+{
+  $Net::Async::Webservice::UPS::Response::QV::Delivery::DIST = 'Net-Async-Webservice-UPS';
+}
 use Moo;
 use 5.010;
 use Types::Standard qw(Str ArrayRef HashRef);
@@ -11,149 +15,72 @@ use namespace::autoclean;
 
 # ABSTRACT: a Quantum View "delivery" event
 
-=for Pod::Coverage BUILDARGS
-
-=head1 DESCRIPTION
-
-Object representing the
-C<QuantumViewEvents/SubscriptionEvents/SubscriptionFile/Delivery>
-elements in the Quantum View response. Attribute descriptions come
-from the official UPS documentation.
-
-=attr C<package_reference>
-
-Optional array of
-L<Net::Async::Webservice::UPS::Response::QV::Reference>, package-level
-reference numbers.
-
-=cut
 
 has package_reference => (
     is => 'ro',
     isa => ArrayRef[QVReference],
 );
 
-=attr C<shipment_reference>
-
-Optional array of
-L<Net::Async::Webservice::UPS::Response::QV::Reference>, shipment-level
-reference numbers.
-
-=cut
 
 has shipment_reference => (
     is => 'ro',
     isa => ArrayRef[QVReference],
 );
 
-=attr C<shipper_number>
-
-Optional string, shipper's six digit alphanumeric account number.
-
-=cut
 
 has shipper_number => (
     is => 'ro',
     isa => Str,
 );
 
-=attr C<tracking_number>
-
-Optional string, package's 1Z tracking number.
-
-=cut
 
 has tracking_number => (
     is => 'ro',
     isa => Str,
 );
 
-=attr C<date_time>
-
-Optional L<DateTime>, date and time that the package is delivered,
-most probably with a floating timezone.
-
-=cut
 
 has date_time => (
     is => 'ro',
     isa => DateTimeT,
 );
 
-=attr C<activity_location>
-
-Optional L<Net::Async::Webservice::UPS::Address>, geographic location
-where an activity occurred during a movement of a package or shipment.
-
-=cut
 
 has activity_location => (
     is => 'ro',
     isa => Address,
 );
 
-=attr C<delivery_location>
-
-Optional L<Net::Async::Webservice::UPS::Address>, location where
-package is delivered.
-
-=cut
 
 has delivery_location => (
     is => 'ro',
     isa => Address,
 );
 
-=attr C<delivery_location_code>
-
-Optional string, Location Code for delivered package.
-
-=cut
 
 has delivery_location_code => (
     is => 'ro',
     isa => Str,
 );
 
-=attr C<delivery_location_descripton>
-
-Optional string, description of the location where package is delivered.
-
-=cut
 
 has delivery_location_descripton => (
     is => 'ro',
     isa => Str,
 );
 
-=attr C<signed_for_by>
-
-Optional string, the person who signed for the package.
-
-=cut
 
 has signed_for_by => (
     is => 'ro',
     isa => Str,
 );
 
-=attr C<driver_release>
-
-Optional string, information about driver release note / signature.
-
-=cut
 
 has driver_release => (
     is => 'ro',
     isa => Str,
 );
 
-=attr C<cod_currency>
-
-Optional string, the IATA currency code associated with the COD amount
-for the package.
-
-=cut
 
 has cod_currency => (
     is => 'ro',
@@ -161,11 +88,6 @@ has cod_currency => (
     required => 0,
 );
 
-=attr C<cod_value>
-
-Optional string, the monetary amount of the COD.
-
-=cut
 
 has cod_value => (
     is => 'ro',
@@ -173,48 +95,24 @@ has cod_value => (
     required => 0,
 );
 
-=attr C<bill_to_account_number>
-
-Optional string, the UPS Account number to which the shipping charges
-were billed.
-
-=cut
 
 has bill_to_account_number => (
     is => 'ro',
     isa => Str,
 );
 
-=attr C<bill_to_account_option>
-
-Optional string, indicates how shipping charges for the package were
-billed. Valid Values: 01 Shipper, 02 Consignee Billing , 03 Third
-Party, 04 Freight Collect.
-
-=cut
 
 has bill_to_account_option => (
     is => 'ro',
     isa => Str,
 );
 
-=attr C<access_point_location_id>
-
-Optional string, the UPS Access Point Location ID.
-
-=cut
 
 has access_point_location_id => (
     is => 'ro',
     isa => Str,
 );
 
-=attr C<last_pickup>
-
-Optional string, last pickup by Date from the UPS Access Point
-Location (yes, a string, the format does not seem to be specified)
-
-=cut
 
 has last_pickup => (
     is => 'ro',
@@ -255,3 +153,131 @@ sub BUILDARGS {
 }
 
 1;
+
+__END__
+
+=pod
+
+=encoding UTF-8
+
+=head1 NAME
+
+Net::Async::Webservice::UPS::Response::QV::Delivery - a Quantum View "delivery" event
+
+=head1 VERSION
+
+version 1.1.1
+
+=head1 DESCRIPTION
+
+Object representing the
+C<QuantumViewEvents/SubscriptionEvents/SubscriptionFile/Delivery>
+elements in the Quantum View response. Attribute descriptions come
+from the official UPS documentation.
+
+=head1 ATTRIBUTES
+
+=head2 C<package_reference>
+
+Optional array of
+L<Net::Async::Webservice::UPS::Response::QV::Reference>, package-level
+reference numbers.
+
+=head2 C<shipment_reference>
+
+Optional array of
+L<Net::Async::Webservice::UPS::Response::QV::Reference>, shipment-level
+reference numbers.
+
+=head2 C<shipper_number>
+
+Optional string, shipper's six digit alphanumeric account number.
+
+=head2 C<tracking_number>
+
+Optional string, package's 1Z tracking number.
+
+=head2 C<date_time>
+
+Optional L<DateTime>, date and time that the package is delivered,
+most probably with a floating timezone.
+
+=head2 C<activity_location>
+
+Optional L<Net::Async::Webservice::UPS::Address>, geographic location
+where an activity occurred during a movement of a package or shipment.
+
+=head2 C<delivery_location>
+
+Optional L<Net::Async::Webservice::UPS::Address>, location where
+package is delivered.
+
+=head2 C<delivery_location_code>
+
+Optional string, Location Code for delivered package.
+
+=head2 C<delivery_location_descripton>
+
+Optional string, description of the location where package is delivered.
+
+=head2 C<signed_for_by>
+
+Optional string, the person who signed for the package.
+
+=head2 C<driver_release>
+
+Optional string, information about driver release note / signature.
+
+=head2 C<cod_currency>
+
+Optional string, the IATA currency code associated with the COD amount
+for the package.
+
+=head2 C<cod_value>
+
+Optional string, the monetary amount of the COD.
+
+=head2 C<bill_to_account_number>
+
+Optional string, the UPS Account number to which the shipping charges
+were billed.
+
+=head2 C<bill_to_account_option>
+
+Optional string, indicates how shipping charges for the package were
+billed. Valid Values: 01 Shipper, 02 Consignee Billing , 03 Third
+Party, 04 Freight Collect.
+
+=head2 C<access_point_location_id>
+
+Optional string, the UPS Access Point Location ID.
+
+=head2 C<last_pickup>
+
+Optional string, last pickup by Date from the UPS Access Point
+Location (yes, a string, the format does not seem to be specified)
+
+=for Pod::Coverage BUILDARGS
+
+=head1 AUTHORS
+
+=over 4
+
+=item *
+
+Gianni Ceccarelli <gianni.ceccarelli@net-a-porter.com>
+
+=item *
+
+Sherzod B. Ruzmetov <sherzodr@cpan.org>
+
+=back
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2014 by Gianni Ceccarelli <gianni.ceccarelli@net-a-porter.com>.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+=cut

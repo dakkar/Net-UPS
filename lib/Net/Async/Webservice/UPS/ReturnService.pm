@@ -1,4 +1,8 @@
 package Net::Async::Webservice::UPS::ReturnService;
+$Net::Async::Webservice::UPS::ReturnService::VERSION = '1.1.1';
+{
+  $Net::Async::Webservice::UPS::ReturnService::DIST = 'Net-Async-Webservice-UPS';
+}
 use Moo;
 use 5.010;
 use Types::Standard qw(Str);
@@ -7,32 +11,12 @@ use namespace::autoclean;
 
 # ABSTRACT: shipment return service from UPS
 
-=head1 DESCRIPTION
-
-Instances of this class describe a particular shipping return service.
-
-=attr C<code>
-
-UPS service code, see
-L<Net::Async::Webservice::UPS::Types/ReturnServiceCode>. If you
-construct an object passing only L</label>, the code corresponding to
-that label will be used.
-
-=cut
 
 has code => (
     is => 'ro',
     isa => ReturnServiceCode,
 );
 
-=attr C<label>
-
-UPS service label, see
-L<Net::Async::Webservice::UPS::Types/ReturnServiceLabel>. If you
-construct an object passing only L</code>, the label corresponding to
-that code will be used.
-
-=cut
 
 has label => (
     is => 'ro',
@@ -48,17 +32,6 @@ my %code_for_label = (
 );
 my %label_for_code = reverse %code_for_label;
 
-=func C<label_for_code>
-
-  my $label = Net::Async::Webservice::UPS::Service::label_for_code($code);
-
-I<Not a method>. Returns the UPS service label string for the given
-service code.
-
-=for Pod::Coverage
-BUILDARGS
-
-=cut
 
 sub label_for_code {
     my ($code) = @_;
@@ -85,12 +58,81 @@ around BUILDARGS => sub {
     return $args;
 };
 
-=method C<cache_id>
-
-Returns a string identifying this service.
-
-=cut
 
 sub cache_id { return $_[0]->code }
 
 1;
+
+__END__
+
+=pod
+
+=encoding UTF-8
+
+=head1 NAME
+
+Net::Async::Webservice::UPS::ReturnService - shipment return service from UPS
+
+=head1 VERSION
+
+version 1.1.1
+
+=head1 DESCRIPTION
+
+Instances of this class describe a particular shipping return service.
+
+=head1 ATTRIBUTES
+
+=head2 C<code>
+
+UPS service code, see
+L<Net::Async::Webservice::UPS::Types/ReturnServiceCode>. If you
+construct an object passing only L</label>, the code corresponding to
+that label will be used.
+
+=head2 C<label>
+
+UPS service label, see
+L<Net::Async::Webservice::UPS::Types/ReturnServiceLabel>. If you
+construct an object passing only L</code>, the label corresponding to
+that code will be used.
+
+=head1 METHODS
+
+=head2 C<cache_id>
+
+Returns a string identifying this service.
+
+=head1 FUNCTIONS
+
+=head2 C<label_for_code>
+
+  my $label = Net::Async::Webservice::UPS::Service::label_for_code($code);
+
+I<Not a method>. Returns the UPS service label string for the given
+service code.
+
+=for Pod::Coverage BUILDARGS
+
+=head1 AUTHORS
+
+=over 4
+
+=item *
+
+Gianni Ceccarelli <gianni.ceccarelli@net-a-porter.com>
+
+=item *
+
+Sherzod B. Ruzmetov <sherzodr@cpan.org>
+
+=back
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2014 by Gianni Ceccarelli <gianni.ceccarelli@net-a-porter.com>.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+=cut
