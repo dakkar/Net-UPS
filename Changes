@@ -1,4 +1,5 @@
 {{$NEXT}}
+ - drop mistaken "use NAP::policy" from a module
 
 1.1.1     2014-10-07 10:34:29+01:00 Europe/London
  - add DateTime::Format::ISO8601 prereq that was not auto-detected
