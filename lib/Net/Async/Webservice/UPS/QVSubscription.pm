@@ -1,4 +1,8 @@
 package Net::Async::Webservice::UPS::QVSubscription;
+$Net::Async::Webservice::UPS::QVSubscription::VERSION = '1.1.2';
+{
+  $Net::Async::Webservice::UPS::QVSubscription::DIST = 'Net-Async-Webservice-UPS';
+}
 use Moo;
 use 5.010;
 use Types::Standard qw(Str Int Bool StrictNum);
@@ -12,18 +16,6 @@ my $dt = DateTimeT->plus_coercions(DTFormat['ISO8601']);
 
 # ABSTRACT: a UPS Quantum View subscription
 
-=head1 DESCRIPTION
-
-Instances of this class can be passed to
-L<Net::Async::Webservice::UPS/qv_events> to specify what events you
-want to retrieve.
-
-=attr C<begin_date>
-
-Optional L<DateTime> (with coercion from ISO 8601 strings), to only
-retrieve events after this date.
-
-=cut
 
 has begin_date => (
     is => 'ro',
@@ -31,12 +23,6 @@ has begin_date => (
     coerce => $dt->coercion
 );
 
-=attr C<end_date>
-
-Optional L<DateTime> (with coercion from ISO 8601 strings), to only
-retrieve events before this date.
-
-=cut
 
 has end_date => (
     is => 'ro',
@@ -44,35 +30,18 @@ has end_date => (
     coerce => $dt->coercion
 );
 
-=attr C<name>
-
-Optional string, the name of a subscription.
-
-=cut
 
 has name => (
     is => 'ro',
     isa => Str,
 );
 
-=attr C<filename>
-
-Optional string, the name of a Quantum View subscription file.
-
-=cut
 
 has filename => (
     is => 'ro',
     isa => Str,
 );
 
-=method C<as_hash>
-
-Returns a hashref that, when passed through L<XML::Simple>, will
-produce the XML fragment needed in UPS C<QVEvents> requests to
-represent this subscription.
-
-=cut
 
 sub as_hash {
     my ($self) = @_;
@@ -95,3 +64,74 @@ sub as_hash {
 }
 
 1;
+
+__END__
+
+=pod
+
+=encoding UTF-8
+
+=head1 NAME
+
+Net::Async::Webservice::UPS::QVSubscription - a UPS Quantum View subscription
+
+=head1 VERSION
+
+version 1.1.2
+
+=head1 DESCRIPTION
+
+Instances of this class can be passed to
+L<Net::Async::Webservice::UPS/qv_events> to specify what events you
+want to retrieve.
+
+=head1 ATTRIBUTES
+
+=head2 C<begin_date>
+
+Optional L<DateTime> (with coercion from ISO 8601 strings), to only
+retrieve events after this date.
+
+=head2 C<end_date>
+
+Optional L<DateTime> (with coercion from ISO 8601 strings), to only
+retrieve events before this date.
+
+=head2 C<name>
+
+Optional string, the name of a subscription.
+
+=head2 C<filename>
+
+Optional string, the name of a Quantum View subscription file.
+
+=head1 METHODS
+
+=head2 C<as_hash>
+
+Returns a hashref that, when passed through L<XML::Simple>, will
+produce the XML fragment needed in UPS C<QVEvents> requests to
+represent this subscription.
+
+=head1 AUTHORS
+
+=over 4
+
+=item *
+
+Gianni Ceccarelli <gianni.ceccarelli@net-a-porter.com>
+
+=item *
+
+Sherzod B. Ruzmetov <sherzodr@cpan.org>
+
+=back
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2014 by Gianni Ceccarelli <gianni.ceccarelli@net-a-porter.com>.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+=cut

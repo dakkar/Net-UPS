@@ -1,4 +1,8 @@
 package Net::Async::Webservice::UPS::Contact;
+$Net::Async::Webservice::UPS::Contact::VERSION = '1.1.2';
+{
+  $Net::Async::Webservice::UPS::Contact::DIST = 'Net-Async-Webservice-UPS';
+}
 use Moo;
 use 5.010;
 use Types::Standard qw(Str);
@@ -8,16 +12,6 @@ use namespace::autoclean;
 
 # ABSTRACT: a "contact" for UPS
 
-=head1 DESCRIPTION
-
-A contact is someone you send a shipment to, or that you want to pick
-up a shipment from.
-
-=attr C<name>
-
-Optional string, the contact's name.
-
-=cut
 
 has name => (
     is => 'ro',
@@ -25,11 +19,6 @@ has name => (
     required => 0,
 );
 
-=attr C<company_name>
-
-Optional string, the contact's company name.
-
-=cut
 
 has company_name => (
     is => 'ro',
@@ -37,12 +26,6 @@ has company_name => (
     required => 0,
 );
 
-=attr C<attention_name>
-
-Optional string, the name of the person to the attention of whom UPS
-should bring the shipment.
-
-=cut
 
 has attention_name => (
     is => 'ro',
@@ -50,11 +33,6 @@ has attention_name => (
     required => 0,
 );
 
-=attr C<phone_number>
-
-Optional string, the contact's phone number.
-
-=cut
 
 has phone_number => (
     is => 'ro',
@@ -62,11 +40,6 @@ has phone_number => (
     required => 0,
 );
 
-=attr C<email_address>
-
-Optional string, the contact's email address.
-
-=cut
 
 has email_address => (
     is => 'ro',
@@ -74,12 +47,6 @@ has email_address => (
     required => 0,
 );
 
-=attr C<address>
-
-Required L<Net::Async::Webservice::UPS::Address> object, the contact's
-address.
-
-=cut
 
 has address => (
     is => 'ro',
@@ -87,13 +54,6 @@ has address => (
     required => 1,
 );
 
-=method C<as_hash>
-
-Returns a hashref that, when passed through L<XML::Simple>, will
-produce the XML fragment needed in UPS requests to represent this
-contact.
-
-=cut
 
 sub as_hash {
     my ($self,$shape) = @_;
@@ -110,11 +70,6 @@ sub as_hash {
     };
 }
 
-=method C<cache_id>
-
-Returns a string identifying this contact.
-
-=cut
 
 sub cache_id {
     my ($self) = @_;
@@ -123,3 +78,85 @@ sub cache_id {
 }
 
 1;
+
+__END__
+
+=pod
+
+=encoding UTF-8
+
+=head1 NAME
+
+Net::Async::Webservice::UPS::Contact - a "contact" for UPS
+
+=head1 VERSION
+
+version 1.1.2
+
+=head1 DESCRIPTION
+
+A contact is someone you send a shipment to, or that you want to pick
+up a shipment from.
+
+=head1 ATTRIBUTES
+
+=head2 C<name>
+
+Optional string, the contact's name.
+
+=head2 C<company_name>
+
+Optional string, the contact's company name.
+
+=head2 C<attention_name>
+
+Optional string, the name of the person to the attention of whom UPS
+should bring the shipment.
+
+=head2 C<phone_number>
+
+Optional string, the contact's phone number.
+
+=head2 C<email_address>
+
+Optional string, the contact's email address.
+
+=head2 C<address>
+
+Required L<Net::Async::Webservice::UPS::Address> object, the contact's
+address.
+
+=head1 METHODS
+
+=head2 C<as_hash>
+
+Returns a hashref that, when passed through L<XML::Simple>, will
+produce the XML fragment needed in UPS requests to represent this
+contact.
+
+=head2 C<cache_id>
+
+Returns a string identifying this contact.
+
+=head1 AUTHORS
+
+=over 4
+
+=item *
+
+Gianni Ceccarelli <gianni.ceccarelli@net-a-porter.com>
+
+=item *
+
+Sherzod B. Ruzmetov <sherzodr@cpan.org>
+
+=back
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2014 by Gianni Ceccarelli <gianni.ceccarelli@net-a-porter.com>.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+=cut
