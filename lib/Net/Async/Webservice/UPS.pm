@@ -385,11 +385,10 @@ it's for, I just copied it from L<Net::UPS>.
 
 sub transaction_reference {
     my ($self,$args) = @_;
-    our $VERSION; # this, and the ||0 later, are to make it work
-                  # before dzil munges it
+    no warnings 'once';
     return {
         CustomerContext => ($args->{customer_context} // "Net::Async::Webservice::UPS"),
-        XpciVersion     => "".($VERSION||0),
+        XpciVersion     => "".($Net::Async::Webservice::UPS::VERSION||0),
     };
 }
 
