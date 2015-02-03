@@ -87,13 +87,13 @@ sub test_it {
     my @packages = (
         Net::Async::Webservice::UPS::Package->new(
             length=>34, width=>24, height=>1.5,
-            weight=>1,
+            weight=>10,
             measurement_system => 'english',
             description => 'some stuff',
         ),
         Net::Async::Webservice::UPS::Package->new(
             length=>34, width=>24, height=>1.5,
-            weight=>2,
+            weight=>20,
             measurement_system => 'english',
         ),
     );
@@ -595,7 +595,7 @@ sub test_it {
                 cmp_deeply(
                     $confirm,
                     methods(
-                        billing_weight => num(3),
+                        billing_weight => num(30,0.01),
                         unit => 'LBS',
                         currency => 'USD',
                         customer_context => 'test ship1',
@@ -627,7 +627,7 @@ sub test_it {
                     $accept,
                     methods(
                         customer_context => 'test acc1',
-                        billing_weight => num(3),
+                        billing_weight => num(30,0.01),
                         unit => 'LBS',
                         currency => 'USD',
                         service_option_charges => num($confirm->service_option_charges),
@@ -675,7 +675,7 @@ sub test_it {
                 cmp_deeply(
                     $confirm,
                     methods(
-                        billing_weight => num(1),
+                        billing_weight => num(10,0.01),
                         unit => 'LBS',
                         currency => 'USD',
                     ),
@@ -705,7 +705,7 @@ sub test_it {
                 cmp_deeply(
                     $accept,
                     methods(
-                        billing_weight => num(1),
+                        billing_weight => num(10,0.01),
                         unit => 'LBS',
                         currency => 'USD',
                         service_option_charges => num($confirm->service_option_charges),
@@ -754,7 +754,7 @@ sub test_it {
                 cmp_deeply(
                     $confirm,
                     methods(
-                        billing_weight => num(1),
+                        billing_weight => num(10,0.01),
                         unit => 'LBS',
                         currency => 'USD',
                     ),
@@ -783,7 +783,7 @@ sub test_it {
                 cmp_deeply(
                     $accept,
                     methods(
-                        billing_weight => num(1),
+                        billing_weight => num(10,0.01),
                         unit => 'LBS',
                         currency => 'USD',
                         service_option_charges => num($confirm->service_option_charges),

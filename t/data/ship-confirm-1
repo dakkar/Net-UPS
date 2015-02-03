@@ -36,7 +36,7 @@ POST https://wwwcie.ups.com/ups.app/xml/ShipConfirm
         <UnitOfMeasurement>
           <Code>LBS</Code>
         </UnitOfMeasurement>
-        <Weight>1</Weight>
+        <Weight>10</Weight>
       </PackageWeight>
       <PackagingType>
         <Code>02</Code>
@@ -56,7 +56,7 @@ POST https://wwwcie.ups.com/ups.app/xml/ShipConfirm
         <UnitOfMeasurement>
           <Code>LBS</Code>
         </UnitOfMeasurement>
-        <Weight>2</Weight>
+        <Weight>20</Weight>
       </PackageWeight>
       <PackagingType>
         <Code>02</Code>
@@ -111,4 +111,4 @@ POST https://wwwcie.ups.com/ups.app/xml/ShipConfirm
 </ShipmentConfirmRequest>
 
 <?xml version="1.0"?>
-<ShipmentConfirmResponse><Response><TransactionReference><CustomerContext>test ship1</CustomerContext><XpciVersion>0</XpciVersion></TransactionReference><ResponseStatusCode>1</ResponseStatusCode><ResponseStatusDescription>Success</ResponseStatusDescription></Response><ShipmentCharges><TransportationCharges><CurrencyCode>USD</CurrencyCode><MonetaryValue>15.78</MonetaryValue></TransportationCharges><ServiceOptionsCharges><CurrencyCode>USD</CurrencyCode><MonetaryValue>0.00</MonetaryValue></ServiceOptionsCharges><TotalCharges><CurrencyCode>USD</CurrencyCode><MonetaryValue>15.78</MonetaryValue></TotalCharges></ShipmentCharges><BillingWeight><UnitOfMeasurement><Code>LBS</Code></UnitOfMeasurement><Weight>3.0</Weight></BillingWeight><ShipmentIdentificationNumber>12345</ShipmentIdentificationNumber><ShipmentDigest>somedigest</ShipmentDigest></ShipmentConfirmResponse>
+<ShipmentConfirmResponse><Response><TransactionReference><CustomerContext>test ship1</CustomerContext><XpciVersion>0</XpciVersion></TransactionReference><ResponseStatusCode>1</ResponseStatusCode><ResponseStatusDescription>Success</ResponseStatusDescription></Response><ShipmentCharges><TransportationCharges><CurrencyCode>USD</CurrencyCode><MonetaryValue>15.78</MonetaryValue></TransportationCharges><ServiceOptionsCharges><CurrencyCode>USD</CurrencyCode><MonetaryValue>0.00</MonetaryValue></ServiceOptionsCharges><TotalCharges><CurrencyCode>USD</CurrencyCode><MonetaryValue>15.78</MonetaryValue></TotalCharges></ShipmentCharges><BillingWeight><UnitOfMeasurement><Code>LBS</Code></UnitOfMeasurement><Weight>30.0</Weight></BillingWeight><ShipmentIdentificationNumber>12345</ShipmentIdentificationNumber><ShipmentDigest>somedigest</ShipmentDigest></ShipmentConfirmResponse>
