@@ -1,5 +1,5 @@
 package Net::UPS;
-$Net::UPS::VERSION = '0.13';
+$Net::UPS::VERSION = '0.14';
 {
   $Net::UPS::DIST = 'Net-UPS';
 }
@@ -176,6 +176,52 @@ sub access_key  { return $_[0]->{__access_key}                          }
 sub account_number{return $_[0]->{__args}->{ups_account_number}         }
 sub customer_classification { return $_[0]->{__args}->{customer_classification} }
 sub dump        { return Dumper($_[0])                                  }
+
+sub ssl_options {
+    my ($self) = @_;
+
+    unless ($self->{__args}{ssl_options}) {
+        require IO::Socket::SSL;
+        require IO::Socket::SSL::Utils;
+        my $cert = IO::Socket::SSL::Utils::PEM_string2cert(<<'PEM');
+-----BEGIN CERTIFICATE-----
+MIICPDCCAaUCEHC65B0Q2Sk0tjjKewPMur8wDQYJKoZIhvcNAQECBQAwXzELMAkGA1UEBhMCVVMx
+FzAVBgNVBAoTDlZlcmlTaWduLCBJbmMuMTcwNQYDVQQLEy5DbGFzcyAzIFB1YmxpYyBQcmltYXJ5
+IENlcnRpZmljYXRpb24gQXV0aG9yaXR5MB4XDTk2MDEyOTAwMDAwMFoXDTI4MDgwMTIzNTk1OVow
+XzELMAkGA1UEBhMCVVMxFzAVBgNVBAoTDlZlcmlTaWduLCBJbmMuMTcwNQYDVQQLEy5DbGFzcyAz
+IFB1YmxpYyBQcmltYXJ5IENlcnRpZmljYXRpb24gQXV0aG9yaXR5MIGfMA0GCSqGSIb3DQEBAQUA
+A4GNADCBiQKBgQDJXFme8huKARS0EN8EQNvjV69qRUCPhAwL0TPZ2RHP7gJYHyX3KqhEBarsAx94
+f56TuZoAqiN91qyFomNFx3InzPRMxnVx0jnvT0Lwdd8KkMaOIG+YD/isI19wKTakyYbnsZogy1Ol
+hec9vn2a/iRFM9x2Fe0PonFkTGUugWhFpwIDAQABMA0GCSqGSIb3DQEBAgUAA4GBALtMEivPLCYA
+TxQT3ab7/AoRhIzzKBxnki98tsX63/Dolbwdj2wsqFHMc9ikwFPwTtYmwHYBV4GSXiHx0bH/59Ah
+WM1pF+NEHJwZRDmJXNycAA9WjQKZ7aKQRUzkuxCkPfAyAw7xzvjoyVGM5mKf5p/AfbdynMk2Omuf
+Tqj/ZA1k
+-----END CERTIFICATE-----
+PEM
+        require Mozilla::CA;
+        $self->{__args}{ssl_options} = {
+            SSL_verify_mode => 1,
+            SSL_verifycn_scheme => 'www',
+            SSL_ca => [ $cert ],
+            SSL_ca_file => Mozilla::CA::SSL_ca_file(),
+        };
+    }
+    return $self->{__args}{ssl_options};
+}
+
+
+sub user_agent  {
+    my ($self) = @_;
+
+    unless ($self->{__args}{user_agent}) {
+        my $user_agent  = LWP::UserAgent->new(
+            ssl_opts => $self->ssl_options,
+        );
+        $user_agent->env_proxy;
+        $self->{__args}{user_agent} = $user_agent;
+    }
+    return $self->{__args}{user_agent}
+}
 
 sub access_as_xml {
     my $self = shift;
@@ -453,11 +499,9 @@ sub post {
         croak "post(): usage error";
     }
 
-    my $user_agent  = LWP::UserAgent->new();
-    $user_agent->env_proxy;
     my $request     = HTTP::Request->new('POST', $url);
     $request->content( encode('utf-8',$content) );
-    my $response    = $user_agent->request( $request );
+    my $response    = $self->user_agent->request( $request );
     if ( $response->is_error ) {
         die $response->status_line();
     }
@@ -705,9 +749,29 @@ L</live> setting will be ignored, and this URL always used.
 The URL to use to access the Rate service. If you set this one, the
 L</live> setting will be ignored, and this URL always used.
 
+=item user_agent
+
+A custom User Agent object, usually an instance of L<LWP::UserAgent>,
+or maybe something else that implements the same interface (at least
+the L<< C<request> |LWP::UserAgent/request >> method). It not
+supplied, a L<LWP::UserAgent> will be instantiated, with C<env_proxy>
+set, and L</ssl_options> will be used to set its C<ssl_opts>
+attribute.
+
+=item ssl_options
+
+A hashref that will be passed to the constructor of L<LWP::UserAgent>
+when building the default L</user_agent>. The default value sets full
+TLS validation, and makes sure that the Verisign certificate currently
+(as of 2015-02-03) used by the UPS servers is recognised (see L<UPS
+SSL/TLS notes>).
+
+Please note that if you set a custom L</user_agent>, these options
+will be ignored.
+
 =back
 
-All the C<%args> can also be defined in the F<$config_file>. C<%args> can be used to overwrite the default arguments. See L<CONFIGURATION FILE|/"CONFIGURATION FILE">
+All the C<%args> (apart from C<user_agent> and C<ssl_options>, where it would not make sense) can also be defined in the F<$config_file>. C<%args> can be used to overwrite the default arguments. See L<CONFIGURATION FILE|/"CONFIGURATION FILE">
 
 =item instance ()
 
@@ -720,6 +784,16 @@ Returns an instance of Net::UPS object. Should be called after an instance is cr
 =item access_key ()
 
 Return UserID, Password and AccessKey values respectively
+
+=item ssl_options ()
+
+Returns a hashref of the SSL options that may have been used to build
+the user agent. See L</ssl_options> above for details.
+
+=item user_agent ()
+
+Returns the user agent object that will be used to talk with the UPS
+servers. See L</user_agent> above for details.
 
 =item rate ($from, $to, $package)
 
@@ -1020,5 +1094,22 @@ Setting this directive to any true value will make Net::UPS to initiate calls to
 
 
 =back
+
+=head1 UPS SSL/TLS notes
+
+In December 2014, UPS notified all its users that it would stop
+supporting SSLv3 in March 2015. This library has no problems with
+that, since LWP has supported TLS for years.
+
+Another, unrelated, issue cropped up at rougly the same time, to
+confuse the situation: L<Mozilla::CA>, which is used to get the root
+certificates to verify connections, dropped a top-level Verisign
+certificate that Verisign stopped using in 2010, but the UPS servers'
+certificate was signed with it, so LWP stopped recognising the
+servers' certificate. Net::UPS 0.14 works around the problem by always
+including the root certificate in the default L</ssl_options>. If you
+set a custom user agent, you may want to set its SSL options
+appropriately. See also
+https://rt.cpan.org/Ticket/Display.html?id=101908
 
 =cut

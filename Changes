@@ -1,6 +1,11 @@
 Revision history for Perl module Net::UPS
 ==============================================
 
+0.14 2015-02-03
+   * allow setting custom SSL options and custom user agent
+   * manually include the root certificate for UPS's servers in the
+     default SSL options
+
 0.13 2014-09-01
    * incorporate patch from RT #98219, in case AddressKeyFormat is
      returned multiple times

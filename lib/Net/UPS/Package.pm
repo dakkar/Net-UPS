@@ -1,5 +1,5 @@
 package Net::UPS::Package;
-$Net::UPS::Package::VERSION = '0.13';
+$Net::UPS::Package::VERSION = '0.14';
 {
   $Net::UPS::Package::DIST = 'Net-UPS';
 }

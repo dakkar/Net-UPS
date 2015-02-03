@@ -4,6 +4,7 @@ author:
   - 'Sherzod B. Ruzmetov <sherzodr@cpan.org>'
   - 'Gianni Ceccarelli <gianni.ceccarelli@net-a-porter.com>'
 build_requires:
+  Data::Dump: '0'
   Data::Printer: '0'
   File::Temp: '0'
   HTTP::Response: '0'
@@ -16,7 +17,7 @@ build_requires:
 configure_requires:
   ExtUtils::MakeMaker: '0'
 dynamic_config: 0
-generated_by: 'Dist::Zilla version 5.020, CPAN::Meta::Converter version 2.142060'
+generated_by: 'Dist::Zilla version 5.030, CPAN::Meta::Converter version 2.143240'
 license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
@@ -31,7 +32,10 @@ requires:
   Encode: '0'
   File::Spec: '0'
   IO::File: '0'
+  IO::Socket::SSL: '0'
+  IO::Socket::SSL::Utils: '0'
   LWP::UserAgent: '0'
+  Mozilla::CA: '0'
   Scalar::Util: '0'
   Task::Weaken: '0'
   XML::Simple: '0'
@@ -39,4 +43,4 @@ requires:
   warnings: '0'
 resources:
   repository: git://github.com/NET-A-PORTER/Net-UPS.git
-version: '0.13'
+version: '0.14'

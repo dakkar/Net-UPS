@@ -24,6 +24,7 @@ my @files = (
     'lib/Net/UPS/Tutorial.pm',
     't/02address.t',
     't/custom-url.t',
+    't/custom-user-agent.t',
     't/data/address',
     't/data/address-bad',
     't/data/address-non-ascii',

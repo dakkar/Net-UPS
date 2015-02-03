@@ -38,11 +38,11 @@ sub test_it {
     my @packages = (
         Net::UPS::Package->new(
             length=>34, width=>24, height=>1.5,
-            weight=>1,
+            weight=>10,
         ),
         Net::UPS::Package->new(
             length=>34, width=>24, height=>1.5,
-            weight=>2,
+            weight=>20,
         ),
     );
 
