@@ -1,4 +1,6 @@
 {{$NEXT}}
+- default ssl_options now include the root certificate used to sign
+  UPS's servers certificate
 
 1.1.2     2014-10-13 10:44:50+01:00 Europe/London
  - drop mistaken "use NAP::policy" from a module

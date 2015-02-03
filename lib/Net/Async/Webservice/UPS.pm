@@ -239,6 +239,44 @@ C<do_request> and C<POST>) or like L<LWP::UserAgent> (has C<request>
 and C<post>). You can pass the C<loop> constructor parameter to get a
 default L<Net::Async::HTTP> instance.
 
+=attr C<ssl_options>
+
+Optional hashref, its contents will be passed to C<user_agent>'s
+C<do_request> method.
+
+If L<IO::Socket::SSL> and L<Mozilla::CA> are installed, the default
+value sets full TLS validation, and makes sure that the Verisign
+certificate currently (as of 2015-02-03) used by the UPS servers is
+recognised (see L<UPS SSL/TLS notes>).
+
+=cut
+
+sub _build_ssl_options {
+    eval "require IO::Socket::SSL; require IO::Socket::SSL::Utils; require Mozilla::CA;"
+        or return {};
+
+    my $cert = IO::Socket::SSL::Utils::PEM_string2cert(<<'PEM');
+-----BEGIN CERTIFICATE-----
+MIICPDCCAaUCEHC65B0Q2Sk0tjjKewPMur8wDQYJKoZIhvcNAQECBQAwXzELMAkGA1UEBhMCVVMx
+FzAVBgNVBAoTDlZlcmlTaWduLCBJbmMuMTcwNQYDVQQLEy5DbGFzcyAzIFB1YmxpYyBQcmltYXJ5
+IENlcnRpZmljYXRpb24gQXV0aG9yaXR5MB4XDTk2MDEyOTAwMDAwMFoXDTI4MDgwMTIzNTk1OVow
+XzELMAkGA1UEBhMCVVMxFzAVBgNVBAoTDlZlcmlTaWduLCBJbmMuMTcwNQYDVQQLEy5DbGFzcyAz
+IFB1YmxpYyBQcmltYXJ5IENlcnRpZmljYXRpb24gQXV0aG9yaXR5MIGfMA0GCSqGSIb3DQEBAQUA
+A4GNADCBiQKBgQDJXFme8huKARS0EN8EQNvjV69qRUCPhAwL0TPZ2RHP7gJYHyX3KqhEBarsAx94
+f56TuZoAqiN91qyFomNFx3InzPRMxnVx0jnvT0Lwdd8KkMaOIG+YD/isI19wKTakyYbnsZogy1Ol
+hec9vn2a/iRFM9x2Fe0PonFkTGUugWhFpwIDAQABMA0GCSqGSIb3DQEBAgUAA4GBALtMEivPLCYA
+TxQT3ab7/AoRhIzzKBxnki98tsX63/Dolbwdj2wsqFHMc9ikwFPwTtYmwHYBV4GSXiHx0bH/59Ah
+WM1pF+NEHJwZRDmJXNycAA9WjQKZ7aKQRUzkuxCkPfAyAw7xzvjoyVGM5mKf5p/AfbdynMk2Omuf
+Tqj/ZA1k
+-----END CERTIFICATE-----
+PEM
+    return {
+        SSL_verify_mode => IO::Socket::SSL::SSL_VERIFY_PEER(),
+        SSL_ca => [ $cert ],
+        SSL_ca_file => Mozilla::CA::SSL_ca_file(),
+    };
+}
+
 =method C<new>
 
 Async:
@@ -1092,3 +1130,20 @@ sub _shipper_from_contact {
 }
 
 1;
+
+=head1 UPS SSL/TLS notes
+
+In December 2014, UPS notified all its users that it would stop
+supporting SSLv3 in March 2015. This library has no problems with
+that, since LWP has supported TLS for years.
+
+Another, unrelated, issue cropped up at rougly the same time, to
+confuse the situation: L<Mozilla::CA>, which is used to get the root
+certificates to verify connections, dropped a top-level Verisign
+certificate that Verisign stopped using in 2010, but the UPS servers'
+certificate was signed with it, so LWP stopped recognising the
+servers' certificate. Net::Async::Webservice::UPS 1.1.3 works around
+the problem by always including the root certificate in the default
+L</ssl_options>. If you use custom options, you may want to check that
+you're including the correct certificate. See also
+https://rt.cpan.org/Ticket/Display.html?id=101908
