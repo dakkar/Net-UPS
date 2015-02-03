@@ -683,6 +683,8 @@ Net::UPS - Implementation of UPS Online Tools API in Perl
 
 =head1 DESCRIPTION
 
+B<PLEASE NOTE>: this distribution is considered "old". Only critical fixes will be released here. All new work is done in L<Net::Async::Webservice::UPS>, which can be used even without any async library.
+
 Net::UPS implements UPS' Online Tools API in Perl. In a nutshell, Net::UPS knows how to retrieve rates and service information for shipping packages using UPS, as well as for validating U.S. addresses.
 
 This manual is optimized to be used as a quick reference. If you're knew to Net::UPS, and this manual doesn't seem to help, you're encouraged to read L<Net::UPS::Tutorial|Net::UPS::Tutorial> first.
