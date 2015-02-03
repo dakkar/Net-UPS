@@ -1,4 +1,8 @@
 package Net::Async::Webservice::UPS::Response::QV::Event;
+$Net::Async::Webservice::UPS::Response::QV::Event::VERSION = '1.1.3';
+{
+  $Net::Async::Webservice::UPS::Response::QV::Event::DIST = 'Net-Async-Webservice-UPS';
+}
 use Moo;
 use 5.010;
 use Types::Standard qw(Str ArrayRef HashRef);
@@ -10,20 +14,6 @@ use namespace::autoclean;
 
 # ABSTRACT: a Quantum View "event"
 
-=for Pod::Coverage BUILDARGS
-
-=head1 DESCRIPTION
-
-Object representing the C<QuantumViewEvents/SubscriptionEvents>
-elements in the Quantum View response. Attribute descriptions come
-from the official UPS documentation.
-
-=attr C<name>
-
-String, a name uniquely defined associated to the Subscription ID, for
-each subscription.
-
-=cut
 
 has name => (
     is => 'ro',
@@ -31,12 +21,6 @@ has name => (
     required => 1,
 );
 
-=attr C<number>
-
-String, a number uniquely defined associated to the Subscriber ID, for
-each subscription.
-
-=cut
 
 has number => (
     is => 'ro',
@@ -44,17 +28,6 @@ has number => (
     required => 1,
 );
 
-=attr C<status>
-
-Hashref, with keys:
-
-=for :list
-= C<Code>
-required, status types of subscription; valid values are: C<UN> – Unknown, C<AT> – Activate, C<P> – Pending, C<A> –Active, C<I> – Inactive, C<S> - Suspended
-= C<Description>
-optional, description of the status
-
-=cut
 
 has status => (
     is => 'ro',
@@ -62,11 +35,6 @@ has status => (
     required => 1,
 );
 
-=attr C<files>
-
-Array ref of L<Net::Async::Webservice::UPS::Response::QV::File>
-
-=cut
 
 has files => (
     is => 'ro',
@@ -74,12 +42,6 @@ has files => (
     required => 1,
 );
 
-=attr C<begin_date>
-
-Optional, beginning date-time of subscription requested by user. It's
-a L<DateTime> object, most probably with a floating timezone.
-
-=cut
 
 has begin_date => (
     is => 'ro',
@@ -87,12 +49,6 @@ has begin_date => (
     required => 0,
 );
 
-=attr C<end_date>
-
-Optional, ending date-time of subscription requested by user. It's a
-L<DateTime> object, most probably with a floating timezone.
-
-=cut
 
 has end_date => (
     is => 'ro',
@@ -123,3 +79,90 @@ sub BUILDARGS {
 }
 
 1;
+
+__END__
+
+=pod
+
+=encoding UTF-8
+
+=head1 NAME
+
+Net::Async::Webservice::UPS::Response::QV::Event - a Quantum View "event"
+
+=head1 VERSION
+
+version 1.1.3
+
+=head1 DESCRIPTION
+
+Object representing the C<QuantumViewEvents/SubscriptionEvents>
+elements in the Quantum View response. Attribute descriptions come
+from the official UPS documentation.
+
+=head1 ATTRIBUTES
+
+=head2 C<name>
+
+String, a name uniquely defined associated to the Subscription ID, for
+each subscription.
+
+=head2 C<number>
+
+String, a number uniquely defined associated to the Subscriber ID, for
+each subscription.
+
+=head2 C<status>
+
+Hashref, with keys:
+
+=over 4
+
+=item C<Code>
+
+required, status types of subscription; valid values are: C<UN> – Unknown, C<AT> – Activate, C<P> – Pending, C<A> –Active, C<I> – Inactive, C<S> - Suspended
+
+=item C<Description>
+
+optional, description of the status
+
+=back
+
+=head2 C<files>
+
+Array ref of L<Net::Async::Webservice::UPS::Response::QV::File>
+
+=head2 C<begin_date>
+
+Optional, beginning date-time of subscription requested by user. It's
+a L<DateTime> object, most probably with a floating timezone.
+
+=head2 C<end_date>
+
+Optional, ending date-time of subscription requested by user. It's a
+L<DateTime> object, most probably with a floating timezone.
+
+=for Pod::Coverage BUILDARGS
+
+=head1 AUTHORS
+
+=over 4
+
+=item *
+
+Gianni Ceccarelli <gianni.ceccarelli@net-a-porter.com>
+
+=item *
+
+Sherzod B. Ruzmetov <sherzodr@cpan.org>
+
+=back
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2015 by Gianni Ceccarelli <gianni.ceccarelli@net-a-porter.com>.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+=cut

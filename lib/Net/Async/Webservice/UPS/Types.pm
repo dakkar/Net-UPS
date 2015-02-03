@@ -1,4 +1,8 @@
 package Net::Async::Webservice::UPS::Types;
+$Net::Async::Webservice::UPS::Types::VERSION = '1.1.3';
+{
+  $Net::Async::Webservice::UPS::Types::DIST = 'Net-Async-Webservice-UPS';
+}
 use strict;
 use warnings;
 use Type::Library
@@ -26,20 +30,6 @@ use namespace::autoclean;
 
 # ABSTRACT: type library for UPS
 
-=head1 DESCRIPTION
-
-This L<Type::Library> declares a few type constraints and coercions
-for use with L<Net::Async::Webservice::UPS>.
-
-=head1 TYPES
-
-=head2 C<PickupType>
-
-C<E>num, one of C<DAILY_PICKUP> C<DAILY> C<CUSTOMER_COUNTER>
-C<ONE_TIME_PICKUP> C<ONE_TIME> C<ON_CALL_AIR> C<SUGGESTED_RETAIL>
-C<SUGGESTED_RETAIL_RATES> C<LETTER_CENTER> C<AIR_SERVICE_CENTER>
-
-=cut
 
 enum PickupType,
     [qw(
@@ -55,11 +45,6 @@ enum PickupType,
            AIR_SERVICE_CENTER
    )];
 
-=head2 C<CustomerClassification>
-
-C<E>num, one of C<WHOLESALE> C<OCCASIONAL> C<RETAIL>
-
-=cut
 
 enum CustomerClassification,
     [qw(
@@ -68,11 +53,6 @@ enum CustomerClassification,
            RETAIL
    )];
 
-=head2 C<RequestMode>
-
-Enum, one of C<rate> C<shop>
-
-=cut
 
 enum RequestMode, # there are probably more
     [qw(
@@ -80,12 +60,6 @@ enum RequestMode, # there are probably more
            shop
    )];
 
-=head2 C<ServiceCode>
-
-Enum, one of C<01> C<02> C<03> C<07> C<08> C<11> C<12> C<12> C<13>
-C<14> C<54> C<59> C<65> C<86> C<85> C<83> C<82>
-
-=cut
 
 enum ServiceCode,
     [qw(
@@ -108,16 +82,6 @@ enum ServiceCode,
            82
    )];
 
-=head2 C<ServiceLabel>
-
-Enum, one of C<NEXT_DAY_AIR> C<2ND_DAY_AIR> C<GROUND>
-C<WORLDWIDE_EXPRESS> C<WORLDWIDE_EXPEDITED> C<STANDARD>
-C<3_DAY_SELECT> C<3DAY_SELECT> C<NEXT_DAY_AIR_SAVER>
-C<NEXT_DAY_AIR_EARLY_AM> C<WORLDWIDE_EXPRESS_PLUS> C<2ND_DAY_AIR_AM>
-C<SAVER> C<TODAY_EXPRESS_SAVER> C<TODAY_EXPRESS>
-C<TODAY_DEDICATED_COURIER> C<TODAY_STANDARD>
-
-=cut
 
 enum ServiceLabel,
     [qw(
@@ -140,12 +104,6 @@ enum ServiceLabel,
         TODAY_STANDARD
    )];
 
-=head2 C<PackagingType>
-
-Enum, one of C<LETTER> C<PACKAGE> C<TUBE> C<UPS_PAK>
-C<UPS_EXPRESS_BOX> C<UPS_25KG_BOX> C<UPS_10KG_BOX>
-
-=cut
 
 enum PackagingType,
     [qw(
@@ -158,11 +116,6 @@ enum PackagingType,
         UPS_10KG_BOX
    )];
 
-=head2 C<CreditCardCode>
-
-Enum, one of C<01> C<03> C<04> C<05> C<06> C<07> C<08>
-
-=cut
 
 enum CreditCardCode,
     [qw(
@@ -175,12 +128,6 @@ enum CreditCardCode,
            08
    )];
 
-=head2 C<CreditCardType>
-
-Enum, one of C<AMEX> C<Discover> C<MasterCard> C<Optima> C<VISA>
-C<Bravo> C<Diners>.
-
-=cut
 
 enum CreditCardType,
     [qw(
@@ -193,11 +140,6 @@ enum CreditCardType,
            Diners
    )];
 
-=head2 C<MeasurementSystem>
-
-Enum, one of C<metric> C<english>.
-
-=cut
 
 enum MeasurementSystem,
     [qw(
@@ -205,11 +147,6 @@ enum MeasurementSystem,
            english
    )];
 
-=head2 C<SizeMeasurementUnit>
-
-Enum, one of C<IN> C<CM>
-
-=cut
 
 enum SizeMeasurementUnit,
     [qw(
@@ -217,11 +154,6 @@ enum SizeMeasurementUnit,
            CM
    )];
 
-=head2 C<WeightMeasurementUnit>
-
-Enum, one of C<LBS> C<KGS>
-
-=cut
 
 enum WeightMeasurementUnit,
     [qw(
@@ -229,20 +161,10 @@ enum WeightMeasurementUnit,
            KGS
    )];
 
-=head2 C<Currency>
-
-String.
-
-=cut
 
 declare Currency,
     as Str;
 
-=head2 C<Measure>
-
-Non-negative number.
-
-=cut
 
 declare Measure,
     as StrictNum,
@@ -256,11 +178,6 @@ declare Measure,
     },
     message { ($_//'<undef>').' is not a valid measure, it must be a non-negative number' };
 
-=head2 C<Tolerance>
-
-Number between 0 and 1.
-
-=cut
 
 declare Tolerance,
     as StrictNum,
@@ -274,12 +191,6 @@ declare Tolerance,
     },
     message { ($_//'<undef>').' is not a valid tolerance, it must be a number between 0 and 1' };
 
-=head2 C<Address>
-
-Instance of L<Net::Async::Webservice::UPS::Address>, with automatic
-coercion from string (interpreted as a US postal code).
-
-=cut
 
 class_type Address, { class => 'Net::Async::Webservice::UPS::Address' };
 coerce Address, from Str, via {
@@ -288,11 +199,6 @@ coerce Address, from Str, via {
 };
 Address->coercion->freeze;
 
-=head2 C<Contact>
-
-Instance of L<Net::Async::Webservice::UPS::Contact>.
-
-=cut
 
 class_type Contact, { class => 'Net::Async::Webservice::UPS::Contact' };
 coerce Contact, from Address, via {
@@ -301,45 +207,18 @@ coerce Contact, from Address, via {
 };
 Contact->coercion->freeze;
 
-=head2 C<Shipper>
-
-Instance of L<Net::Async::Webservice::UPS::Shipper>.
-
-=cut
 
 class_type Shipper, { class => 'Net::Async::Webservice::UPS::Shipper' };
 
-=head2 C<Payment>
-
-Instance of L<Net::Async::Webservice::UPS::Payment>.
-
-=cut
 
 class_type Payment, { class => 'Net::Async::Webservice::UPS::Payment' };
 
-=head2 C<CreditCard>
-
-Instance of L<Net::Async::Webservice::UPS::CreditCard>.
-
-=cut
 
 class_type CreditCard, { class => 'Net::Async::Webservice::UPS::CreditCard' };
 
-=head2 C<ImageType>
-
-Enum, one of C<EPL>, C<ZPL>, C<SPL>, C<STARPL>, C<GIF>, C<HTML>.
-
-=cut
 
 enum ImageType, [qw(EPL ZPL SPL STARPL GIF HTML)];
 
-=head2 C<Image>
-
-Instance of L<Net::Async::Webservice::UPS::Response::Image>, with
-automatic coercion from hashref (via
-L<Net::Async::Webservice::UPS::Response::Image/from_hash>).
-
-=cut
 
 class_type Image, { class => 'Net::Async::Webservice::UPS::Response::Image' };
 coerce Image, from HashRef, via {
@@ -348,12 +227,6 @@ coerce Image, from HashRef, via {
 };
 Image->coercion->freeze;
 
-=head2 C<Label>
-
-Instance of L<Net::Async::Webservice::UPS::Label>, with automatic
-coercion from string (interpreted as a label code).
-
-=cut
 
 class_type Label, { class => 'Net::Async::Webservice::UPS::Label' };
 coerce Label, from Str, via {
@@ -362,36 +235,15 @@ coerce Label, from Str, via {
 };
 Label->coercion->freeze;
 
-=head2 C<Package>
-
-Instance of L<Net::Async::Webservice::UPS::Package>.
-
-=head2 C<PackageList>
-
-Array ref of packages, with automatic coercion from a single package
-to a singleton array.
-
-=cut
 
 class_type Package, { class => 'Net::Async::Webservice::UPS::Package' };
 declare PackageList, as ArrayRef[Package];
 coerce PackageList, from Package, via { [ $_ ] };
 PackageList->coercion->freeze;
 
-=head2 C<PackageResult>
-
-Instance of L<Net::Async::Webservice::UPS::Response::PackageResult>.
-
-=cut
 
 class_type PackageResult, { class => 'Net::Async::Webservice::UPS::Response::PackageResult' };
 
-=head2 C<Service>
-
-Instance of L<Net::Async::Webservice::UPS::Service>, with automatic
-coercion from string (interpreted as a service label).
-
-=cut
 
 class_type Service, { class => 'Net::Async::Webservice::UPS::Service' };
 coerce Service, from Str, via {
@@ -400,12 +252,6 @@ coerce Service, from Str, via {
 };
 Service->coercion->freeze;
 
-=head2 C<ReturnService>
-
-Instance of L<Net::Async::Webservice::UPS::ReturnService>, with automatic
-coercion from string (interpreted as a service label).
-
-=cut
 
 class_type ReturnService, { class => 'Net::Async::Webservice::UPS::ReturnService' };
 coerce ReturnService, from Str, via {
@@ -414,11 +260,6 @@ coerce ReturnService, from Str, via {
 };
 ReturnService->coercion->freeze;
 
-=head2 C<ReturnServiceCode>
-
-Enum, one of C<2> C<3> C<5> C<8> C<9>
-
-=cut
 
 enum ReturnServiceCode,
     [qw(
@@ -429,11 +270,6 @@ enum ReturnServiceCode,
            9
    )];
 
-=head2 C<ReturnServiceLabel>
-
-Enum, one of C<PNM> C<RS1> C<RS3> C<ERL> C<PRL>
-
-=cut
 
 enum ReturnServiceLabel,
     [qw(
@@ -444,27 +280,12 @@ enum ReturnServiceLabel,
            PRL
    )];
 
-=head2 C<Rate>
-
-Instance of L<Net::Async::Webservice::UPS::Rate>.
-
-=head2 C<RateList>
-
-Array ref of rates, with automatic coercion from a single rate to a
-singleton array.
-
-=cut
 
 class_type Rate, { class => 'Net::Async::Webservice::UPS::Rate' };
 declare RateList, as ArrayRef[Rate];
 coerce RateList, from Rate, via { [ $_ ] };
 RateList->coercion->freeze;
 
-=head2 C<ShipmentConfirm>
-
-Instance of L<Net::Async::Webservice::UPS::Response::ShipmentConfirm>.
-
-=cut
 
 class_type ShipmentConfirm, { class => 'Net::Async::Webservice::UPS::Response::ShipmentConfirm' };
 
@@ -480,6 +301,179 @@ class_type QVPackage, { class => 'Net::Async::Webservice::UPS::Response::QV::Pac
 class_type QVException, { class => 'Net::Async::Webservice::UPS::Response::QV::Exception' };
 class_type QVReference, { class => 'Net::Async::Webservice::UPS::Response::QV::Reference' };
 
+
+duck_type Cache, [qw(get set)];
+duck_type Cacheable, [qw(cache_id)];
+
+1;
+
+__END__
+
+=pod
+
+=encoding UTF-8
+
+=head1 NAME
+
+Net::Async::Webservice::UPS::Types - type library for UPS
+
+=head1 VERSION
+
+version 1.1.3
+
+=head1 DESCRIPTION
+
+This L<Type::Library> declares a few type constraints and coercions
+for use with L<Net::Async::Webservice::UPS>.
+
+=head1 TYPES
+
+=head2 C<PickupType>
+
+C<E>num, one of C<DAILY_PICKUP> C<DAILY> C<CUSTOMER_COUNTER>
+C<ONE_TIME_PICKUP> C<ONE_TIME> C<ON_CALL_AIR> C<SUGGESTED_RETAIL>
+C<SUGGESTED_RETAIL_RATES> C<LETTER_CENTER> C<AIR_SERVICE_CENTER>
+
+=head2 C<CustomerClassification>
+
+C<E>num, one of C<WHOLESALE> C<OCCASIONAL> C<RETAIL>
+
+=head2 C<RequestMode>
+
+Enum, one of C<rate> C<shop>
+
+=head2 C<ServiceCode>
+
+Enum, one of C<01> C<02> C<03> C<07> C<08> C<11> C<12> C<12> C<13>
+C<14> C<54> C<59> C<65> C<86> C<85> C<83> C<82>
+
+=head2 C<ServiceLabel>
+
+Enum, one of C<NEXT_DAY_AIR> C<2ND_DAY_AIR> C<GROUND>
+C<WORLDWIDE_EXPRESS> C<WORLDWIDE_EXPEDITED> C<STANDARD>
+C<3_DAY_SELECT> C<3DAY_SELECT> C<NEXT_DAY_AIR_SAVER>
+C<NEXT_DAY_AIR_EARLY_AM> C<WORLDWIDE_EXPRESS_PLUS> C<2ND_DAY_AIR_AM>
+C<SAVER> C<TODAY_EXPRESS_SAVER> C<TODAY_EXPRESS>
+C<TODAY_DEDICATED_COURIER> C<TODAY_STANDARD>
+
+=head2 C<PackagingType>
+
+Enum, one of C<LETTER> C<PACKAGE> C<TUBE> C<UPS_PAK>
+C<UPS_EXPRESS_BOX> C<UPS_25KG_BOX> C<UPS_10KG_BOX>
+
+=head2 C<CreditCardCode>
+
+Enum, one of C<01> C<03> C<04> C<05> C<06> C<07> C<08>
+
+=head2 C<CreditCardType>
+
+Enum, one of C<AMEX> C<Discover> C<MasterCard> C<Optima> C<VISA>
+C<Bravo> C<Diners>.
+
+=head2 C<MeasurementSystem>
+
+Enum, one of C<metric> C<english>.
+
+=head2 C<SizeMeasurementUnit>
+
+Enum, one of C<IN> C<CM>
+
+=head2 C<WeightMeasurementUnit>
+
+Enum, one of C<LBS> C<KGS>
+
+=head2 C<Currency>
+
+String.
+
+=head2 C<Measure>
+
+Non-negative number.
+
+=head2 C<Tolerance>
+
+Number between 0 and 1.
+
+=head2 C<Address>
+
+Instance of L<Net::Async::Webservice::UPS::Address>, with automatic
+coercion from string (interpreted as a US postal code).
+
+=head2 C<Contact>
+
+Instance of L<Net::Async::Webservice::UPS::Contact>.
+
+=head2 C<Shipper>
+
+Instance of L<Net::Async::Webservice::UPS::Shipper>.
+
+=head2 C<Payment>
+
+Instance of L<Net::Async::Webservice::UPS::Payment>.
+
+=head2 C<CreditCard>
+
+Instance of L<Net::Async::Webservice::UPS::CreditCard>.
+
+=head2 C<ImageType>
+
+Enum, one of C<EPL>, C<ZPL>, C<SPL>, C<STARPL>, C<GIF>, C<HTML>.
+
+=head2 C<Image>
+
+Instance of L<Net::Async::Webservice::UPS::Response::Image>, with
+automatic coercion from hashref (via
+L<Net::Async::Webservice::UPS::Response::Image/from_hash>).
+
+=head2 C<Label>
+
+Instance of L<Net::Async::Webservice::UPS::Label>, with automatic
+coercion from string (interpreted as a label code).
+
+=head2 C<Package>
+
+Instance of L<Net::Async::Webservice::UPS::Package>.
+
+=head2 C<PackageList>
+
+Array ref of packages, with automatic coercion from a single package
+to a singleton array.
+
+=head2 C<PackageResult>
+
+Instance of L<Net::Async::Webservice::UPS::Response::PackageResult>.
+
+=head2 C<Service>
+
+Instance of L<Net::Async::Webservice::UPS::Service>, with automatic
+coercion from string (interpreted as a service label).
+
+=head2 C<ReturnService>
+
+Instance of L<Net::Async::Webservice::UPS::ReturnService>, with automatic
+coercion from string (interpreted as a service label).
+
+=head2 C<ReturnServiceCode>
+
+Enum, one of C<2> C<3> C<5> C<8> C<9>
+
+=head2 C<ReturnServiceLabel>
+
+Enum, one of C<PNM> C<RS1> C<RS3> C<ERL> C<PRL>
+
+=head2 C<Rate>
+
+Instance of L<Net::Async::Webservice::UPS::Rate>.
+
+=head2 C<RateList>
+
+Array ref of rates, with automatic coercion from a single rate to a
+singleton array.
+
+=head2 C<ShipmentConfirm>
+
+Instance of L<Net::Async::Webservice::UPS::Response::ShipmentConfirm>.
+
 =head2 C<Cache>
 
 Duck type, any object with a C<get> and a C<set> method.
@@ -488,9 +482,25 @@ Duck type, any object with a C<get> and a C<set> method.
 
 Duck type, any object with a C<cache_id> method.
 
+=head1 AUTHORS
+
+=over 4
+
+=item *
+
+Gianni Ceccarelli <gianni.ceccarelli@net-a-porter.com>
+
+=item *
+
+Sherzod B. Ruzmetov <sherzodr@cpan.org>
+
+=back
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2015 by Gianni Ceccarelli <gianni.ceccarelli@net-a-porter.com>.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
 =cut
-
-duck_type Cache, [qw(get set)];
-duck_type Cacheable, [qw(cache_id)];
-
-1;

@@ -1,4 +1,8 @@
 package Net::Async::Webservice::UPS::Response::QV::Exception;
+$Net::Async::Webservice::UPS::Response::QV::Exception::VERSION = '1.1.3';
+{
+  $Net::Async::Webservice::UPS::Response::QV::Exception::DIST = 'Net-Async-Webservice-UPS';
+}
 use Moo;
 use 5.010;
 use Types::Standard qw(Str ArrayRef HashRef);
@@ -11,211 +15,102 @@ use namespace::autoclean;
 
 # ABSTRACT: a Quantum View "exception" event
 
-=for Pod::Coverage BUILDARGS
-
-=head1 DESCRIPTION
-
-Object representing the
-C<QuantumViewEvents/SubscriptionEvents/SubscriptionFile/Exception>
-elements in the Quantum View response. Attribute descriptions come
-from the official UPS documentation.
-
-=attr C<package_reference>
-
-Optional array of
-L<Net::Async::Webservice::UPS::Response::QV::Reference>, package-level
-reference numbers.
-
-=cut
 
 has package_reference => (
     is => 'ro',
     isa => ArrayRef[QVReference],
 );
 
-=attr C<shipment_reference>
-
-Optional array of
-L<Net::Async::Webservice::UPS::Response::QV::Reference>, shipment-level
-reference numbers.
-
-=cut
 
 has shipment_reference => (
     is => 'ro',
     isa => ArrayRef[QVReference],
 );
 
-=attr C<shipper_number>
-
-Optional string, shipper's six digit alphanumeric account number.
-
-=cut
 
 has shipper_number => (
     is => 'ro',
     isa => Str,
 );
 
-=attr C<tracking_number>
-
-Optional string, package's 1Z tracking number.
-
-=cut
 
 has tracking_number => (
     is => 'ro',
     isa => Str,
 );
 
-=attr C<date_time>
-
-Optional L<DateTime>, date and time that the package is delivered,
-most probably with a floating timezone.
-
-=cut
 
 has date_time => (
     is => 'ro',
     isa => DateTimeT,
 );
 
-=attr C<updated_address>
-
-Optional L<Net::Async::Webservice::UPS::Address>, updated shipping
-address. Only contains fields that were updated from the original
-destination address.
-
-=cut
 
 has updated_address => (
     is => 'ro',
     isa => Address,
 );
 
-=attr C<status_code>
-
-Optional string, code for status of updating shipping address issue.
-
-=cut
 
 has status_code => (
     is => 'ro',
     isa => Str,
 );
 
-=attr C<status_description>
-
-Optional string, description for status of updating shipping address
-issue.
-
-=cut
 
 has status_description => (
     is => 'ro',
     isa => Str,
 );
 
-=attr C<reason_code>
-
-Optional string, code for reason of updating shipping address issue.
-
-=cut
 
 has reason_code => (
     is => 'ro',
     isa => Str,
 );
 
-=attr C<reason_description>
-
-Optional string, description for reason of updating shipping address
-issue.
-
-=cut
 
 has reason_description => (
     is => 'ro',
     isa => Str,
 );
 
-=attr C<resolution_code>
-
-Optional string, type of resolution for updating shipping address issue.
-
-=cut
 
 has resolution_code => (
     is => 'ro',
     isa => Str,
 );
 
-=attr C<resolution_description>
-
-Optional string, description of resolution for updating shipping
-address issue.
-
-=cut
 
 has resolution_description => (
     is => 'ro',
     isa => Str,
 );
 
-=attr C<rescheduled_delivery_date>
-
-Optional L<DateTime>, rescheduled delivery date for updated shipping
-address, most probably with a floating timezone.
-
-=cut
 
 has rescheduled_delivery_date => (
     is => 'ro',
     isa => DateTimeT,
 );
 
-=attr C<activity_location>
-
-Optional L<Net::Async::Webservice::UPS::Address>, geographic location
-where an activity occurred during a movement of a package or shipment.
-
-=cut
 
 has activity_location => (
     is => 'ro',
     isa => Address,
 );
 
-=attr C<bill_to_account_number>
-
-Optional string, the UPS Account number to which the shipping charges
-were billed.
-
-=cut
 
 has bill_to_account_number => (
     is => 'ro',
     isa => Str,
 );
 
-=attr C<bill_to_account_option>
-
-Optional string, indicates how shipping charges for the package were
-billed. Valid Values: 01 Shipper, 02 Consignee Billing , 03 Third
-Party, 04 Freight Collect.
-
-=cut
 
 has bill_to_account_option => (
     is => 'ro',
     isa => Str,
 );
 
-=attr C<access_point_location_id>
-
-Optional string, the UPS Access Point Location ID.
-
-=cut
 
 has access_point_location_id => (
     is => 'ro',
@@ -258,3 +153,134 @@ sub BUILDARGS {
 
 
 1;
+
+__END__
+
+=pod
+
+=encoding UTF-8
+
+=head1 NAME
+
+Net::Async::Webservice::UPS::Response::QV::Exception - a Quantum View "exception" event
+
+=head1 VERSION
+
+version 1.1.3
+
+=head1 DESCRIPTION
+
+Object representing the
+C<QuantumViewEvents/SubscriptionEvents/SubscriptionFile/Exception>
+elements in the Quantum View response. Attribute descriptions come
+from the official UPS documentation.
+
+=head1 ATTRIBUTES
+
+=head2 C<package_reference>
+
+Optional array of
+L<Net::Async::Webservice::UPS::Response::QV::Reference>, package-level
+reference numbers.
+
+=head2 C<shipment_reference>
+
+Optional array of
+L<Net::Async::Webservice::UPS::Response::QV::Reference>, shipment-level
+reference numbers.
+
+=head2 C<shipper_number>
+
+Optional string, shipper's six digit alphanumeric account number.
+
+=head2 C<tracking_number>
+
+Optional string, package's 1Z tracking number.
+
+=head2 C<date_time>
+
+Optional L<DateTime>, date and time that the package is delivered,
+most probably with a floating timezone.
+
+=head2 C<updated_address>
+
+Optional L<Net::Async::Webservice::UPS::Address>, updated shipping
+address. Only contains fields that were updated from the original
+destination address.
+
+=head2 C<status_code>
+
+Optional string, code for status of updating shipping address issue.
+
+=head2 C<status_description>
+
+Optional string, description for status of updating shipping address
+issue.
+
+=head2 C<reason_code>
+
+Optional string, code for reason of updating shipping address issue.
+
+=head2 C<reason_description>
+
+Optional string, description for reason of updating shipping address
+issue.
+
+=head2 C<resolution_code>
+
+Optional string, type of resolution for updating shipping address issue.
+
+=head2 C<resolution_description>
+
+Optional string, description of resolution for updating shipping
+address issue.
+
+=head2 C<rescheduled_delivery_date>
+
+Optional L<DateTime>, rescheduled delivery date for updated shipping
+address, most probably with a floating timezone.
+
+=head2 C<activity_location>
+
+Optional L<Net::Async::Webservice::UPS::Address>, geographic location
+where an activity occurred during a movement of a package or shipment.
+
+=head2 C<bill_to_account_number>
+
+Optional string, the UPS Account number to which the shipping charges
+were billed.
+
+=head2 C<bill_to_account_option>
+
+Optional string, indicates how shipping charges for the package were
+billed. Valid Values: 01 Shipper, 02 Consignee Billing , 03 Third
+Party, 04 Freight Collect.
+
+=head2 C<access_point_location_id>
+
+Optional string, the UPS Access Point Location ID.
+
+=for Pod::Coverage BUILDARGS
+
+=head1 AUTHORS
+
+=over 4
+
+=item *
+
+Gianni Ceccarelli <gianni.ceccarelli@net-a-porter.com>
+
+=item *
+
+Sherzod B. Ruzmetov <sherzodr@cpan.org>
+
+=back
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2015 by Gianni Ceccarelli <gianni.ceccarelli@net-a-porter.com>.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+=cut
