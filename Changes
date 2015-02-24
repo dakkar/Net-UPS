@@ -3,6 +3,8 @@ Revision history for Perl module Net::UPS
 
 {{$NEXT}}
 
+0.15 2015-02-24
+
 0.14 2015-02-03
    * allow setting custom SSL options and custom user agent
    * manually include the root certificate for UPS's servers in the
