@@ -54,6 +54,7 @@
          "requires" : {
             "Data::Dump" : "0",
             "Data::Printer" : "0",
+            "Devel::Peek" : "0",
             "File::Temp" : "0",
             "HTTP::Response" : "0",
             "Test::Deep" : "0",
@@ -61,6 +62,7 @@
             "Test::More" : "0",
             "Test::Most" : "0",
             "Time::HiRes" : "0",
+            "XML::SAX" : "0",
             "lib" : "0"
          }
       }

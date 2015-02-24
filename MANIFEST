@@ -37,3 +37,4 @@ t/net-ups-offline.t
 t/oversized.t
 t/release-no-tabs.t
 t/release-pod-syntax.t
+t/xml-parsers-check.t

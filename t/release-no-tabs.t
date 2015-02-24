@@ -41,7 +41,8 @@ my @files = (
     't/missing-sizes.t',
     't/net-ups-live.t',
     't/net-ups-offline.t',
-    't/oversized.t'
+    't/oversized.t',
+    't/xml-parsers-check.t'
 );
 
 notabs_ok($_) foreach @files;
