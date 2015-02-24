@@ -1,3 +1,0 @@
-This is a re-implementation of Net::UPS using Futures, to be
-async-friendly. You can still use it synchronously, there's no need to
-have IO::Async installed, you can still just use LWP underneath.
