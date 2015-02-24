@@ -11,6 +11,7 @@ use Net::UPS::Service;
 use Net::UPS::Address;
 use Net::UPS::Package;
 use Scalar::Util 'weaken';
+use IO::Socket::SSL;
 
 @Net::UPS::ISA          = ( "Net::UPS::ErrorHandler" );
 $Net::UPS::LIVE         = 0;
@@ -177,7 +178,6 @@ sub ssl_options {
     my ($self) = @_;
 
     unless ($self->{__args}{ssl_options}) {
-        require IO::Socket::SSL;
         require IO::Socket::SSL::Utils;
         my $cert = IO::Socket::SSL::Utils::PEM_string2cert(<<'PEM');
 -----BEGIN CERTIFICATE-----
