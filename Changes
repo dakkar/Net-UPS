@@ -2,8 +2,15 @@ Revision history for Perl module Net::UPS
 ==============================================
 
 {{$NEXT}}
+   * thanks to KENTNL for opening RT #105214 and helping me find the
+     culprit of the encoding problems: XML::SAX::PurePerl requires
+     character strings in input
+   * removed encoding test
 
 0.15 2015-02-24
+   * always 'use' IO::Socket::SSL (prevents errors relating to the
+     Net::SSLeay::OP_NO_* constants)
+   * add test to figure out encoding problems
 
 0.14 2015-02-03
    * allow setting custom SSL options and custom user agent

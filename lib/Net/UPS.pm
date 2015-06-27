@@ -501,7 +501,7 @@ sub post {
     if ( $response->is_error ) {
         die $response->status_line();
     }
-    return $response->content;
+    return $response->decoded_content;
 }
 
 

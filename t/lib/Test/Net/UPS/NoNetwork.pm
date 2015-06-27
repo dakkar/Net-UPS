@@ -50,7 +50,7 @@ sub prepare_test_from_file {
     my ($self,$file,$comment) = @_;
 
     my ($req_line,$request,$response) = do {
-        open my $fh,'<',$file;
+        open my $fh,'<:utf8',$file;
         local $/="";
         <$fh>;
     };
